@@ -1,3 +1,9 @@
+/*
+Controls the enemy movment and shooting ai
+By: Nick Petruccelli
+Last Modified: 08/06/2023
+*/
+
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
