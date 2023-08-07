@@ -26,7 +26,7 @@ public class Bullet : MonoBehaviour
         Destroy(gameObject);
     }
 
-    public void setDamage(float dam)
+    public void SetDamage(float dam)
     {
         damage = dam;
     }
