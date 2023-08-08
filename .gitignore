@@ -1,5 +1,4 @@
 *.meta
 .vs/slnx.sqlite
-Scripts/EnemyBullet.cs
 .vs/VSWorkspaceState.json
 .vs/cs-app-dungeon-crawler/v15/.suo
