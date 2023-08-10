@@ -1,3 +1,9 @@
+/*
+Generic ranged weapon class that stores basic weapon info and sooting function
+By: Nick Petruccelli
+Last Modified: 08/10/2023
+*/
+
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -8,7 +14,7 @@ public class RangedWeapon : Weapon
     public GameObject bulletPreFab;
     public float bulletForce = 25f;
     public float fireDelay = .25f;
-
+    
     private float lastFireTime;
     private float damageFinal;
     
