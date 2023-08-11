@@ -15,5 +15,6 @@ public class Weapon : MonoBehaviour
     public float critChance;
     public float critMultiplier;
     public GameObject groundItem;
+    public float pickUpOffSet;
 
 }

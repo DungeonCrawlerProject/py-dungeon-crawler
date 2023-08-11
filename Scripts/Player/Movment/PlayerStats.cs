@@ -10,21 +10,19 @@ using UnityEngine;
 
 public class PlayerStats : MonoBehaviour
 {
-    public float plyrMaxHealth = 10f;
-    public float plyrCurHealth = 10f;
-    public float plyrDamageMult = 1f;
+    public float maxHealth = 10f;
+    public float curHealth = 10f;
+    public float damageMult = 1f;
+    public float critChance = 0;
+    public float critMultiplier = 1;
     public ParticleSystem deathEffect;
-
-    public float getDamageMult()
-    {
-        return plyrDamageMult;
-    }
+    public List<string> equipedItems;
 
     public void takeDamage(float damage)
     {
-        plyrCurHealth -= damage;
+        curHealth -= damage;
 
-        if (plyrCurHealth <= 0f)
+        if (curHealth <= 0f)
         {
             Die();
         }

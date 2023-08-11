@@ -17,6 +17,7 @@ public class RangedWeapon : Weapon
     
     private float lastFireTime;
     private float damageFinal;
+    private float critChanceFinal;
     
 
     // Start is called before the first frame update
@@ -24,7 +25,8 @@ public class RangedWeapon : Weapon
     {
         lastFireTime = -fireDelay;
         PlayerStats playerStats = transform.parent.GetComponent<PlayerStats>();
-        damageFinal = damage * playerStats.getDamageMult();
+        damageFinal = damage * playerStats.damageMult;
+        critChanceFinal = critChance + playerStats.critChance;
     }
 
     // Update is called once per frame
@@ -47,7 +49,7 @@ public class RangedWeapon : Weapon
         // Determine if bullet is going to crit and adjust damage if it does
         float random = Random.Range(0,1);
         float damageTemp = damageFinal;
-        if (critChance <= random)
+        if (critChance >= random)
         {
             damageFinal = damageFinal * critMultiplier;
         }
