@@ -1,3 +1,9 @@
+/*
+Contains all of the logic for playing shooting using the Bullet class
+By: Nick Petruccelli
+Last Modified: 08/06/2023
+*/
+
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -20,7 +26,7 @@ public class Bullet : MonoBehaviour
         Destroy(gameObject);
     }
 
-    public void setDamage(float dam)
+    public void SetDamage(float dam)
     {
         damage = dam;
     }

@@ -1,3 +1,9 @@
+/*
+Controls players shooting
+By: Nick Petruccelli
+Last Modified: 08/06/2023
+*/
+
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -36,7 +42,7 @@ public class Shooting : MonoBehaviour
         GameObject bullet = Instantiate(bulletPreFab, firePoint.position, firePoint.rotation);
         Rigidbody2D rb = bullet.GetComponent<Rigidbody2D>();
         Bullet bulletScript = bullet.GetComponent<Bullet>();
-        bulletScript.setDamage(damage);
+        bulletScript.SetDamage(damage);
         rb.AddForce(firePoint.up * bulletForce, ForceMode2D.Impulse);
 
     }
