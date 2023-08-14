@@ -67,6 +67,8 @@ public class PickUp : MonoBehaviour
 
                     // Add item to inventory
                     playerStats.equipedItems.Add(itemStats.itemName);
+
+                    Destroy(gameObject);
                     break;
             }
         }
