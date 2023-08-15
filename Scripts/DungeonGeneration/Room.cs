@@ -4,5 +4,20 @@ using UnityEngine;
 
 public class Room : MonoBehaviour
 {
-    public int roomSize = 1; // 1 = small room, 2 = large room
+    public enum RoomSize
+    {
+        small,
+        medium,
+        large
+    }
+    public enum RoomType
+    {
+        spawn,
+        room,
+        boss,
+        hall
+    }
+    public RoomSize roomSize;
+    public RoomType roomType;
+    public List<GameObject> doorWays;
 }
