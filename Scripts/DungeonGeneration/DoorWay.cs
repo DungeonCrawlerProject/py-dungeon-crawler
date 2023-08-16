@@ -12,4 +12,5 @@ public class DoorWay : MonoBehaviour
         left
     }
     public RoomSide roomSide;
+    public bool isAbleToGenerate = true;
 }
