@@ -9,6 +9,7 @@ public class DungeonGeneration : MonoBehaviour
     public List<GameObject> largeRooms;
     public List<GameObject> smallRooms;
     public List<GameObject> hallWays;
+    public GameObject doorFill;
     public LayerMask roomMask;
     public int mapWidth = 50;
     public int mapHight = 50;
@@ -232,5 +233,34 @@ public class DungeonGeneration : MonoBehaviour
             } 
         }
 
+        // Fill in unused doorways
+        foreach (GameObject _room in placedRooms)
+        {
+            foreach (GameObject _doorWay in _room.GetComponent<Room>().doorWays)
+            {
+                DoorWay _doorWayScript = _doorWay.GetComponent<DoorWay>();
+                if (_doorWayScript.isAbleToGenerate == true)
+                {
+                    switch ((int)_doorWayScript.roomSide)
+                    {
+                        case 0:
+                            Instantiate(doorFill, _doorWay.transform.position + new Vector3(0f,-.5f,0f), Quaternion.Euler(0f,0f,0f));
+                            break;
+                        case 1:
+                            Instantiate(doorFill, _doorWay.transform.position + new Vector3(-.5f, 0f, 0f), Quaternion.Euler(0f, 0f, 90f));
+                            break;
+                        case 2:
+                            Instantiate(doorFill, _doorWay.transform.position + new Vector3(0f, .5f, 0f), Quaternion.Euler(0f, 0f, 0f));
+                            break;
+                        case 3:
+                            Instantiate(doorFill, _doorWay.transform.position + new Vector3(.5f, 0f, 0f), Quaternion.Euler(0f, 0f, 90f));
+                            break;
+                    }
+                }
+            }
+        }
+
+        // Recalculate Ai pathfinding
+        AstarPath.active.Scan();
     }   
 }
