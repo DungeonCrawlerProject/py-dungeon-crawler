@@ -2,7 +2,4 @@
 .vs/slnx.sqlite
 .vs/VSWorkspaceState.json
 .vs/cs-app-dungeon-crawler/v15/.suo
-.idea/.idea.cs-app-dungeon-crawler.dir/.idea/.gitignore
-.idea/.idea.cs-app-dungeon-crawler.dir/.idea/encodings.xml
-.idea/.idea.cs-app-dungeon-crawler.dir/.idea/indexLayout.xml
-.idea/.idea.cs-app-dungeon-crawler.dir/.idea/vcs.xml
+*.idea
