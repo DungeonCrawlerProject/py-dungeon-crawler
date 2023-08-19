@@ -66,7 +66,7 @@ public class PickUp : MonoBehaviour
                     playerStats.critChance += itemStats.critChanceIncStatic;
 
                     // Add item to inventory
-                    playerStats.equipedItems.Add(itemStats.itemName);
+                    playerStats.equippedItems.Add(itemStats.itemName);
 
                     Destroy(gameObject);
                     break;
