@@ -1,12 +1,13 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.PlayerLoop;
+
 
 public class PlayerDodge : IPlayerState
 {
     private float dodgeStartTime = 10f;
     private bool canDodge = true;
+    /// <summary>Determines if player state needs to change states and calls Dodge method</summary>
+    /// <param name="player">Instance of player class</param>
+    /// <returns>Returns IPlayerState interface</returns>
     public IPlayerState DoState(Player player)
     {
         Dodge(player);
@@ -17,6 +18,8 @@ public class PlayerDodge : IPlayerState
         return player.playerIdle;
     }
 
+    /// <summary>Moves the player in a fixed direction at a faster speed</summary>
+    /// <param name="player">Instance of player class</param>
     private void Dodge(Player player)
     {
         if (canDodge)

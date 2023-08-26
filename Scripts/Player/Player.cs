@@ -1,25 +1,25 @@
-using System;
-using System.Collections;
-using System.Collections.Generic;
 using Unity.VisualScripting;
 using UnityEngine;
 
 public class Player : MonoBehaviour
 {
-    public IPlayerState currentState;
-    public PlayerIdle playerIdle = new PlayerIdle();
-    public PlayerMove playerMove = new PlayerMove();
-    public PlayerDodge playerDodge = new PlayerDodge();
+    private IPlayerState currentState;
+    public readonly PlayerIdle playerIdle = new PlayerIdle();
+    public readonly PlayerMove playerMove = new PlayerMove();
+    public readonly PlayerDodge playerDodge = new PlayerDodge();
 
     public Vector2 moveDirection;
     public float moveSpeed = 10;
     public float dodgeSpeed = 20;
+    
     public float dodgeDelay = 1f;
-    public float nextDodge = 0;
+    public float nextDodge;
     public float dodgeDuration = .25f;
+    
     public Rigidbody2D rb;
-    private Vector2 mousePos;
     public Camera cam;
+    
+    private Vector2 mousePos;
 
     private void Start()
     {
@@ -29,6 +29,8 @@ public class Player : MonoBehaviour
     private void Update()
     {
         currentState = currentState.DoState(this);
+        
+        // Gets mouse position
         mousePos = cam.ScreenToWorldPoint(Input.mousePosition);
     }
     

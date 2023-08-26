@@ -1,10 +1,10 @@
-using System.Collections;
-using System.Collections.Generic;
-using Unity.VisualScripting;
 using UnityEngine;
 
 public class PlayerMove : IPlayerState
 {
+    /// <summary>Determines if player state needs to change states and calls Move method</summary>
+    /// <param name="player">Instance of player class</param>
+    /// <returns>Returns IPlayerState interface</returns>
     public IPlayerState DoState(Player player)
     {
         Move(player);
@@ -15,6 +15,10 @@ public class PlayerMove : IPlayerState
         return player.playerIdle;
     }
 
+    /// <summary>
+    /// Gets direction that player needs to move from keyboard inputs
+    /// </summary>
+    /// <param name="player">Instance of player class</param>
     private void Move(Player player)
     {
         player.moveDirection.x = Input.GetAxisRaw("Horizontal");
