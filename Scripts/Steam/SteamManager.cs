@@ -1,167 +1,166 @@
-/*
- * The Manager that oversees all Steam functionality
- * Uses SteamAPI Version: 1.0.13
- * By: Sean McClanahan
- * Last Modified: 08/18/2023
- * Documentation: https://steamworks.github.io/installation/
- */
+// The Manager that oversees all Steam functionality
+// Uses SteamAPI Version: 1.0.13
+// By: Sean McClanahan
+// Last Modified: 08/18/2023
+// Documentation: https://steamworks.github.io/installation/
 
 
-#if !(UNITY_STANDALONE_WIN || UNITY_STANDALONE_LINUX || UNITY_STANDALONE_OSX || STEAMWORKS_WIN || STEAMWORKS_LIN_OSX)
-#define DISABLESTEAMWORKS
-#endif
-
-using UnityEngine;
-#if !DISABLESTEAMWORKS
-using System.Collections;
 using Steamworks;
-#endif
+using Steamworks.Data;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using UnityEngine;
 
-
-[DisallowMultipleComponent]
 public class SteamManager : MonoBehaviour {
-	
-	// the #if statement allows the compilier to do less work depending on how this file is being started.
-	#if !DISABLESTEAMWORKS
-		protected static bool s_EverInitialized = false;
-		// This is the Game ID, 480 refers to SpaceWars which is specifically used for development purposes.
-		public static AppId_t MYAPPID = (AppId_t)480;
-		protected static SteamManager s_instance;
-		protected static SteamManager Instance {
-			get {
-				if (s_instance == null) {
-					return new GameObject("SteamManager").AddComponent<SteamManager>();
-				}
-				else {
-					return s_instance;
-				}
-			}
-		}
+    
+    public static SteamManager Instance;
+    private const uint AppId = 480;
+    public static string PlayerName;
+    public static SteamId PlayerId;
+    public static string PlayerStringId;
+    public bool hasConnectionToSteam;
 
-		protected bool m_bInitialized = false;
-		public static bool Initialized {
-			get {
-				return Instance.m_bInitialized;
-			}
-		}
+    public List<Lobby> ActiveLobbies;
+    
+    private Lobby _hostedMultiplayerLobby;
+    public Lobby CurrentLobby;
+    
+    public bool applicationHasQuit;
+    
+    private void Awake() {
+        if (Instance != null) {
+            Debug.Log("The Instance Already Exists");
+            return;
+        }
 
-		protected SteamAPIWarningMessageHook_t m_SteamAPIWarningMessageHook;
+        Instance = this;
+        
+        DontDestroyOnLoad(this);
+        
+        try {
+            SteamClient.Init(AppId, asyncCallbacks: true);
 
-		[AOT.MonoPInvokeCallback(typeof(SteamAPIWarningMessageHook_t))]
-		protected static void SteamAPIDebugTextHook(int nSeverity, System.Text.StringBuilder pchDebugText) {
-			Debug.LogWarning(pchDebugText);
-		}
+            if (!SteamClient.IsValid) {
+                throw new Exception("Invalid SteamClient");
+            }
 
-	#if UNITY_2019_3_OR_NEWER
-		// In case of disabled Domain Reload, reset static members before entering Play Mode.
-		[RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
-		private static void InitOnPlayMode()
-		{
-			s_EverInitialized = false;
-			s_instance = null;
-		}
-	#endif
+            // Local 'my' player information
+            PlayerName = SteamClient.Name;
 
-		protected virtual void Awake() {
-			// Only one instance of SteamManager at a time!
-			if (s_instance != null) {
-				Destroy(gameObject);
-				return;
-			}
-			s_instance = this;
-			
-			// This is almost always an error.
-			if(s_EverInitialized) {
-				// Limit Steamworks functions in OnDestroy, use OnDisable when possible.
-				throw new System.Exception("Tried to Initialize the SteamAPI twice in one session!");
-			}
+            PlayerId = SteamClient.SteamId;
+            PlayerStringId = SteamClient.SteamId.ToString();
 
-			// SteamManager Instance to persist across scenes.
-			DontDestroyOnLoad(gameObject);
+            hasConnectionToSteam = true;
+        }
+        catch {
+            hasConnectionToSteam = false;
+            PlayerStringId = "NoSteamId";
+        }
+        
+    }
 
-			if (!Packsize.Test()) {
-				Debug.LogError("[Steamworks.NET] Packsize Test returned false, the wrong version of Steamworks.NET is being run in this platform.", this);
-			}
 
-			if (!DllCheck.Test()) {
-				Debug.LogError("[Steamworks.NET] DllCheck Test returned false, One or more of the Steamworks binaries seems to be the wrong version.", this);
-			}
-			
-			// If Steam is not running properly SteamAPI_RestartAppIfNecessary starts the Steam client and reboots game.
-			try {
-				// Steam AppID assigned by Valve, should replace AppId_t.Invalid with it and remove steam_appid.txt
-				if (SteamAPI.RestartAppIfNecessary(MYAPPID)) {
-					Debug.Log("[Steamworks.NET] is restarting the program due to NRM.");
-					Application.Quit();
-					return;
-				}
-			} catch (System.DllNotFoundException e) {
-				Debug.LogError("[Steamworks.NET] Could not load [lib]steam_api.dll/so/dylib. It's likely not in the correct location. Refer to the README for more details.\n" + e, this);
+    void Start() {
+        // SteamMatchmaking.OnLobbyGameCreated += OnLobbyGameCreatedCallback;
+        // SteamMatchmaking.OnLobbyCreated += OnLobbyCreatedCallback;
+        // SteamMatchmaking.OnLobbyEntered += OnLobbyEnteredCallback;
+        SteamMatchmaking.OnLobbyMemberJoined += OnLobbyMemberJoinedCallback;
+        // SteamMatchmaking.OnChatMessage += OnChatMessageCallback;
+        SteamMatchmaking.OnLobbyMemberDisconnected += OnLobbyMemberDisconnectedCallback;
+        SteamMatchmaking.OnLobbyMemberLeave += OnLobbyMemberLeaveCallback;
+        // SteamFriends.OnGameLobbyJoinRequested += OnGameLobbyJoinRequestedCallback;
+        // SteamApps.OnDlcInstalled += OnDlcInstalledCallback;
+        // SceneManager.sceneLoaded += OnSceneLoaded;
+    }
 
-				Application.Quit();
-				return;
-			}
+    void Update()
+    {
+        SteamClient.RunCallbacks();
+    }
 
-			// Initializing the Steamworks API.
-			// Valve's documentation: https://partner.steamgames.com/doc/sdk/api#initialization_and_shutdown
-			m_bInitialized = SteamAPI.Init();
-			if (!m_bInitialized) {
-				Debug.LogError("[Steamworks.NET] SteamAPI_Init() failed. Refer to Valve's documentation or the comment above this line for more information.", this);
+    private void OnApplicationQuit() {
+        try {
+            SteamClient.Shutdown();
+        } catch {
+            Debug.Log("Steamworks was unable to shutdown properly.");
+        }
+    }
+    
+    
+    public async Task<bool> CreateLobby(int lobbyParameters, int maxPlayers = 4) {
+        try {
+            var createLobbyOutput = await SteamMatchmaking.CreateLobbyAsync(maxMembers: maxPlayers);
+            
+            if (!createLobbyOutput.HasValue) {
+                throw new Exception("Lobby created but not correctly instantiated");
+            }
+            
+            _hostedMultiplayerLobby = createLobbyOutput.Value;
+            _hostedMultiplayerLobby.SetPublic();
+            _hostedMultiplayerLobby.SetJoinable(true);
+            // hostedMultiplayerLobby.SetData(staticDataString, lobbyParameters.ToString());
+            
+            CurrentLobby = _hostedMultiplayerLobby;
+            
+            return true;
+        }
+        catch (Exception exception) {
+            Debug.Log(exception.ToString());
+            return false;
+        }
+    } 
+    
+    void OnLobbyMemberDisconnectedCallback(Lobby lobby, Friend friend) {
+        OtherLobbyMemberLeft(friend);
+    }
 
-				return;
-			}
+    void OnLobbyMemberLeaveCallback(Lobby lobby, Friend friend) {
+        OtherLobbyMemberLeft(friend);
+    }
+    
+    private void OtherLobbyMemberLeft(Friend friend) {
+        if (friend.Id != PlayerId) {
+            Debug.Log("Opponent has left the lobby");
+            
+            try {
+                SteamNetworking.CloseP2PSessionWithUser(friend.Id);
+                // Handle game / UI changes that need to happen when other player leaves
+            }
+            catch {
+                Debug.Log("Unable to update disconnected player nameplate / process disconnect cleanly");
+            }
 
-			s_EverInitialized = true;
-		}
-
-		// This should only ever get called on first load and after an Assembly reload, You should never Disable the Steamworks Manager yourself.
-		protected virtual void OnEnable() {
-			if (s_instance == null) {
-				s_instance = this;
-			}
-
-			if (!m_bInitialized) {
-				return;
-			}
-
-			if (m_SteamAPIWarningMessageHook == null) {
-				// Set up our callback to receive warning messages from Steam.
-				// You must launch with "-debug_steamapi" in the launch args to receive warnings.
-				m_SteamAPIWarningMessageHook = new SteamAPIWarningMessageHook_t(SteamAPIDebugTextHook);
-				SteamClient.SetWarningMessageHook(m_SteamAPIWarningMessageHook);
-			}
-		}
-
-		// OnApplicationQuit gets called too early to shutdown the SteamAPI.
-		// Because the SteamManager should be persistent and never disabled or destroyed we can shutdown the SteamAPI here.
-		// Don't perform any Steamworks work in other OnDestroy functions as the order may freeze during Shutdown. Prefer OnDisable().
-		protected virtual void OnDestroy() {
-			if (s_instance != this) {
-				return;
-			}
-
-			s_instance = null;
-
-			if (!m_bInitialized) {
-				return;
-			}
-
-			SteamAPI.Shutdown();
-		}
-
-		protected virtual void Update() {
-			if (!m_bInitialized) {
-				return;
-			}
-
-			// Run Steam client callbacks
-			SteamAPI.RunCallbacks();
-		}
-	#else
-		public static bool Initialized {
-			get {
-				return false;
-			}
-		}
-	#endif // !DISABLESTEAMWORKS
+        }
+    }
+    
+    /// <summary> Clears the Active Lobbies and repopulates them with the SteamLobbyList with 20 max results </summary>
+    public async Task RefreshMultiplayerLobbies() {
+        try {
+            ActiveLobbies.Clear();
+            // Lobby[] lobbies = await SteamMatchmaking.LobbyList.WithMaxResults(20).WithKeyValue(isRankedDataString, FALSE).RequestAsync();
+            
+            var lobbies = await SteamMatchmaking.LobbyList.WithMaxResults(20).RequestAsync();
+            
+            // The No need to look for multiplayer lobbies if there are none.
+            if (lobbies == null) {
+                return;
+            }
+            
+            foreach (var lobby in lobbies.ToList()) {
+                ActiveLobbies.Add(lobby);
+            }
+        }
+        catch (Exception e) {
+            Debug.Log("Error fetching multiplayer lobbies "+ e);
+        }
+    }         
+    
+    void OnLobbyMemberJoinedCallback(Lobby lobby, Friend friend) {
+        Debug.Log("someone else joined lobby");
+        if (friend.Id != PlayerId) {
+            SteamNetworking.AcceptP2PSessionWithUser(friend.Id);
+        }
+    } 
 }
