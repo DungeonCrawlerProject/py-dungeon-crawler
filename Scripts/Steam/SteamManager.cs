@@ -1,9 +1,7 @@
 // The Manager that oversees all Steam functionality
-// Uses SteamAPI Version: 1.0.13
 // By: Sean McClanahan
 // Last Modified: 08/18/2023
-// Documentation: https://steamworks.github.io/installation/
-
+// Documentation: https://wiki.facepunch.com/steamworks/
 
 using Steamworks;
 using Steamworks.Data;
@@ -15,17 +13,22 @@ using UnityEngine;
 
 public class SteamManager : MonoBehaviour {
     
-    public static SteamManager Instance;
+    // Values that will never change and must remain constant during run-time.
     private const uint AppId = 480;
+    
+    public static SteamManager Instance;
+    
+    // Local Player Specific Variables
     public static string PlayerName;
     public static SteamId PlayerId;
     public static string PlayerStringId;
-    public bool hasConnectionToSteam;
-
+    
+    // List of External 
+    public List<SteamId> FriendSteamIds;
     public List<Lobby> ActiveLobbies;
     
     private Lobby _hostedMultiplayerLobby;
-    public Lobby CurrentLobby;
+    private Lobby _currentLobby;
     
     public bool applicationHasQuit;
     
@@ -36,7 +39,6 @@ public class SteamManager : MonoBehaviour {
         }
 
         Instance = this;
-        
         DontDestroyOnLoad(this);
         
         try {
@@ -51,14 +53,10 @@ public class SteamManager : MonoBehaviour {
 
             PlayerId = SteamClient.SteamId;
             PlayerStringId = SteamClient.SteamId.ToString();
-
-            hasConnectionToSteam = true;
         }
         catch {
-            hasConnectionToSteam = false;
             PlayerStringId = "NoSteamId";
         }
-        
     }
 
 
@@ -66,17 +64,18 @@ public class SteamManager : MonoBehaviour {
         // SteamMatchmaking.OnLobbyGameCreated += OnLobbyGameCreatedCallback;
         // SteamMatchmaking.OnLobbyCreated += OnLobbyCreatedCallback;
         // SteamMatchmaking.OnLobbyEntered += OnLobbyEnteredCallback;
-        SteamMatchmaking.OnLobbyMemberJoined += OnLobbyMemberJoinedCallback;
         // SteamMatchmaking.OnChatMessage += OnChatMessageCallback;
+        SteamMatchmaking.OnLobbyMemberJoined += OnLobbyMemberJoinedCallback;
         SteamMatchmaking.OnLobbyMemberDisconnected += OnLobbyMemberDisconnectedCallback;
         SteamMatchmaking.OnLobbyMemberLeave += OnLobbyMemberLeaveCallback;
         // SteamFriends.OnGameLobbyJoinRequested += OnGameLobbyJoinRequestedCallback;
         // SteamApps.OnDlcInstalled += OnDlcInstalledCallback;
         // SceneManager.sceneLoaded += OnSceneLoaded;
+        CreateLobby(0);
+        
     }
 
-    void Update()
-    {
+    void Update() {
         SteamClient.RunCallbacks();
     }
 
@@ -102,8 +101,8 @@ public class SteamManager : MonoBehaviour {
             _hostedMultiplayerLobby.SetJoinable(true);
             // hostedMultiplayerLobby.SetData(staticDataString, lobbyParameters.ToString());
             
-            CurrentLobby = _hostedMultiplayerLobby;
-            
+            _currentLobby = _hostedMultiplayerLobby;
+            SteamFriends.OpenGameInviteOverlay(_currentLobby.Id);
             return true;
         }
         catch (Exception exception) {
@@ -120,19 +119,50 @@ public class SteamManager : MonoBehaviour {
         OtherLobbyMemberLeft(friend);
     }
     
-    private void OtherLobbyMemberLeft(Friend friend) {
-        if (friend.Id != PlayerId) {
-            Debug.Log("Opponent has left the lobby");
+    void OnLobbyMemberJoinedCallback(Lobby lobby, Friend friend) {
+        OtherLobbyMemberJoin(friend);
+    } 
+    
+    private void OtherLobbyMemberJoin(Friend friend) {
+        
+        Debug.Log("Trying to establish new connection with " + friend.Name);
+        
+        if (friend.Id == PlayerId) {
             
-            try {
-                SteamNetworking.CloseP2PSessionWithUser(friend.Id);
-                // Handle game / UI changes that need to happen when other player leaves
-            }
-            catch {
-                Debug.Log("Unable to update disconnected player nameplate / process disconnect cleanly");
-            }
-
         }
+
+        try {
+            // --------------Handle game / UI changes that need to happen when other player leaves----------------------
+            SteamNetworking.AcceptP2PSessionWithUser(friend.Id);
+            FriendSteamIds.Add(friend.Id);
+        }
+        catch {
+            Debug.Log("Unable to update connected player nameplate / process connect cleanly");
+        }
+    }
+    
+    private void OtherLobbyMemberLeft(Friend friend) {
+        
+        // Skip if it is the local player
+        if (friend.Id != PlayerId) {
+            return;
+        }
+        
+        Debug.Log("Opponent has left the lobby");
+        
+        try {
+            // --------------Handle game / UI changes that need to happen when other player leaves----------------------
+            SteamNetworking.CloseP2PSessionWithUser(friend.Id);
+            
+            // Remove the player Id from the list if that Id exists
+            if (FriendSteamIds.Contains(friend.Id)) {
+                FriendSteamIds.Remove(friend.Id);
+            }
+        }
+        catch {
+            Debug.Log("Unable to update disconnected player nameplate / process disconnect cleanly");
+        }
+        
     }
     
     /// <summary> Clears the Active Lobbies and repopulates them with the SteamLobbyList with 20 max results </summary>
@@ -155,12 +185,5 @@ public class SteamManager : MonoBehaviour {
         catch (Exception e) {
             Debug.Log("Error fetching multiplayer lobbies "+ e);
         }
-    }         
-    
-    void OnLobbyMemberJoinedCallback(Lobby lobby, Friend friend) {
-        Debug.Log("someone else joined lobby");
-        if (friend.Id != PlayerId) {
-            SteamNetworking.AcceptP2PSessionWithUser(friend.Id);
-        }
-    } 
+    }
 }
