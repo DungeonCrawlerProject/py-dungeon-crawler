@@ -24,7 +24,7 @@ public class SteamManager : MonoBehaviour {
     public static string PlayerStringId;
     
     // List of External 
-    public List<SteamId> FriendSteamIds;
+    public List<SteamId> FriendSteamIds = new List<SteamId>();
     public List<Lobby> ActiveLobbies;
     
     private Lobby _hostedMultiplayerLobby;
@@ -131,13 +131,15 @@ public class SteamManager : MonoBehaviour {
             
         }
 
-        try {
+        try
+        {
             // --------------Handle game / UI changes that need to happen when other player leaves----------------------
             SteamNetworking.AcceptP2PSessionWithUser(friend.Id);
             FriendSteamIds.Add(friend.Id);
+            Debug.Log("Establish connection with " + friend.Name);
         }
-        catch {
-            Debug.Log("Unable to update connected player nameplate / process connect cleanly");
+        catch (Exception e){
+            Debug.Log("Unable to update connected player nameplate / process connect cleanly " + e);
         }
     }
     
@@ -157,6 +159,7 @@ public class SteamManager : MonoBehaviour {
             // Remove the player Id from the list if that Id exists
             if (FriendSteamIds.Contains(friend.Id)) {
                 FriendSteamIds.Remove(friend.Id);
+                Debug.Log(friend.Name +  " Has left the server");
             }
         }
         catch {
