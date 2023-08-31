@@ -10,6 +10,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using UnityEngine;
+using UnityEngine.Rendering;
 
 public class SteamManager : MonoBehaviour {
     
@@ -25,6 +26,7 @@ public class SteamManager : MonoBehaviour {
     
     // List of External 
     public List<SteamId> FriendSteamIds = new List<SteamId>();
+    public List<String> FriendSteamNames = new List<string>();
     public List<Lobby> ActiveLobbies;
     
     private Lobby _hostedMultiplayerLobby;
@@ -136,6 +138,7 @@ public class SteamManager : MonoBehaviour {
             // --------------Handle game / UI changes that need to happen when other player leaves----------------------
             SteamNetworking.AcceptP2PSessionWithUser(friend.Id);
             FriendSteamIds.Add(friend.Id);
+            FriendSteamNames.Add(friend.Name);
             Debug.Log("Establish connection with " + friend.Name);
         }
         catch (Exception e){
@@ -188,5 +191,23 @@ public class SteamManager : MonoBehaviour {
         catch (Exception e) {
             Debug.Log("Error fetching multiplayer lobbies "+ e);
         }
+    }
+
+    public List<String> GetPlayerNames()
+    {
+        var result = new List<String>();
+        result.Add(PlayerName);
+        foreach (var _playerName in FriendSteamNames)
+        {
+            
+            result.Add(_playerName);
+        }
+
+        if (result.Count > 4)
+        {
+            throw new Exception("Overload Player Count");
+        }
+
+        return result;
     }
 }

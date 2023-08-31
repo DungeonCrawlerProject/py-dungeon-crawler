@@ -10,7 +10,6 @@ public class EnemySpawner : MonoBehaviour
     {
         if (collision.tag == "Player")
         {
-            Debug.Log("Entered Room");
             GetComponent<BoxCollider2D>().enabled = !GetComponent<BoxCollider2D>().enabled;
             foreach (GameObject spawner in enemySpawns)
             {
