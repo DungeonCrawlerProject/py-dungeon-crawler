@@ -72,8 +72,7 @@ public class SteamManager : MonoBehaviour {
         SteamMatchmaking.OnLobbyMemberLeave += OnLobbyMemberLeaveCallback;
         // SteamFriends.OnGameLobbyJoinRequested += OnGameLobbyJoinRequestedCallback;
         // SteamApps.OnDlcInstalled += OnDlcInstalledCallback;
-        // SceneManager.sceneLoaded += OnSceneLoaded;
-        CreateLobby(0);
+        // SceneManager.sceneLoaded += OnSceneLoaded
         
     }
 
@@ -104,6 +103,7 @@ public class SteamManager : MonoBehaviour {
             // hostedMultiplayerLobby.SetData(staticDataString, lobbyParameters.ToString());
             
             _currentLobby = _hostedMultiplayerLobby;
+            
             SteamFriends.OpenGameInviteOverlay(_currentLobby.Id);
             return true;
         }
@@ -114,10 +114,12 @@ public class SteamManager : MonoBehaviour {
     } 
     
     void OnLobbyMemberDisconnectedCallback(Lobby lobby, Friend friend) {
+        Debug.Log("HIT");
         OtherLobbyMemberLeft(friend);
     }
 
     void OnLobbyMemberLeaveCallback(Lobby lobby, Friend friend) {
+        Debug.Log("HIT2");
         OtherLobbyMemberLeft(friend);
     }
     
