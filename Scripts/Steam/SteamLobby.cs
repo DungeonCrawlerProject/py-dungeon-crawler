@@ -1,6 +1,6 @@
 // The Steam Lobby Manager will update gui based on who is in the lobby
 // By: Sean McClanahan
-// Last Modified: 08/27/2023
+// Last Modified: 08/31/2023
 
 using System.Collections.Generic;
 using Steamworks;

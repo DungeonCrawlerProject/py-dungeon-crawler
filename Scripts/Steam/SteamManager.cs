@@ -1,6 +1,6 @@
 // The Manager that oversees all Steam functionality
 // By: Sean McClanahan
-// Last Modified: 08/18/2023
+// Last Modified: 08/31/2023
 // Documentation: https://wiki.facepunch.com/steamworks/
 
 using Steamworks;
@@ -19,14 +19,8 @@ public class SteamManager : MonoBehaviour {
     
     public static SteamManager Instance;
     
-    // Local Player Specific Variables
-    public static string PlayerName;
-    public static SteamId PlayerId;
-    public static string PlayerStringId;
-    
     // List of External 
-    public List<SteamId> FriendSteamIds = new List<SteamId>();
-    public List<String> FriendSteamNames = new List<string>();
+    public List<LobbyPlayer> lobbyPlayers = new List<LobbyPlayer>();
     public List<Lobby> ActiveLobbies;
     
     private Lobby _hostedMultiplayerLobby;
@@ -39,10 +33,10 @@ public class SteamManager : MonoBehaviour {
             Debug.Log("The Instance Already Exists");
             return;
         }
-
+        
         Instance = this;
         DontDestroyOnLoad(this);
-        
+
         try {
             SteamClient.Init(AppId, asyncCallbacks: true);
 
@@ -51,17 +45,11 @@ public class SteamManager : MonoBehaviour {
             }
 
             // Local 'my' player information
-            PlayerName = SteamClient.Name;
-
-            PlayerId = SteamClient.SteamId;
-            PlayerStringId = SteamClient.SteamId.ToString();
+            lobbyPlayers.Add(new LobbyPlayer(SteamClient.SteamId, SteamClient.Name));
         }
-        catch {
-            PlayerStringId = "NoSteamId";
-        }
+        catch { }
     }
-
-
+    
     void Start() {
         // SteamMatchmaking.OnLobbyGameCreated += OnLobbyGameCreatedCallback;
         // SteamMatchmaking.OnLobbyCreated += OnLobbyCreatedCallback;
@@ -114,12 +102,10 @@ public class SteamManager : MonoBehaviour {
     } 
     
     void OnLobbyMemberDisconnectedCallback(Lobby lobby, Friend friend) {
-        Debug.Log("HIT");
         OtherLobbyMemberLeft(friend);
     }
 
     void OnLobbyMemberLeaveCallback(Lobby lobby, Friend friend) {
-        Debug.Log("HIT2");
         OtherLobbyMemberLeft(friend);
     }
     
@@ -131,7 +117,7 @@ public class SteamManager : MonoBehaviour {
         
         Debug.Log("Trying to establish new connection with " + friend.Name);
         
-        if (friend.Id == PlayerId) {
+        if (friend.Id == lobbyPlayers[0].Id) {
             
         }
 
@@ -139,8 +125,7 @@ public class SteamManager : MonoBehaviour {
         {
             // --------------Handle game / UI changes that need to happen when other player leaves----------------------
             SteamNetworking.AcceptP2PSessionWithUser(friend.Id);
-            FriendSteamIds.Add(friend.Id);
-            FriendSteamNames.Add(friend.Name);
+            lobbyPlayers.Add(new LobbyPlayer(friend.Id, friend.Name));
             Debug.Log("Establish connection with " + friend.Name);
         }
         catch (Exception e){
@@ -151,19 +136,28 @@ public class SteamManager : MonoBehaviour {
     private void OtherLobbyMemberLeft(Friend friend) {
         
         // Skip if it is the local player
-        if (friend.Id != PlayerId) {
+        if (friend.Id == lobbyPlayers[0].Id) {
             return;
         }
         
-        Debug.Log("Opponent has left the lobby");
+        Debug.Log("Teammate has left the lobby");
         
         try {
             // --------------Handle game / UI changes that need to happen when other player leaves----------------------
             SteamNetworking.CloseP2PSessionWithUser(friend.Id);
             
             // Remove the player Id from the list if that Id exists
-            if (FriendSteamIds.Contains(friend.Id)) {
-                FriendSteamIds.Remove(friend.Id);
+            
+            var _lobbyIds = lobbyPlayers.Select(player => player.Id).ToList();
+            
+            if (_lobbyIds.Contains(friend.Id)) {
+                for (int i = 0; i < lobbyPlayers.Count; i ++ ) {
+                    var _player = lobbyPlayers[i];
+                    if (_player.Id != friend.Id) {
+                        continue;
+                    }
+                    lobbyPlayers.RemoveAt(i);
+                }
                 Debug.Log(friend.Name +  " Has left the server");
             }
         }
@@ -195,18 +189,17 @@ public class SteamManager : MonoBehaviour {
         }
     }
 
-    public List<String> GetPlayerNames()
-    {
+    public List<String> GetPlayerNames() {
+        
+        if (lobbyPlayers.Count == 0) {
+            return new List<string>();
+        }
         var result = new List<String>();
-        result.Add(PlayerName);
-        foreach (var _playerName in FriendSteamNames)
-        {
-            
-            result.Add(_playerName);
+        foreach (var _player in lobbyPlayers) {
+            result.Add(_player.Name);
         }
 
-        if (result.Count > 4)
-        {
+        if (result.Count > 4) {
             throw new Exception("Overload Player Count");
         }
 

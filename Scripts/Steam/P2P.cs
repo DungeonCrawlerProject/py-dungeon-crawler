@@ -1,6 +1,6 @@
 ﻿// The P2P Packet Manager
 // By: Sean McClanahan
-// Last Modified: 08/27/2023
+// Last Modified: 08/31/2023
 
 
 using Steamworks;
@@ -30,11 +30,11 @@ public class P2P : MonoBehaviour {
     public void SendPacket(string dataString, int attempts = 2) {
         
         // Get each playerId
-        foreach (var friendId in SteamManager.Instance.FriendSteamIds) {
+        foreach (var _player in SteamManager.Instance.lobbyPlayers) {
             // Try to run it twice. If the first time it works return
             for (int i = 0; i < attempts; i++) {
                 var sentSuccessfully = SteamNetworking.SendP2PPacket(
-                    steamid: friendId,
+                    steamid: _player.Id,
                     data: System.Text.Encoding.UTF8.GetBytes(dataString)
                 );
                 if (sentSuccessfully) {}
