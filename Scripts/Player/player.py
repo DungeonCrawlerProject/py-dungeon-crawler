@@ -1,4 +1,7 @@
+import math
 from dataclasses import dataclass
+
+import pygame
 
 from Scripts.Player.Movement.player_stats import PlayerStats
 from Scripts.Player.PlayerStateMachine.PlayerStates.player_idle import PlayerIdle
@@ -14,14 +17,23 @@ class Position:
     y: float
 
 
-@dataclass
 class Player:
     position: Position
     stats: PlayerStats = PlayerStats()
-    current_state: IPlayerState = PlayerMove
+    angle: float = 0
+
+    def __init__(self):
+
+        # Note: the real state should be Idle once statemachine is added properly
+        self.current_state: IPlayerState = PlayerMove
+        self.mouse_position = (0, 0)
 
     def update(self) -> None:
 
+        # currentState = currentState.DoState(this);
+        self.mouse_position = pygame.mouse.get_pos()
+
+        # TODO make it actually call for the player state, these should also be fixed update
         if self.current_state == PlayerMove:
             PlayerMove.move(self)
 
@@ -30,6 +42,22 @@ class Player:
 
         if self.current_state == PlayerDodge:
             raise NotImplementedError
+
+        # TODO un_hardcode, Should be fixed update
+        player_size = 50
+
+        # currentState = currentState.DoState(this);
+        self.mouse_position = pygame.mouse.get_pos()
+
+        # Get the mouse position
+        mouse_x, mouse_y = self.mouse_position
+
+        self.angle = math.degrees(
+            math.atan2(
+                mouse_y - (self.position.y + player_size // 2),
+                mouse_x - (self.position.x + player_size // 2)
+            )
+        )
 
     def take_damage(self, damage: float):
 
@@ -42,54 +70,3 @@ class Player:
 
     def kill_player(self):
         raise NotImplementedError
-
-#     _currentState;
-#     playerIdle = new PlayerIdle();
-#     playerMove = new PlayerMove();
-#     playerDodge = new PlayerDodge();
-#
-#     public Vector2 moveDirection;
-#     public float moveSpeed = 10;
-#     public float dodgeSpeed = 20;
-#
-#     public float dodgeDelay = 1f;
-#     public float nextDodge;
-#     public float dodgeDuration = .25f;
-#
-#     public Rigidbody2D rb;
-#     public Camera cam;
-#
-#     private Vector2 mousePos;
-#
-#     private void Start()
-#     {
-#         currentState = playerIdle;
-#     }
-#
-#     private void Update()
-#     {
-#         currentState = currentState.DoState(this);
-#
-#         // Gets mouse position
-#         mousePos = cam.ScreenToWorldPoint(Input.mousePosition);
-#     }
-#
-#
-#     private void FixedUpdate()
-#     {
-#         // move player according to state
-#         if (currentState == playerMove)
-#         {
-#             rb.MovePosition(rb.position + (moveSpeed * Time.fixedDeltaTime) * moveDirection);
-#         }
-#         if (currentState == playerDodge)
-#         {
-#             rb.MovePosition(rb.position + (dodgeSpeed * Time.fixedDeltaTime) * moveDirection);
-#         }
-#
-#         // Makes Player Look At Mouse: temporary until i set up weapon system
-#         Vector2 lookDir = mousePos - rb.position;
-#         float angle = (Mathf.Atan2(lookDir.y, lookDir.x) * Mathf.Rad2Deg)-90;
-#         rb.rotation = angle;
-#     }
-# }
