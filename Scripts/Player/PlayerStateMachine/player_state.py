@@ -1,11 +1,7 @@
-# public interface IPlayerState
-# {
-#     IPlayerState DoState(Player player);
-# }
-from dataclasses import dataclass
-from typing import Any
+from abc import ABC, abstractmethod
 
 
-@dataclass
-class PlayerState:
-    do_state: Any
+class IPlayerState(ABC):
+    @abstractmethod
+    def do_state(self, player):
+        pass

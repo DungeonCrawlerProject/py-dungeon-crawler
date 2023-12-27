@@ -1,16 +1,26 @@
+import math
 import time
+from dataclasses import dataclass
 
 import pygame
 
-from Scripts.Player.PlayerStateMachine.player_state import PlayerState
+from Scripts.Player.PlayerStateMachine.player_state import IPlayerState
 
 
-class PlayerMove(PlayerState):
+# TODO Position is temp
+@dataclass
+class Position:
+    x: float
+    y: float
+
+
+class PlayerMove(IPlayerState):
 
     def __init__(self):
         super().__init__(None)
 
-    def do_state(self, player):
+    @staticmethod
+    def do_state(player):
         """Determines if player state needs to change states and calls Move method
         :param player: Instance of player class
         :returns: Returns PlayerState interface
@@ -28,23 +38,33 @@ class PlayerMove(PlayerState):
 
         return player.playerIdle
 
-    def move(self, player):
+    @staticmethod
+    def move(player):
         """
         Gets direction that player needs to move from keyboard inputs
         :param player: Instance of player class
         """
+
+        # Get the state of all keys
+        keys = pygame.key.get_pressed()
+
         # Update player position based on key input
-        # if keys[pygame.K_w]:
-        #     movement_input.y = -1
-        # if keys[pygame.K_s]:
-        #     movement_input.y = 1
-        # if keys[pygame.K_a]:
-        #     movement_input.x = -1
-        # if keys[pygame.K_d]:
-        #     movement_input.x = 1
-        #
-        # player.moveDirection.x = Input.GetAxisRaw("Horizontal");
-        # player.moveDirection.y = Input.GetAxisRaw("Vertical");
-        #
-        # player.moveDirection.Normalize();
-        ...
+        movement_input = Position(0, 0)
+
+        # Update player position based on key input
+        if keys[pygame.K_w]:
+            movement_input.y = -1
+        if keys[pygame.K_s]:
+            movement_input.y = 1
+        if keys[pygame.K_a]:
+            movement_input.x = -1
+        if keys[pygame.K_d]:
+            movement_input.x = 1
+
+        mag = math.sqrt(movement_input.x ** 2 + movement_input.y ** 2)
+        if keys[pygame.K_LSHIFT]:
+            player.position.x += player.stats.speed * movement_input.x * player.stats.sprint_factor / mag
+            player.position.y += player.stats.speed * movement_input.y * player.stats.sprint_factor / mag
+        elif mag != 0:
+            player.position.x += player.stats.speed * movement_input.x / mag
+            player.position.y += player.stats.speed * movement_input.y / mag

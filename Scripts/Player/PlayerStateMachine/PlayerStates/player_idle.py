@@ -2,10 +2,10 @@ import time
 
 import pygame
 
-from Scripts.Player.PlayerStateMachine.player_state import PlayerState
+from Scripts.Player.PlayerStateMachine.player_state import IPlayerState
 
 
-class PlayerIdle(PlayerState):
+class PlayerIdle(IPlayerState):
 
 
     def __init__(self):

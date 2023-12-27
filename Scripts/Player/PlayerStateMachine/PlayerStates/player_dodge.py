@@ -2,10 +2,10 @@ import time
 
 import pygame
 
-from Scripts.Player.PlayerStateMachine.player_state import PlayerState
+from Scripts.Player.PlayerStateMachine.player_state import IPlayerState
 
 
-class PlayerDodge(PlayerState):
+class PlayerDodge(IPlayerState):
 
     def __init__(self):
         super().__init__(None)

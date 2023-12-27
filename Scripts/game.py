@@ -19,10 +19,8 @@ pygame.display.set_caption("WASD Movement and Cursor Position Example")
 player_size = 50
 player_color = (0, 128, 255)
 
-
 player_position = Position(screen_width // 2 - player_size // 2, screen_height // 2 - player_size // 2)
-player = Player(player_position, speed=5)
-
+player = Player(player_position)
 
 FRAME_RATE = 30
 
@@ -30,45 +28,25 @@ FRAME_RATE = 30
 running = True
 clock = pygame.time.Clock()
 
+# Loop
 while running:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
 
-    # Get the state of all keys
-    keys = pygame.key.get_pressed()
-
-    # Update player position based on key input
-    movement_input = Position(0, 0)
-
-    # Update player position based on key input
-    if keys[pygame.K_w]:
-        movement_input.y = -1
-    if keys[pygame.K_s]:
-        movement_input.y = 1
-    if keys[pygame.K_a]:
-        movement_input.x = -1
-    if keys[pygame.K_d]:
-        movement_input.x = 1
-
-    mag = math.sqrt(movement_input.x ** 2 + movement_input.y ** 2)
-    if keys[pygame.K_LSHIFT]:
-        print("hit")
-        player.position.x += player.speed * movement_input.x * player.sprint_factor / mag
-        player.position.y += player.speed * movement_input.y * player.sprint_factor / mag
-    elif mag != 0:
-        player.position.x += player.speed * movement_input.x / mag
-        player.position.y += player.speed * movement_input.y / mag
-
-    # Keep player within the screen boundaries
-    player.position.x = max(0, min(player.position.x, screen_width - player_size))
-    player.position.y = max(0, min(player.position.y, screen_height - player_size))
+    player.update()
 
     # Get the mouse position
     mouse_x, mouse_y = pygame.mouse.get_pos()
 
     dx = mouse_x - player.position.x
     dy = mouse_y - player.position.y
+
+    # Everything Past here is drawing the screen
+
+    # Keep player within the screen boundaries
+    player.position.x = max(0, min(player.position.x, screen_width - player_size))
+    player.position.y = max(0, min(player.position.y, screen_height - player_size))
 
     # Print the cursor position
     # print(f"Cursor Position: ({dx}, {dy})")
