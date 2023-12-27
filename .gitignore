@@ -1,5 +1,5 @@
-*.meta
 .vs/slnx.sqlite
 .vs/VSWorkspaceState.json
 .vs/cs-app-dungeon-crawler/v15/.suo
 *.idea
+*.pyc
