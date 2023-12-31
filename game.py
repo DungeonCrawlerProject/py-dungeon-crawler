@@ -26,7 +26,12 @@ if __name__ == "__main__":
 
     # Loop
     while engine.is_running():
-        player.update()
+
+        # Get the state of all keys
+        keys = pygame.key.get_pressed()
+
+        # Update the player based on the current state
+        player.update(keys)
 
         # Keep player within the engine.screen boundaries
         player.position.x = max(0, int(min(player.position.x, engine.screen_width - player_size)))
@@ -35,13 +40,12 @@ if __name__ == "__main__":
         # Draw the backdrop
         engine.screen.fill((255, 255, 255))
 
-        # Draw the player
-        pygame.draw.rect(engine.screen, player_color, (player.position.x, player.position.y, player_size, player_size))
+        player.draw(screen=engine.screen)
 
         # Draw the players line of direction
         pygame.draw.line(
             surface=engine.screen,
-            color=(255, 0, 0),
+            color=(0, 0, 0),
             start_pos=(player.position.x + player_size / 2, player.position.y + player_size / 2),
             end_pos=(
                 math.cos(math.radians(player.angle)) * 100 + player.position.x + player_size / 2,

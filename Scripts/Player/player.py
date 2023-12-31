@@ -4,10 +4,7 @@ from dataclasses import dataclass
 import pygame
 
 from Scripts.Player.Movement.player_stats import PlayerStats
-from Scripts.Player.PlayerStateMachine.PlayerStates.player_idle import PlayerIdle
-from Scripts.Player.PlayerStateMachine.PlayerStates.player_move import PlayerMove
-from Scripts.Player.PlayerStateMachine.PlayerStates.player_dodge import PlayerDodge
-from Scripts.Player.PlayerStateMachine.player_state import IPlayerState
+from Scripts.Player.PlayerStateMachine.player_state import IdleState
 
 
 # TODO Position is temp
@@ -23,25 +20,15 @@ class Player:
     angle: float = 0
 
     def __init__(self):
-
         # Note: the real state should be Idle once statemachine is added properly
-        self.current_state: IPlayerState = PlayerMove
+        self.state = IdleState(self)
         self.mouse_position = (0, 0)
 
-    def update(self) -> None:
-
+    def update(self, keys) -> None:
         # currentState = currentState.DoState(this);
         self.mouse_position = pygame.mouse.get_pos()
 
-        # TODO make it actually call for the player state, these should also be fixed update
-        if self.current_state == PlayerMove:
-            PlayerMove.move(self)
-
-        if self.current_state == PlayerIdle:
-            raise NotImplementedError
-
-        if self.current_state == PlayerDodge:
-            raise NotImplementedError
+        self.state.update(keys)
 
         # TODO un_hardcode, Should be fixed update
         player_size = 50
@@ -60,7 +47,6 @@ class Player:
         )
 
     def take_damage(self, damage: float):
-
         self.stats.current_health -= damage
 
         # healthBar.SetHealth(curHealth / maxHealth);
@@ -70,3 +56,6 @@ class Player:
 
     def kill_player(self):
         raise NotImplementedError
+
+    def draw(self, screen):
+        self.state.draw(screen)
