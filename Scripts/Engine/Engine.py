@@ -12,13 +12,12 @@ class GameEngine:
         pygame.init()
 
         # Pygame Setup
-        self.screen_width = 800
-        self.screen_height = 600
+        self.screen_width = 1920
+        self.screen_height = 1080
         self.screen = pygame.display.set_mode((self.screen_width, self.screen_height))
-        pygame.display.set_caption("WASD Movement and Cursor Position Example")
+        pygame.display.set_caption("Dungeon Crawler Prototype")
 
         self.clock = pygame.time.Clock()
-
 
     def is_running(self):
         for _event in pygame.event.get():

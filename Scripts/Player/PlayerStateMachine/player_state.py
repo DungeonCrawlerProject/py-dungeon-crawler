@@ -11,8 +11,6 @@ import time
 
 import pygame
 
-from Scripts.CustomTypes.position import Position
-
 
 class IPlayerState(ABC):
     def __init__(self, player) -> None:
@@ -45,7 +43,7 @@ class DodgeState(IPlayerState):
             return
 
         # Use the movement input from the MovingState
-        movement_input = Position(0, 0)
+        movement_input = pygame.Vector2(0, 0)
         if keys[pygame.K_w]:
             movement_input.y = -1
         if keys[pygame.K_s]:
@@ -93,7 +91,7 @@ class MovingState(IPlayerState):
             self.move(keys)
 
     def move(self, keys):
-        movement_input = Position(0, 0)
+        movement_input = pygame.Vector2(0, 0)
 
         if keys[pygame.K_w]:
             movement_input.y = -1
@@ -123,7 +121,7 @@ class SprintingState(IPlayerState):
             self.move(keys)
 
     def move(self, keys):
-        movement_input = Position(0, 0)
+        movement_input = pygame.Vector2(0, 0)
 
         if keys[pygame.K_w]:
             movement_input.y = -1
