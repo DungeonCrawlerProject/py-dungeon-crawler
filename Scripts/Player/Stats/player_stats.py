@@ -15,5 +15,5 @@ class PlayerStats:
     crit_multiplier: float = 1.0
     sprint_factor: float = 1.5
     speed: float = 7.5
-    dodge_speed: float = 20.0
-    dodge_cooldown: float = 1.0
+    dodge_distance: float = 125.0
+    dodge_cooldown: float = 2.0

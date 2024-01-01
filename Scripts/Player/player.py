@@ -3,7 +3,8 @@ import math
 import pygame
 
 from Scripts.CustomTypes.position import Position
-from Scripts.Player.Movement.player_stats import PlayerStats
+from Scripts.Player.Stats.player_cooldowns import PlayerCoolDownTimer
+from Scripts.Player.Stats.player_stats import PlayerStats
 from Scripts.Player.PlayerStateMachine.player_state import IdleState
 
 
@@ -16,6 +17,8 @@ class Player:
         # Note: the real state should be Idle once statemachine is added properly
         self.state = IdleState(self)
         self.mouse_position = (0, 0)
+
+        self.cooldown_timers = PlayerCoolDownTimer()
 
     def update(self, keys) -> None:
         # currentState = currentState.DoState(this);
