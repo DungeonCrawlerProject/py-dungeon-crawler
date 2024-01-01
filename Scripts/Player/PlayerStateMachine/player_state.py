@@ -116,6 +116,7 @@ class MovingState(IPlayerState):
 class SprintingState(IPlayerState):
     def update(self, keys):
         if not keys[pygame.K_LSHIFT]:
+            self.player.stats.current_stamina -= 5
             self.player.state = IdleState(self.player)
         else:
             self.move(keys)

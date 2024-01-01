@@ -10,6 +10,10 @@ from dataclasses import dataclass
 class PlayerStats:
     max_health: float = 10.0
     current_health: float = 10.0
+
+    max_stamina: float = 100.0
+    current_stamina: float = 100.0
+
     damage_mult: float = 1.0
     crit_chance: float = 0.0
     crit_multiplier: float = 1.0

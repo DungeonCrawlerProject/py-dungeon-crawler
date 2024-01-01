@@ -8,7 +8,7 @@ import pygame
 
 from Scripts.Engine.Engine import GameEngine
 from Scripts.Player.player import Player
-
+from Scripts.UI.hud import HUD
 
 if __name__ == "__main__":
 
@@ -27,6 +27,8 @@ if __name__ == "__main__":
             engine.screen_height // 2 - player_size // 2
         )
     )
+
+    player_hud = HUD(player)
 
     # Create an enemy
     initial_enemy_position = (1000, 1000)
@@ -47,6 +49,9 @@ if __name__ == "__main__":
 
         # Draw the backdrop
         engine.screen.fill((139, 69, 13))
+
+        player_hud.update()
+        player_hud.draw(engine.screen)
 
         player.draw(screen=engine.screen)
 
