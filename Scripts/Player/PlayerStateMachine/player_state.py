@@ -1,8 +1,16 @@
+"""
+Player State Machine
+By: Sean McClanahan
+Last Modified: 12/31/2023
+"""
+
+
 import math
 from abc import ABC, abstractmethod
-from dataclasses import dataclass
 
 import pygame
+
+from Scripts.CustomTypes.position import Position
 
 
 class IPlayerState(ABC):
@@ -40,12 +48,6 @@ class IdleState(IPlayerState):
         pygame.draw.rect(screen, (255, 0, 0), (self.player.position.x, self.player.position.y, 50, 50))
 
 
-@dataclass
-class Position:
-    x: float
-    y: float
-
-
 class MovingState(IPlayerState):
     def update(self, keys):
         if not (keys[pygame.K_w] or keys[pygame.K_a] or keys[pygame.K_s] or keys[pygame.K_d]):
@@ -69,11 +71,12 @@ class MovingState(IPlayerState):
         if keys[pygame.K_d]:
             movement_input.x = 1
 
+        # Take max of that and 1 to prevent zero division error
         mag = math.sqrt(movement_input.x ** 2 + movement_input.y ** 2)
+        mag = max(1.0, mag)
 
-        if mag != 0:
-            self.player.position.x += self.player.stats.speed * movement_input.x / mag
-            self.player.position.y += self.player.stats.speed * movement_input.y / mag
+        self.player.position.x += self.player.stats.speed * movement_input.x / mag
+        self.player.position.y += self.player.stats.speed * movement_input.y / mag
 
     def draw(self, screen):
         pygame.draw.rect(screen, (0, 255, 0), (self.player.position.x, self.player.position.y, 50, 50))
@@ -98,7 +101,9 @@ class SprintingState(IPlayerState):
         if keys[pygame.K_d]:
             movement_input.x = 1
 
+        # Take max of that and 1 to prevent zero division error
         mag = math.sqrt(movement_input.x ** 2 + movement_input.y ** 2)
+        mag = max(1.0, mag)
 
         self.player.position.x += self.player.stats.speed * movement_input.x * self.player.stats.sprint_factor / mag
         self.player.position.y += self.player.stats.speed * movement_input.y * self.player.stats.sprint_factor / mag

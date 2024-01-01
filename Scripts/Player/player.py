@@ -1,17 +1,10 @@
 import math
-from dataclasses import dataclass
 
 import pygame
 
+from Scripts.CustomTypes.position import Position
 from Scripts.Player.Movement.player_stats import PlayerStats
 from Scripts.Player.PlayerStateMachine.player_state import IdleState
-
-
-# TODO Position is temp
-@dataclass
-class Position:
-    x: float
-    y: float
 
 
 class Player:
