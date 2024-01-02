@@ -74,6 +74,9 @@ class IdleState(IPlayerState):
             self.player.state = DodgeState(self.player)
         elif keys[pygame.K_LSHIFT]:
             self.player.state = SprintingState(self.player)
+        else:
+            self.player.stats.current_stamina += 2.0
+            self.player.stats.current_stamina = min(self.player.stats.current_stamina, self.player.stats.max_stamina)
 
     def draw(self, screen):
         pygame.draw.rect(screen, (255, 0, 0), (self.player.position.x, self.player.position.y, 50, 50))
@@ -88,6 +91,8 @@ class MovingState(IPlayerState):
         elif keys[pygame.K_LSHIFT]:
             self.player.state = SprintingState(self.player)
         else:
+            self.player.stats.current_stamina += 1.5
+            self.player.stats.current_stamina = min(self.player.stats.current_stamina, self.player.stats.max_stamina)
             self.move(keys)
 
     def move(self, keys):
@@ -116,9 +121,10 @@ class MovingState(IPlayerState):
 class SprintingState(IPlayerState):
     def update(self, keys):
         if not keys[pygame.K_LSHIFT]:
-            self.player.stats.current_stamina -= 5
             self.player.state = IdleState(self.player)
         else:
+            self.player.stats.current_stamina -= 2
+            self.player.stats.current_stamina = max(self.player.stats.current_stamina, 0)
             self.move(keys)
 
     def move(self, keys):
