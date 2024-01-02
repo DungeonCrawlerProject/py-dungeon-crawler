@@ -22,7 +22,7 @@ class Camera(pygame.sprite.Group):
 
     def sorted_draw(self):
         # Ground
-        ground_offset = self.ground_rect.topleft + self.offset
+        ground_offset = self.ground_rect.topleft - self.offset
         self.display_surface.blit(self.ground_surf, ground_offset)
 
         # Env Player and Enemys
