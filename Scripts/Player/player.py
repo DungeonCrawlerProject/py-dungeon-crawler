@@ -9,22 +9,29 @@ from Scripts.Player.PlayerStateMachine.PlayerStates.player_move import PlayerMov
 from Scripts.Player.PlayerStateMachine.PlayerStates.player_dodge import PlayerDodge
 from Scripts.Player.PlayerStateMachine.player_state import IPlayerState
 
-
 # TODO Position is temp
 @dataclass
 class Position:
     x: float
     y: float
 
+class PlayerSprite(pygame.sprite.Sprite):
+    def __init__(self, start_position, group):
+        super().__init__(group)
+        self.image = pygame.image.load('Sprites/Player.png').convert_alpha()
+        self.rect = self.image.get_rect(center = start_position)
+ 
 
 class Player:
     position: Position
     stats: PlayerStats = PlayerStats()
     angle: float = 0
 
-    def __init__(self):
+    def __init__(self, start_position, camera):
+        self.player_sprite = PlayerSprite(start_position, camera)
+        camera.add(self.player_sprite)
 
-        # Note: the real state should be Idle once statemachine is added properly
+       # Note: the real state should be Idle once statemachine is added properly
         self.current_state: IPlayerState = PlayerMove
         self.mouse_position = (0, 0)
 
