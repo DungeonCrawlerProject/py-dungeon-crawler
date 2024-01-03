@@ -15,17 +15,20 @@ import pygame
 from Scripts.Player.Stats.player_cooldowns import PlayerCoolDownTimer
 from Scripts.Player.Stats.player_stats import PlayerStats
 from Scripts.Player.PlayerStateMachine.player_state import IdleState
+from Scripts.sprite import PNGSprite
 
 
 class Player:
 
     def __init__(
             self,
-            initial_position: pygame.Vector2
+            initial_position: pygame.Vector2,
+            camera
     ) -> None:
         """
         The player is the controllable character for the user.
         :param initial_position: The position to first place the player.
+        :param camera: The instance of the camera
         """
 
         # Positional Variables
@@ -43,6 +46,12 @@ class Player:
 
         # The player's state
         self.state = IdleState(self)
+
+        # Make the sprite in the center
+        self.sprite = PNGSprite(camera)
+
+        # Give the player the camera
+        self.add_camera(camera)
 
     def update(
             self,
@@ -80,6 +89,9 @@ class Player:
                     mouse_x - (self.position.x + self.hit_box[0] // 2)
                 )
             )
+
+    def add_camera(self, camera):
+        camera.add(self.sprite)
 
     def take_damage(self, damage: float) -> None:
         self.stats.current_health -= damage
