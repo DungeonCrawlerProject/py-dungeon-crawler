@@ -27,7 +27,7 @@ if __name__ == "__main__":
     player_size = 50
     player_color = (0, 128, 255)
     player = Player(
-        initial_position=pygame.Vector2(2000, 2000),
+        initial_position=pygame.Vector2(1000, 1000),
         camera=cam
     )
     player.sprite.move(
@@ -37,6 +37,7 @@ if __name__ == "__main__":
     player_hud = HUD(player)
 
     while engine.is_running():
+        engine.screen.fill((0, 0, 0))
 
         # Get the state of all keys
         keys = pygame.key.get_pressed()

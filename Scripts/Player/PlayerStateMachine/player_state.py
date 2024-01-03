@@ -21,7 +21,7 @@ class IPlayerState(ABC):
         pass
 
     @abstractmethod
-    def draw(self, screen):
+    def draw(self):
         pass
 
 
@@ -62,8 +62,8 @@ class DodgeState(IPlayerState):
         # Store last dodge time
         self.player.cooldown_timers.dodge_cooldown_timer = current_time
 
-    def draw(self, screen):
-        pygame.draw.rect(screen, (0, 0, 255), (self.player.position.x, self.player.position.y, 50, 50))
+    def draw(self):
+        self.player.sprite.image = self.player.sprite.frames[3]
 
 
 class IdleState(IPlayerState):
@@ -78,8 +78,8 @@ class IdleState(IPlayerState):
             self.player.stats.current_stamina += 2.0
             self.player.stats.current_stamina = min(self.player.stats.current_stamina, self.player.stats.max_stamina)
 
-    def draw(self, screen):
-        pygame.draw.rect(screen, (255, 0, 0), (self.player.position.x, self.player.position.y, 50, 50))
+    def draw(self):
+        self.player.sprite.image = self.player.sprite.frames[0]
 
 
 class MovingState(IPlayerState):
@@ -114,8 +114,8 @@ class MovingState(IPlayerState):
         self.player.position.x += self.player.stats.speed * movement_input.x / mag
         self.player.position.y += self.player.stats.speed * movement_input.y / mag
 
-    def draw(self, screen):
-        pygame.draw.rect(screen, (0, 255, 0), (self.player.position.x, self.player.position.y, 50, 50))
+    def draw(self):
+        self.player.sprite.image = self.player.sprite.frames[1]
 
 
 class SprintingState(IPlayerState):
@@ -146,5 +146,5 @@ class SprintingState(IPlayerState):
         self.player.position.x += self.player.stats.speed * movement_input.x * self.player.stats.sprint_factor / mag
         self.player.position.y += self.player.stats.speed * movement_input.y * self.player.stats.sprint_factor / mag
 
-    def draw(self, screen):
-        pygame.draw.rect(screen, (255, 255, 0), (self.player.position.x, self.player.position.y, 50, 50))
+    def draw(self):
+        self.player.sprite.image = self.player.sprite.frames[2]

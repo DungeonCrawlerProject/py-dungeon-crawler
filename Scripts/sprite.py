@@ -17,7 +17,15 @@ class PNGSprite(Sprite):
 
         super().__init__(group)
 
-        self.image = pygame.image.load('Sprites/Player.png').convert_alpha()
+        self.frames = [
+            pygame.image.load('Sprites/idle.png').convert_alpha(),
+            pygame.image.load('Sprites/walk.png').convert_alpha(),
+            pygame.image.load('Sprites/sprint.png').convert_alpha(),
+            pygame.image.load('Sprites/Ground.png').convert_alpha(),
+        ]
+
+        self.image = self.frames[0]
+
         self.rect = None
 
     def move(

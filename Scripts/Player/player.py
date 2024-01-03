@@ -90,6 +90,8 @@ class Player:
                 )
             )
 
+        self.draw()
+
     def add_camera(self, camera):
         camera.add(self.sprite)
 
@@ -104,17 +106,6 @@ class Player:
     def kill_player(self) -> None:
         raise NotImplementedError
 
-    def draw(self, screen) -> None:
-        self.state.draw(screen)
+    def draw(self) -> None:
 
-        # Draw the players line of direction
-        pygame.draw.circle(
-            surface=screen,
-            color=self.combat_color_cursor,
-            center=(
-                math.cos(math.radians(self.angle)) * 100 + self.position.x + self.hit_box.x / 2,
-                math.sin(math.radians(self.angle)) * 100 + self.position.y + self.hit_box.y / 2
-            ),
-            radius=15,
-            width=5
-        )
+        self.state.draw()
