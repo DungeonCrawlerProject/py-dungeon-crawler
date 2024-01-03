@@ -92,6 +92,7 @@ class Player:
 
     def add_camera(self, camera):
         camera.add(self.sprite)
+        camera.position = self.position
 
     def take_damage(self, damage: float) -> None:
         self.stats.current_health -= damage

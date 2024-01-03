@@ -9,18 +9,25 @@ class Camera(pygame.sprite.Group):
     def __init__(self):
 
         super().__init__()
+        self.position = pygame.math.Vector2(0.0,0.0)
         self.display_surface = pygame.display.get_surface()
-        self.half_width = self.display_surface.get_size()[0]
-        self.half_hight = self.display_surface.get_size()[1]
+        self.half_width = self.display_surface.get_size()[0]//2
+        self.half_hight = self.display_surface.get_size()[1]//2
         self.ground_surf = pygame.image.load('Sprites/Ground.png').convert_alpha()
         self.ground_rect = self.ground_surf.get_rect(topleft=(0, 0))
         self.offset = pygame.Vector2(0, 0)
 
+    def smooth_func(self, input):
+        return pow(input, 2)
 
-
-    def center_player(self, player: Player):
-        self.offset[0] = player.position.x - self.half_width
-        self.offset[1] = player.position.y - self.half_hight
+    def center_player(self, player: Player, strength: float):
+        self.offset = strength*(player.position - self.position)
+        if self.offset != [0,0]:
+            print("Player Pos- ", player.position)
+            print("Cam Pos- ", self.position)
+            print(player.position - self.position)
+ 
+        self.position += self.offset
 
     def sorted_draw(self):
 
@@ -35,4 +42,3 @@ class Camera(pygame.sprite.Group):
             else:
                 sprite_offset = sprite.rect.topleft + self.offset
                 self.display_surface.blit(sprite.image, sprite_offset)
-
