@@ -49,7 +49,7 @@ if __name__ == "__main__":
         # Update the player based on the current state
         player.update(keys, mouse_buttons, mouse_pos)
 
-        cam.center_player(player, .5)
+        cam.center_player(player, .9)
         cam.sorted_draw()
 
         player_hud.update()

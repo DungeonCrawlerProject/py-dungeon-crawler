@@ -2,7 +2,7 @@ import math
 import pygame
 from Scripts.Player.player import Player
 from Scripts.sprite import PNGSprite
-
+from Scripts.GameObject.game_object import GameObject
 
 class Camera(pygame.sprite.Group):
 
@@ -16,24 +16,25 @@ class Camera(pygame.sprite.Group):
         self.ground_surf = pygame.image.load('Sprites/Ground.png').convert_alpha()
         self.ground_rect = self.ground_surf.get_rect(topleft=(0, 0))
         self.offset = pygame.Vector2(0, 0)
+        self.game_objects = list()
 
     def smooth_func(self, input):
         return pow(input, 2)
 
     def center_player(self, player: Player, strength: float):
         self.offset = strength*(player.position - self.position)
+        print("Player pos- ", player.position)
+        print("Cam pos- ", self.position)
+        print("Offset- ", self.offset)
         self.position += self.offset
 
     def sorted_draw(self):
 
         # Ground
-        ground_offset = self.ground_rect.topleft - (self.position - pygame.Vector2(self.half_width, self.half_hight))
+        ground_offset = -(self.position - pygame.Vector2(self.half_width, self.half_hight))
         self.display_surface.blit(self.ground_surf, ground_offset)
 
         # Env Player and Enemys
-        for sprite in sorted(self.sprites(), key=lambda sprite: sprite.rect.bottom):
-            if isinstance(sprite, PNGSprite):
-                self.display_surface.blit(sprite.image, sprite.rect)
-            else:
-                sprite_offset = sprite.rect.topleft + self.offset
-                self.display_surface.blit(sprite.image, sprite_offset)
+        for game_object in self.game_objects:
+            sprite_offset = game_object.position - ground_offset
+            self.display_surface.blit(game_object.sprite.image, sprite_offset)       

@@ -16,6 +16,7 @@ from Scripts.Player.Stats.player_cooldowns import PlayerCoolDownTimer
 from Scripts.Player.Stats.player_stats import PlayerStats
 from Scripts.Player.PlayerStateMachine.player_state import IdleState
 from Scripts.sprite import PNGSprite
+from Scripts.GameObject.game_object import GameObject
 
 
 class Player:
@@ -91,7 +92,7 @@ class Player:
             )
 
     def add_camera(self, camera):
-        camera.add(self.sprite)
+        camera.game_objects.append(GameObject(self.position, self.sprite))
         camera.position = self.position.copy()
 
     def take_damage(self, damage: float) -> None:
