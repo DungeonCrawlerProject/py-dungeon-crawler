@@ -70,7 +70,7 @@ class Camera(pygame.sprite.Group):
         self.display_surface.blit(self.ground_surf, ground_offset)
 
         # Env Player and Enemies
-        for game_object in self.game_objects:
+        for game_object in sorted(self.game_objects, key= lambda game_object: game_object.position[1]):
             sprite_offset = game_object.position + ground_offset
 
             # Draws the player last
