@@ -1,39 +1,68 @@
-import math
+"""
+The Camera Class
+By: Nick Petruccelli
+Last Modified: 01/04/2023
+"""
+
+from typing import List
+
 import pygame
-from Scripts.Player.player import Player
-from Scripts.sprite import PNGSprite
+
 from Scripts.GameObject.game_object import GameObject
+from Scripts.Player.player import Player
+
 
 class Camera(pygame.sprite.Group):
 
     def __init__(self):
+        """
+        The Camera class chases the player and renders the game objects
+        """
 
         super().__init__()
-        self.position = pygame.math.Vector2(10.0,10.0)
+
+        self.position = None
+
         self.display_surface = pygame.display.get_surface()
-        self.half_width = self.display_surface.get_size()[0]//2
-        self.half_hight = self.display_surface.get_size()[1]//2
+
+        _x, _y = self.display_surface.get_size()
+        self.center = pygame.Vector2(_x // 2, _y // 2)
+
         self.ground_surf = pygame.image.load('Sprites/Ground.png').convert_alpha()
         self.ground_rect = self.ground_surf.get_rect(topleft=(0, 0))
         self.offset = pygame.Vector2(0, 0)
-        self.game_objects = list()
+        self.game_objects: List[GameObject] = []
 
-    def smooth_func(self, input):
-        return pow(input, 2)
+    def center_player(
+            self,
+            player: Player,
+            strength: float = 1.0
+    ) -> None:
+        """
+        Moves the camera towards the player's center
+        :param player: The player instance
+        :param strength: The speed at which the camera should follow the player
+        """
 
-    def center_player(self, player: Player, strength: float=1.0):
-        self.offset = strength*(player.position - self.position)
+        self.offset = strength * (player.position - self.position)
         self.position += self.offset
 
-    def sorted_draw(self):
+    def sorted_draw(self) -> None:
+        """
+        Renders the game scene
+        """
+
+        # TODO: Actually do the sorted draw
 
         # Ground
-        ground_offset = -(self.position - pygame.Vector2(self.half_width, self.half_hight))
+        ground_offset = self.center - self.position
+
+        # Draws the ground first
         self.display_surface.blit(self.ground_surf, ground_offset)
 
-        # Env Player and Enemys
+        # Env Player and Enemies
         for game_object in self.game_objects:
             sprite_offset = game_object.position + ground_offset
-            
-            print("Sprite- ",sprite_offset, " Ground- ", ground_offset)
-            self.display_surface.blit(game_object.sprite.image, sprite_offset)       
+
+            # Draws the player last
+            self.display_surface.blit(game_object.sprite.image, sprite_offset)
