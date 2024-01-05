@@ -26,8 +26,11 @@ if __name__ == "__main__":
     # Player Setup
     player_size = 50
     player_color = (0, 128, 255)
+    ds = pygame.display.get_surface()
+    init_x = ds.get_size()[0]//2
+    init_y = ds.get_size()[1]//2
     player = Player(
-        initial_position=pygame.Vector2(1000, 1000),
+        initial_position=pygame.Vector2(init_x, init_y),
         camera=cam
     )
     player.sprite.move(
@@ -47,7 +50,7 @@ if __name__ == "__main__":
         # Update the player based on the current state
         player.update(keys, mouse_buttons, mouse_pos)
 
-        cam.center_player(player)
+        cam.center_player(player, .1)
         cam.sorted_draw()
 
         player_hud.update()
