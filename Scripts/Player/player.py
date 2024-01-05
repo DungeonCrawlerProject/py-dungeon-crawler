@@ -12,10 +12,14 @@ from typing import (
 
 import pygame
 
+from Scripts.Player.PlayerStateMachine.PlayerStates.dodge_state import DodgeState
+from Scripts.Player.PlayerStateMachine.PlayerStates.idle_state import IdleState
+from Scripts.Player.PlayerStateMachine.PlayerStates.moving_state import MovingState
+from Scripts.Player.PlayerStateMachine.PlayerStates.sprinting_state import SprintingState
 from Scripts.Player.Stats.player_cooldowns import PlayerCoolDownTimer
 from Scripts.Player.Stats.player_stats import PlayerStats
-from Scripts.Player.PlayerStateMachine.player_state import IdleState
 from Scripts.sprite import PNGSprite
+from Scripts.GameObject.game_object import GameObject
 
 
 class Player:
@@ -44,8 +48,12 @@ class Player:
         # TODO: Make State Machine For Combat
         self.combat_color_cursor = (0, 0, 0)
 
-        # The player's state
-        self.state = IdleState(self)
+        # The player's state, Store the states' instances to prevent circular imports
+        self.idle_state_inst = IdleState(self)
+        self.moving_state_inst = MovingState(self)
+        self.sprinting_state_inst = SprintingState(self)
+        self.dodge_state_inst = DodgeState(self)
+        self.state = self.idle_state_inst
 
         # Make the sprite in the center
         sprite_sheet = pygame.image.load('Sprites/sprite_sheet.png').convert_alpha()
@@ -94,7 +102,8 @@ class Player:
         self.draw()
 
     def add_camera(self, camera):
-        camera.add(self.sprite)
+        camera.game_objects.append(GameObject(self.position, self.sprite))
+        camera.position = self.position.copy()
 
     def take_damage(self, damage: float) -> None:
         self.stats.current_health -= damage
