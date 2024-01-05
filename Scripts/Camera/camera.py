@@ -47,6 +47,15 @@ class Camera(pygame.sprite.Group):
         self.offset = strength * (player.position - self.position)
         self.position += self.offset
 
+        if self.position[0] - self.center[0] < 0:
+            self.position[0] = 0 + self.center[0]
+        if self.position[1] - self.center[1] < 0:
+            self.position[1] = 0 + self.center[1]
+        if self.position[0] + self.center[0] > self.ground_rect.right:
+            self.position[0] = self.ground_rect.right - self.center[0]
+        if self.position[1] + self.center[1] > self.ground_rect.bottom:
+            self.position[1] = self.ground_rect.bottom - self.center[1]
+ 
     def sorted_draw(self) -> None:
         """
         Renders the game scene
