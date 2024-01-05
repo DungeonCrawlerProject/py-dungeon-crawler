@@ -1,3 +1,9 @@
+"""
+Dodge State
+By: Sean McClanahan
+Last Modified: 01/04/2024
+"""
+
 import math
 import time
 
@@ -8,16 +14,26 @@ from Scripts.Player.PlayerStateMachine.player_state import IPlayerState
 
 class DodgeState(IPlayerState):
 
-    def __init__(self, player) -> None:
-        super().__init__(player)
+    def update(self, keys) -> None:
+        """
+        Updates the players state, includes player movement and state switching
+        :param keys: The pygame input keys
+        """
 
-    def update(self, keys):
-        if not keys[pygame.K_SPACE]:
-            self.player.state = self.player.idle_state_inst
-        else:
+        dt = time.perf_counter() - self.player.cooldown_timers.dodge_cooldown_timer
+
+        if keys[pygame.K_SPACE] and dt >= self.player.stats.dodge_cooldown:
             self.dodge(keys)
+        elif keys[pygame.K_w] or keys[pygame.K_a] or keys[pygame.K_s] or keys[pygame.K_d]:
+            self.player.state = self.player.moving_state_inst
+        else:
+            self.player.state = self.player.idle_state_inst
 
-    def dodge(self, keys):
+    def dodge(self, keys) -> None:
+        """
+        Performs a dodge
+        :param keys: The keys from pygame to determine direction
+        """
 
         current_time = time.perf_counter()
         if current_time - self.player.cooldown_timers.dodge_cooldown_timer < self.player.stats.dodge_cooldown:
@@ -43,5 +59,8 @@ class DodgeState(IPlayerState):
         # Store last dodge time
         self.player.cooldown_timers.dodge_cooldown_timer = current_time
 
-    def draw(self):
+    def draw(self) -> None:
+        """
+        Changes the sprite for the character depending on the state
+        """
         self.player.sprite.image = self.player.sprite.frames[3]
