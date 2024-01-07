@@ -32,7 +32,6 @@ while running:
 
     image_angle += image_rotation_speed * math.sin(math.radians(target_angle - image_angle))
 
-    rotated_image = pygame.Surface(image_rect.size, pygame.SRCALPHA)
     rotated_image = pygame.transform.rotate(image, image_angle)
     rotated_image_rect = rotated_image.get_rect(center=image_center)
 

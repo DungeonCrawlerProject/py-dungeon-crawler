@@ -60,5 +60,19 @@ class PNGSprite(Sprite):
             self,
             x: float | int,
             y: float | int
-    ):
+    ) -> None:
+        """
+        Moves the sprite to the x,y location
+        :param x: The x-coordinate
+        :param y: The y-coordinate
+        """
         self.rect = self.image.get_rect(center=(x, y))
+
+    def rotate(self, deg: float) -> None:
+        """
+        Rotates the sprite to the angle set
+        :param deg: The angle in degrees, as seen in a unit circle.
+        """
+
+        self.image = pygame.transform.rotate(self.image, deg)
+        self.rect = self.image.get_rect(center=[0, 0])

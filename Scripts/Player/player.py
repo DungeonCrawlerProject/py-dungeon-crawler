@@ -1,7 +1,7 @@
 """
 The player class
 By: Sean McClanahan and Nick Petruccelli
-Last Modified: 12/31/2023
+Last Modified: 01/07/2024
 """
 
 import math
@@ -39,7 +39,7 @@ class Player:
         self.position = initial_position
         self.hit_box = pygame.Vector2(50, 50)
         self.angle = 0.0
-        self.mouse_position = (0, 0)
+        self.image_rotation_speed = 100
 
         # Dataclasses
         self.stats = PlayerStats()
@@ -75,8 +75,6 @@ class Player:
         :param mouse_pos: The position of the mouse
         """
 
-        self.mouse_position = mouse_pos
-
         self.state.update(keys)
 
         left_mouse, middle_mouse, right_mouse = mouse_buttons
@@ -88,16 +86,16 @@ class Player:
         else:
             self.combat_color_cursor = (0, 0, 0)
 
-        if mouse_pos:
-            # Get the mouse position
-            mouse_x, mouse_y = self.mouse_position
+        # TODO MAKE THIS THE ACTUAL PLAYER CENTER
+        # TODO The center is tricky as it changed while it rotates
+        # TODO All stutters are from the incorrect offset
+        image_center = 960/1.5, 540/1.5
+        target_angle = self.get_mouse_relative_angle(mouse_pos, image_center)
 
-            self.angle = math.degrees(
-                math.atan2(
-                    mouse_y - (self.position.y + self.hit_box[1] // 2),
-                    mouse_x - (self.position.x + self.hit_box[0] // 2)
-                )
-            )
+        self.angle += self.image_rotation_speed * math.sin(math.radians(target_angle - self.angle))
+
+        # Clamp the angle
+        self.angle %= 360
 
         self.draw()
 
@@ -119,3 +117,16 @@ class Player:
     def draw(self) -> None:
 
         self.state.draw()
+        self.sprite.rotate(self.angle)
+
+    @staticmethod
+    def get_mouse_relative_angle(mouse_pos, image_center) -> float:
+
+        # Get the mouse position
+        mouse_x, mouse_y = mouse_pos
+
+        dx = mouse_x - image_center[0]
+        dy = mouse_y - image_center[1]
+        target_angle = (math.degrees(math.atan2(dx, dy)) + 360) % 360
+
+        return target_angle

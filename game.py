@@ -17,9 +17,6 @@ if __name__ == "__main__":
     # Engine Setup
     engine = GameEngine()
 
-    # Hide the mouse cursor
-    pygame.mouse.set_visible(False)
-
     # Camera Setup
     cam = Camera()
 
