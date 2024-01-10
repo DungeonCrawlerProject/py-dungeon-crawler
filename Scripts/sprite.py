@@ -50,7 +50,7 @@ class PNGSprite(Sprite):
         lst_img = []
         for j in range(_y // height):
 
-            for i in range(_x // 32):
+            for i in range(_x // width):
                 _sprite = sprite_sheet.subsurface(pygame.rect.Rect(i * width, j * height, width, height))
                 lst_img.append(_sprite)
 

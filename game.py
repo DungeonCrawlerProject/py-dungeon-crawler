@@ -11,6 +11,7 @@ from Scripts.Engine.Engine import GameEngine
 from Scripts.Camera.camera import Camera
 from Scripts.Player.player import Player
 from Scripts.UI.hud import HUD
+from Scripts.WorldGeneration.world_generation import WorldGeneration
 
 if __name__ == "__main__":
 
@@ -22,6 +23,11 @@ if __name__ == "__main__":
 
     # Camera Setup
     cam = Camera()
+
+    #World Gen
+    world = WorldGeneration(cam)
+    for obj in world.environment_objects:
+        cam.game_objects.append(obj)
 
     # Player Setup
     player_size = 50
