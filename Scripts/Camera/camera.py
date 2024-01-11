@@ -14,7 +14,7 @@ from Scripts.Player.player import Player
 
 class Camera(pygame.sprite.Group):
 
-    def __init__(self):
+    def __init__(self, world):
         """
         The Camera class chases the player and renders the game objects
         """
@@ -28,10 +28,10 @@ class Camera(pygame.sprite.Group):
         _x, _y = self.display_surface.get_size()
         self.center = pygame.Vector2(_x // 2, _y // 2)
 
-        self.ground_surf = pygame.image.load('Sprites/Ground.png').convert_alpha()
+        self.ground_surf = world.ground
         self.ground_rect = self.ground_surf.get_rect(topleft=(0, 0))
         self.offset = pygame.Vector2(0, 0)
-        self.game_objects: List[GameObject] = []
+        self.game_objects = world.game_objects 
 
     def center_player(
             self,

@@ -57,7 +57,7 @@ class Player:
 
         # Make the sprite in the center
         sprite_sheet = pygame.image.load('Sprites/sprite_sheet.png').convert_alpha()
-        self.sprite = PNGSprite.make_from_sprite_sheet(camera, sprite_sheet, 32, 64)
+        self.sprite = PNGSprite.make_from_sprite_sheet(sprite_sheet, 32, 64)
 
         # Give the player the camera
         self.add_camera(camera)

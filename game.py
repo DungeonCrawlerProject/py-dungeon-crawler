@@ -21,13 +21,11 @@ if __name__ == "__main__":
     # Hide the mouse cursor
     pygame.mouse.set_visible(False)
 
-    # Camera Setup
-    cam = Camera()
-
     #World Gen
-    world = WorldGeneration(cam)
-    for obj in world.environment_objects:
-        cam.game_objects.append(obj)
+    world = WorldGeneration()
+
+    # Camera Setup
+    cam = Camera(world)
 
     # Player Setup
     player_size = 50

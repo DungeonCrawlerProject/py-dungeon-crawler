@@ -9,23 +9,21 @@ class PNGSprite(Sprite):
     @classmethod
     def make_from_sprite_sheet(
             cls,
-            group: Sprite,
             sprite_sheet: pygame.Surface,
             width: int,
             height: int,
     ):
 
-        inst = cls(group=group)
+        inst = cls()
         inst.frames = inst.chop_sprite(sprite_sheet, width, height)
         inst.image = inst.frames[0]
         return inst
 
     def __init__(
             self,
-            group: Sprite
     ) -> None:
 
-        super().__init__(group)
+        super().__init__()
 
         self.frames = []
         self.image = None
