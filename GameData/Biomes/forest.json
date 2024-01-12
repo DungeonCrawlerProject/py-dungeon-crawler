@@ -1,0 +1,5 @@
+{
+    "tile_set": "path to tile set",
+    "points_of_interest": ["path to poi", "path to poi"],
+    "env_objs": ["path to obj", "path to obj"]
+}
