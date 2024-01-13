@@ -4,6 +4,7 @@ from typing import List
 import random
 import json
 from Scripts.sprite import PNGSprite
+from collections import defaultdict
 
 class PointOfInterest:
     def __init__(self, name: str):
@@ -24,7 +25,7 @@ class WorldGeneration:
     TILE_SIZE = 32
 
     def __init__(self):
-        self.ground = self.make_background(50, 60)
+        self.ground = self.make_background(50, 40)
         self.game_objects: List[GameObject] = []
 
         self.generate_biomes([Biome("forest"), Biome("planes")])
@@ -47,9 +48,39 @@ class WorldGeneration:
         return pygame.Surface(size=(width*WorldGeneration.TILE_SIZE, height*WorldGeneration.TILE_SIZE))
     
     def generate_biomes(self, active_biomes: List[Biome]):
+        right_border = self.ground.get_rect().right
+        bot_border = self.ground.get_rect().bottom
+        tile_map = [([0]*(right_border//32)) for i in range(bot_border//32)]
+        placed_tiles = defaultdict(list)
         for biome in active_biomes:
-            _pos = (random.randrange(0, self.ground.get_rect().right), random.randrange(0, self.ground.get_rect().bottom))
+            _pos = (random.randrange(0, right_border//32), random.randrange(0, bot_border//32))
+            while tile_map[_pos[1]][_pos[0]] != 0:
+                _pos = (random.randrange(0, right_border//32), random.randrange(0, bot_border//32))
             image = pygame.image.load(biome.tile_set)
-            self.ground.blit(image, _pos)
-        
-#        for i in range((self.ground.get_rect().right/32)*(self.ground.get_rect().bottom/32)):
+            self.ground.blit(image, tuple([WorldGeneration.TILE_SIZE * cord for cord in _pos]))
+            placed_tiles[biome.name].append(_pos)
+            tile_map[_pos[1]][_pos[0]] = biome.name
+
+        for i in range((right_border//32)*(bot_border//32)-2):
+            for biome in active_biomes:
+                for tile_pos in placed_tiles[biome.name]:
+                    zero_neighbors = self.get_zero_neighbor(tile_map=tile_map, position=tile_pos)
+                    if len(zero_neighbors) == 0:
+                        continue
+                    rand_tile_pos = zero_neighbors[random.randrange(0,len(zero_neighbors))]
+                    image = pygame.image.load(biome.tile_set)
+                    print(rand_tile_pos)
+                    self.ground.blit(image, tuple([WorldGeneration.TILE_SIZE * cord for cord in rand_tile_pos]))
+                    placed_tiles[biome.name].append(rand_tile_pos)
+                    tile_map[rand_tile_pos[1]][rand_tile_pos[0]] = biome.name
+
+    def get_zero_neighbor(self, tile_map, position):
+        out = []
+        for i in [-1,0,1]:
+            for j in [-1,0,1]:
+                try:
+                    if tile_map[position[1]+i][position[0]+j] == 0:
+                        out.append((position[0]+j, position[1]+i))
+                except:
+                    ...
+        return out

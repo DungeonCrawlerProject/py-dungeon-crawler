@@ -61,8 +61,6 @@ class Camera(pygame.sprite.Group):
         Renders the game scene
         """
 
-        # TODO: Actually do the sorted draw
-
         # Ground
         ground_offset = self.center - self.position
 
