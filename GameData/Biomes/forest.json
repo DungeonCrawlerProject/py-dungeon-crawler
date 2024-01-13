@@ -1,5 +1,5 @@
 {
     "tile_set": "Sprites/BiomeTileSheets/forest.png",
-    "points_of_interest": ["path to poi", "path to poi"],
+    "points_of_interest": ["building_1x1"],
     "env_objs": ["path to obj", "path to obj"]
 }
