@@ -14,7 +14,6 @@ class Biome:
     def __init__(self, name: str):
         self.name = name
         with open(f"GameData/Biomes/{name}.json", 'r') as file:
-            print(file)
             biome_data = json.load(file)
         self.tile_set = biome_data["tile_set"]
         self.points_of_interest: List[PointOfInterest] = biome_data["points_of_interest"]
@@ -52,6 +51,7 @@ class WorldGeneration:
         bot_border = self.ground.get_rect().bottom
         tile_map = [([0]*(right_border//32)) for i in range(bot_border//32)]
         placed_tiles = defaultdict(list)
+        print(len(tile_map[39]))
         for biome in active_biomes:
             _pos = (random.randrange(0, right_border//32), random.randrange(0, bot_border//32))
             while tile_map[_pos[1]][_pos[0]] != 0:
@@ -69,7 +69,6 @@ class WorldGeneration:
                         continue
                     rand_tile_pos = zero_neighbors[random.randrange(0,len(zero_neighbors))]
                     image = pygame.image.load(biome.tile_set)
-                    print(rand_tile_pos)
                     self.ground.blit(image, tuple([WorldGeneration.TILE_SIZE * cord for cord in rand_tile_pos]))
                     placed_tiles[biome.name].append(rand_tile_pos)
                     tile_map[rand_tile_pos[1]][rand_tile_pos[0]] = biome.name
@@ -78,9 +77,14 @@ class WorldGeneration:
         out = []
         for i in [-1,0,1]:
             for j in [-1,0,1]:
-                try:
-                    if tile_map[position[1]+i][position[0]+j] == 0:
-                        out.append((position[0]+j, position[1]+i))
-                except:
-                    ...
+                if position[0]+j < 0:
+                    continue
+                if position[1]+i < 0:
+                    continue
+                if position[0]+j >= 50:
+                    continue
+                if position[1]+i >= 40:
+                    continue
+                if tile_map[position[1]+i][position[0]+j] == 0:
+                    out.append((position[0]+j, position[1]+i))
         return out
