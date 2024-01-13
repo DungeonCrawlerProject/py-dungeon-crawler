@@ -1,5 +1,5 @@
 {
-    "tile_set": "path to tile set",
+    "tile_set": "Sprites/BiomeTileSheets/planes.png",
     "points_of_interest": ["path to poi", "path to poi"],
     "env_objs": ["path to obj", "path to obj"]
 }

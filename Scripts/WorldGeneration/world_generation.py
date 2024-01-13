@@ -5,12 +5,29 @@ import random
 import json
 from Scripts.sprite import PNGSprite
 
+class PointOfInterest:
+    def __init__(self, name: str):
+        ...
+
+class Biome:
+    def __init__(self, name: str):
+        self.name = name
+        with open(f"GameData/Biomes/{name}.json", 'r') as file:
+            print(file)
+            biome_data = json.load(file)
+        self.tile_set = biome_data["tile_set"]
+        self.points_of_interest: List[PointOfInterest] = biome_data["points_of_interest"]
+        self.environment_objects = biome_data["env_objs"]
+
+
 class WorldGeneration:
     TILE_SIZE = 32
 
     def __init__(self):
-        self.ground = self.make_background(100, 60)
+        self.ground = self.make_background(50, 60)
         self.game_objects: List[GameObject] = []
+
+        self.generate_biomes([Biome("forest"), Biome("planes")])
 
         for i in range(100):
             _pos = (random.randrange(0, self.ground.get_rect().right), random.randrange(0, self.ground.get_rect().bottom))
@@ -30,13 +47,9 @@ class WorldGeneration:
         return pygame.Surface(size=(width*WorldGeneration.TILE_SIZE, height*WorldGeneration.TILE_SIZE))
     
     def generate_biomes(self, active_biomes: List[Biome]):
-        ...
-
-class Biome:
-    def __init__(self, name: str):
-        self.name = name
-        with open(f"GameData/Biomes/{name}.json", 'r') as file:
-            biome_data = json.loads(file)
-        self.tile_set = biome_data["tile_set"]
-        self.points_of_interest = biome_data["points_of_interest"]
-        self.environment_objects = biome_data["env_objs"]
+        for biome in active_biomes:
+            _pos = (random.randrange(0, self.ground.get_rect().right), random.randrange(0, self.ground.get_rect().bottom))
+            image = pygame.image.load(biome.tile_set)
+            self.ground.blit(image, _pos)
+        
+#        for i in range((self.ground.get_rect().right/32)*(self.ground.get_rect().bottom/32)):
