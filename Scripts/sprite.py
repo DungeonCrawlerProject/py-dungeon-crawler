@@ -13,19 +13,20 @@ class PNGSprite(Sprite):
             width: int,
             height: int,
     ):
-
         inst = cls()
         inst.frames = inst.chop_sprite(sprite_sheet, width, height)
-        inst.image = inst.frames[0]
+        inst.original_image = inst.frames[0]
+        inst.image = inst.original_image.copy()  # Make a copy of the original image
+        inst.rect = inst.image.get_rect()
         return inst
 
     def __init__(
             self,
     ) -> None:
-
         super().__init__()
 
         self.frames = []
+        self.original_image = None  # Store the original image for rotation
         self.image = None
         self.rect = None
 
@@ -60,3 +61,7 @@ class PNGSprite(Sprite):
             y: float | int
     ):
         self.rect = self.image.get_rect(center=(x, y))
+
+    def rotate(self, deg: float) -> None:
+        self.image = pygame.transform.rotate(self.original_image, deg)
+        self.rect = self.image.get_rect(center=self.rect.center)

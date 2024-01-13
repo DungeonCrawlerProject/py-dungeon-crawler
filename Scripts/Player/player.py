@@ -1,7 +1,7 @@
 """
 The player class
 By: Sean McClanahan and Nick Petruccelli
-Last Modified: 12/31/2023
+Last Modified: 01/13/2024
 """
 
 import math
@@ -21,6 +21,8 @@ from Scripts.Player.Stats.player_stats import PlayerStats
 from Scripts.sprite import PNGSprite
 from Scripts.GameObject.game_object import GameObject
 
+ROTATE_SPEED = 50
+
 
 class Player:
 
@@ -37,6 +39,7 @@ class Player:
 
         # Positional Variables
         self.position = initial_position
+        self.relative_position = initial_position
         self.hit_box = pygame.Vector2(50, 50)
         self.angle = 0.0
         self.mouse_position = (0, 0)
@@ -58,6 +61,9 @@ class Player:
         # Make the sprite in the center
         sprite_sheet = pygame.image.load('Sprites/sprite_sheet.png').convert_alpha()
         self.sprite = PNGSprite.make_from_sprite_sheet(sprite_sheet, 32, 64)
+
+        # TODO SEPARATE THIS
+        self.arrow = PNGSprite.make_from_sprite_sheet(pygame.image.load('Sprites/arrow.png').convert_alpha(), 25, 79)
 
         # Give the player the camera
         self.add_camera(camera)
@@ -88,21 +94,20 @@ class Player:
         else:
             self.combat_color_cursor = (0, 0, 0)
 
-        if mouse_pos:
-            # Get the mouse position
-            mouse_x, mouse_y = self.mouse_position
-
-            self.angle = math.degrees(
-                math.atan2(
-                    mouse_y - (self.position.y + self.hit_box[1] // 2),
-                    mouse_x - (self.position.x + self.hit_box[0] // 2)
-                )
-            )
+        # Cursor Rotation
+        target_angle = self.get_mouse_relative_angle(mouse_pos, self.relative_position)
+        self.angle += ROTATE_SPEED * math.sin(math.radians(target_angle - self.angle))
+        self.angle %= 360
 
         self.draw()
 
     def add_camera(self, camera):
-        camera.game_objects.append(GameObject(self.position, self.sprite))
+        camera.game_objects.extend(
+            [
+                GameObject(self.position, self.sprite),
+                GameObject(self.position, self.arrow)
+            ]
+        )
         camera.position = self.position.copy()
 
     def take_damage(self, damage: float) -> None:
@@ -119,3 +124,17 @@ class Player:
     def draw(self) -> None:
 
         self.state.draw()
+        self.arrow.rotate(self.angle)
+
+    def set_relative_position(self, x, y):
+
+        self.relative_position = self.position + pygame.Vector2(x, y)
+
+    @staticmethod
+    def get_mouse_relative_angle(mouse_pos, image_center) -> float:
+
+        # Get the mouse position
+        dx, dy = mouse_pos - image_center
+        target_angle = (math.degrees(math.atan2(dx, dy)) + 360) % 360
+
+        return target_angle

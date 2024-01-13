@@ -19,7 +19,7 @@ if __name__ == "__main__":
     engine = GameEngine()
 
     # Hide the mouse cursor
-    pygame.mouse.set_visible(False)
+    # pygame.mouse.set_visible(False)
 
     #World Gen
     world = WorldGeneration()
