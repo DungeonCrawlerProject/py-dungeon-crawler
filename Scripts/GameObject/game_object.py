@@ -2,6 +2,7 @@ from dataclasses import dataclass
 
 import pygame
 from Scripts.sprite import PNGSprite
+from typing import Optional
 
 
 @dataclass
@@ -12,3 +13,6 @@ class GameObject:
 
     #: The sprite for rendering the game object
     sprite: PNGSprite
+
+    #: The type of gameobject
+    tag: Optional[str] = None
