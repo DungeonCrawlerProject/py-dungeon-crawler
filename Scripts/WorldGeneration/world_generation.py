@@ -38,7 +38,9 @@ class WorldGeneration:
         self.active_biomes = [Biome("forest"), Biome("planes")]
         self.generate_biomes(self.active_biomes)
 
-        self.generate_pois(num_of_pois=4)
+        self.generate_pois(num_of_pois=5)
+
+        #self.generate_paths(4)
 
         for i in range(100):
             _pos = (random.randrange(0, self.ground.get_rect().right), random.randrange(0, self.ground.get_rect().bottom))
@@ -64,7 +66,7 @@ class WorldGeneration:
             self.placed_tiles[biome.name].append(_pos)
             self.tile_map[_pos[1]][_pos[0]] = biome.name
 
-        for i in range((self.right_border//32)*(self.bot_border//32)-2):
+        for i in range(((self.right_border//32)*(self.bot_border//32)-2)//len(active_biomes)):
             for biome in active_biomes:
                 for tile_pos in self.placed_tiles[biome.name]:
                     zero_neighbors = self.get_zero_neighbor(tile_map=self.tile_map, position=tile_pos)
@@ -75,6 +77,7 @@ class WorldGeneration:
                     self.ground.blit(image, tuple([WorldGeneration.TILE_SIZE * cord for cord in rand_tile_pos]))
                     self.placed_tiles[biome.name].append(rand_tile_pos)
                     self.tile_map[rand_tile_pos[1]][rand_tile_pos[0]] = biome.name
+                    break
 
     def get_zero_neighbor(self, tile_map, position):
         out = []
@@ -133,4 +136,5 @@ class WorldGeneration:
     
     def generate_min_span_tree(self, nodes: list):
         #Kruskalls algo
+        dist_list = []
         ...
