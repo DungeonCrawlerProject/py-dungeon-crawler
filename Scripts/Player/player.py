@@ -41,7 +41,8 @@ class Player:
         self.position = initial_position
         self.relative_position = initial_position
         self.hit_box = pygame.Vector2(50, 50)
-        self.angle = 0.0
+        self.left_angle = 0.0
+        self.right_angle = 0.0
         self.mouse_position = (0, 0)
 
         # Dataclasses
@@ -96,10 +97,31 @@ class Player:
 
         # Cursor Rotation
         target_angle = self.get_mouse_relative_angle(mouse_pos, self.relative_position)
-        self.angle += ROTATE_SPEED * math.sin(math.radians(target_angle - self.angle))
-        self.angle %= 360
+        self.right_angle += ROTATE_SPEED * math.sin(math.radians(target_angle - self.right_angle))
+        self.right_angle %= 360
+
+        self.left_angle = self.get_left_angle(keys)
 
         self.draw()
+
+    @staticmethod
+    def get_left_angle(keys):
+
+        mov_dir = pygame.Vector2(0, 0)
+
+        if keys[pygame.K_w]:
+            mov_dir.y = 1
+        if keys[pygame.K_s]:
+            mov_dir.y = -1
+        if keys[pygame.K_a]:
+            mov_dir.x = -1
+        if keys[pygame.K_d]:
+            mov_dir.x = 1
+
+        if not (keys[pygame.K_w] or keys[pygame.K_a] or keys[pygame.K_s] or keys[pygame.K_d]):
+            mov_dir.x, mov_dir.y = 0, -1
+
+        return math.degrees(math.atan2(mov_dir.x, -mov_dir.y))
 
     def add_camera(self, camera):
         camera.game_objects.extend(
@@ -124,7 +146,7 @@ class Player:
     def draw(self) -> None:
 
         self.state.draw()
-        self.arrow.rotate(self.angle)
+        self.arrow.rotate(self.left_angle)
 
     def set_relative_position(self, x, y):
 
