@@ -1,3 +1,4 @@
 {
-    "sprite_sheet": "Sprites/PointsOfInterest/building_1x1.png"
+    "sprite_sheet": "Sprites/PointsOfInterest/building_1x1.png",
+    "size": [1, 1]
 }

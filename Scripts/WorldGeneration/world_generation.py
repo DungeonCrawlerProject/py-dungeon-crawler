@@ -12,6 +12,7 @@ class PointOfInterest:
         with open(f"GameData/PointsOfInterest/{name}.json", 'r') as file:
             poi_data = json.load(file)
         self.sprite_sheet = poi_data["sprite_sheet"]
+        self.size = poi_data["size"]
 
 class Biome:
     def __init__(self, name: str):
@@ -99,8 +100,12 @@ class WorldGeneration:
                 if biome.name == self.tile_map[_pos[1]][_pos[0]]:
                     cur_biome = biome
                     break
-            poi = cur_biome.points_of_interest[random.randrange(len(cur_biome.points_of_interest))]
-            sprite_sheet = pygame.image.load(PointOfInterest(poi).sprite_sheet).convert_alpha()
-            sprite = PNGSprite().make_from_sprite_sheet(sprite_sheet, 32, 32)
+            poi = PointOfInterest(cur_biome.points_of_interest[random.randrange(len(cur_biome.points_of_interest))])
+            if _pos[0] + poi.size[0] > self.right_border | _pos[1] + poi.size[1] > self.bot_border:
+                i -= 1
+                continue
+            sprite_sheet = pygame.image.load(poi.sprite_sheet).convert_alpha()
+            sprite = PNGSprite().make_from_sprite_sheet(
+                sprite_sheet, poi.size[0]*WorldGeneration.TILE_SIZE, poi.size[1]*WorldGeneration.TILE_SIZE)
             self.game_objects.append(GameObject(tuple([WorldGeneration.TILE_SIZE*cord for cord in _pos]), sprite))
             
