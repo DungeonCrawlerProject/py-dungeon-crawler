@@ -5,23 +5,20 @@ import random
 import json
 from Scripts.sprite import PNGSprite
 from collections import defaultdict
+from pydantic import BaseModel
 
-class PointOfInterest:
-    def __init__(self, name: str):
-        self.name = name
-        with open(f"GameData/PointsOfInterest/{name}.json", 'r') as file:
-            poi_data = json.load(file)
-        self.sprite_sheet = poi_data["sprite_sheet"]
-        self.size = poi_data["size"]
 
-class Biome:
-    def __init__(self, name: str):
-        self.name = name
-        with open(f"GameData/Biomes/{name}.json", 'r') as file:
-            biome_data = json.load(file)
-        self.tile_set = biome_data["tile_set"]
-        self.points_of_interest: List[PointOfInterest] = biome_data["points_of_interest"]
-        self.environment_objects = biome_data["env_objs"]
+class PointOfInterest(BaseModel):
+    name: str
+    sprite_sheet: str
+    size: List[int]
+
+
+class Biome(BaseModel):
+    name: str
+    tile_set: str
+    points_of_interest: List[str]
+    environment_objects: List[str]
 
 
 class WorldGeneration:
@@ -34,8 +31,13 @@ class WorldGeneration:
         self.tile_map = [([0]*(self.right_border//32)) for i in range(self.bot_border//32)]
         self.placed_tiles = defaultdict(list)
         self.game_objects: List[GameObject] = []
+        self.active_biomes = []
 
-        self.active_biomes = [Biome("forest"), Biome("planes")]
+        for name in ["forest", "planes"]:
+            with open(f"GameData/Biomes/{name}.json", 'r') as file:
+                biome_data = json.load(file)
+            self.active_biomes.append(Biome(**biome_data))
+
         self.generate_biomes(self.active_biomes)
 
         self.generate_pois(num_of_pois=5)
@@ -102,7 +104,14 @@ class WorldGeneration:
                 if biome.name == self.tile_map[_pos[1]][_pos[0]]:
                     cur_biome = biome
                     break
-            poi = PointOfInterest(cur_biome.points_of_interest[random.randrange(len(cur_biome.points_of_interest))])
+
+            poi_name = cur_biome.points_of_interest[random.randrange(len(cur_biome.points_of_interest))]
+
+            with open(f"GameData/PointsOfInterest/{poi_name}.json", 'r') as file:
+                poi_data = json.load(file)
+
+            poi = PointOfInterest(**poi_data)
+
             if _pos[0] + poi.size[0] > self.right_border | _pos[1] + poi.size[1] > self.bot_border:
                 i -= 1
                 continue

@@ -1,5 +1,6 @@
 {
+    "name": "planes",
     "tile_set": "Sprites/BiomeTileSheets/planes.png",
     "points_of_interest": ["building_1x1"],
-    "env_objs": ["path to obj", "path to obj"]
+    "environment_objects": ["path to obj", "path to obj"]
 }
