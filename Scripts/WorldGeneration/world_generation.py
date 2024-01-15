@@ -203,7 +203,6 @@ class WorldGeneration:
         dist_list = []
         
         for source in nodes:
-            print(source[0])
             for dest in nodes:
                 if source[0] >= dest[0]:
                     continue
@@ -212,4 +211,44 @@ class WorldGeneration:
                 dist_list.append([[source[0], dest[0]], [source[1], dest[1]], dist])
                 
         dist_list = sorted(dist_list, key= lambda x: x[2])
-        print([x[2] for x in dist_list])
+        
+        active_edges = []
+        connected_verts = [{x[0]} for x in nodes]
+        while len((active_edges)) < len(nodes)-1:
+            edge = dist_list[0][0]
+            is_cycle = self.check_cycle(edge, connected_verts)
+            if is_cycle:
+                dist_list.pop(0)
+                continue
+            active_edges.append(dist_list[0][0])
+            set_1 = None
+            set_2 = None
+            for vert_set in connected_verts:
+                if set_1 == None:
+                    if dist_list[0][0][0] in vert_set:
+                        set_1 = vert_set
+                    if dist_list[0][0][1] in vert_set:
+                        set_1 = vert_set
+                else:
+                    if dist_list[0][0][0] in vert_set:
+                        set_2 = vert_set
+                        break
+                    if dist_list[0][0][1] in vert_set:
+                        set_2 = vert_set
+                        break
+            print(dist_list[0][0][0], dist_list[0][0][1])
+            print(set_1, set_2)
+            connected_verts.append(set_1.union(set_2))
+            connected_verts.remove(set_1)
+            connected_verts.remove(set_2)
+            dist_list.pop(0)
+
+            
+        print(connected_verts)
+        print(active_edges)
+
+    def check_cycle(self, edge, connected_verts):
+        for vert_set in connected_verts:
+            if edge[0] in vert_set and edge[1] in vert_set:
+                return True
+        return False
