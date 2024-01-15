@@ -74,6 +74,11 @@ class Camera(pygame.sprite.Group):
 
         # Env Player and Enemies
         for game_object in sorted(self.game_objects, key= lambda game_object: game_object.position[1]):
+
+            # Skip if the sprite is set to invisible
+            if not game_object.sprite.visible:
+                continue
+
             sprite_offset = game_object.position + ground_offset
 
             # Draws the player last

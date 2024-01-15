@@ -65,6 +65,8 @@ class Player:
 
         # TODO SEPARATE THIS
         self.arrow = PNGSprite.make_from_sprite_sheet(pygame.image.load('Sprites/arrow.png').convert_alpha(), 25, 79)
+        self.slash_sprite = PNGSprite.make_from_sprite_sheet(pygame.image.load('Sprites/slash.png').convert_alpha(), 40, 20)
+        self.block_sprite = PNGSprite.make_from_sprite_sheet(pygame.image.load('Sprites/block.png').convert_alpha(), 100, 50)
 
         # Give the player the camera
         self.add_camera(camera)
@@ -89,11 +91,14 @@ class Player:
         left_mouse, middle_mouse, right_mouse = mouse_buttons
 
         if left_mouse:
-            self.combat_color_cursor = (255, 0, 0)
-        elif right_mouse:
-            self.combat_color_cursor = (0, 255, 0)
+            self.slash_sprite.visible = True
         else:
-            self.combat_color_cursor = (0, 0, 0)
+            self.slash_sprite.visible = False
+
+        if right_mouse:
+            self.block_sprite.visible = True
+        else:
+            self.block_sprite.visible = False
 
         # Cursor Rotation
         target_angle = self.get_mouse_relative_angle(mouse_pos, self.relative_position)
@@ -127,7 +132,9 @@ class Player:
         camera.game_objects.extend(
             [
                 GameObject(self.position, self.sprite),
-                GameObject(self.position, self.arrow)
+                GameObject(self.position, self.arrow),
+                GameObject(self.position, self.slash_sprite),
+                GameObject(self.position, self.block_sprite)
             ]
         )
         camera.position = self.position.copy()
@@ -147,6 +154,8 @@ class Player:
 
         self.state.draw()
         self.arrow.rotate(self.left_angle)
+        self.slash_sprite.rotate(self.left_angle)
+        self.block_sprite.rotate(self.left_angle)
 
     def set_relative_position(self, x, y):
 

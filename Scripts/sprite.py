@@ -29,6 +29,7 @@ class PNGSprite(Sprite):
         self.original_image = None  # Store the original image for rotation
         self.image = None
         self.rect = None
+        self.visible = True
 
     @staticmethod
     def chop_sprite(
