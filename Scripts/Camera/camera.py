@@ -57,7 +57,7 @@ class Camera(pygame.sprite.Group):
             self.position[1] = self.ground_rect.bottom - self.center[1]
 
         # Update players screen position variable.
-        player.set_relative_position(*(self.center - self.position))
+        player.set_relative_position(self.center - self.position)
  
     def sorted_draw(self) -> None:
         """
