@@ -23,7 +23,7 @@ class MovingState(IPlayerState):
         dt = time.perf_counter() - self.player.cooldown_timers.dodge_cooldown_timer
 
         if not (keys[pygame.K_w] or keys[pygame.K_a] or keys[pygame.K_s] or keys[pygame.K_d]):
-            self.player.state = self.player.moving_state_inst
+            self.player.state = self.player.idle_state_inst
         elif keys[pygame.K_SPACE] and dt >= self.player.stats.dodge_cooldown:
             self.player.state = self.player.dodge_state_inst
         elif keys[pygame.K_LSHIFT]:

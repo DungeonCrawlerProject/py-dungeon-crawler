@@ -51,6 +51,9 @@ class Camera(pygame.sprite.Group):
         if self.position[1] + self.center[1] > self.ground_rect.bottom:
             self.position[1] = self.ground_rect.bottom - self.center[1]
 
+        # Update players screen position variable.
+        player.set_relative_position(self.center - self.position)
+ 
     def sorted_draw(self) -> None:
         """
         Renders the game scene
@@ -63,9 +66,12 @@ class Camera(pygame.sprite.Group):
         self.display_surface.blit(self.ground_surf, ground_offset)
 
         # Env Player and Enemies
-        for game_object in sorted(
-            self.game_objects, key=lambda game_object: game_object.position[1]
-        ):
+        for game_object in sorted(self.game_objects, key= lambda game_object: game_object.position[1]):
+
+            # Skip if the sprite is set to invisible
+            if not game_object.sprite.visible:
+                continue
+
             sprite_offset = game_object.position + ground_offset
 
             # Draws the player last
