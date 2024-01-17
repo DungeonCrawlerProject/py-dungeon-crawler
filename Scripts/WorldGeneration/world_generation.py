@@ -279,20 +279,47 @@ class WorldGeneration:
             dest = edge[1][1] +  pygame.Vector2(0, 1)
 
             pos = src
+            direction = pygame.Vector2(0, 0)
             while pos != dest:
-                image = pygame.image.load("Sprites/PathTiles/straight.png")
-                self.ground.blit(image, pos*WorldGeneration.TILE_SIZE)
                 if pos[1] - dest[1] < 0:
-                    pos = pos + pygame.Vector2(0, 1)
-                    continue
-                if pos[1] - dest[1] > 0:
-                    pos = pos - pygame.Vector2(0, 1)
-                    continue
-                if pos[0] - dest[0] < 0:
-                    pos = pos + pygame.Vector2(1, 0)
-                    continue
-                if pos[0] - dest[0] > 0:
-                    pos = pos - pygame.Vector2(1, 0)
-                    continue
+                    next_pos = pos + [0, 1]
+                elif pos[1] - dest[1] > 0:
+                    next_pos = pos - [0, 1]
+                elif pos[0] - dest[0] < 0:
+                    next_pos = pos + [1, 0]
+                elif pos[0] - dest[0] > 0:
+                    next_pos = pos - [1, 0]
+                
+                next_direction = next_pos - pos
+                if next_direction != direction:
+                    image = pygame.image.load("Sprites/PathTiles/2way.png")
+                    print(pos, next_pos)
+                    print(next_direction + direction)
+                    path_direction = tuple(next_direction + direction)
+                    match path_direction:
+                        case (1, 1):
+                            image = pygame.transform.flip(image, flip_x=False, flip_y=True)
+                        case (1, -1):
+                            image = pygame.transform.flip(image, flip_x=False, flip_y=False)
+                        case (-1, 1):
+                            image = pygame.transform.flip(image, flip_x=True, flip_y=True)
+                        case (-1, -1):
+                            image = pygame.transform.flip(image, flip_x=True, flip_y=False)
+                        case (1, 0):
+                            image = pygame.transform.flip(image, flip_x=False, flip_y=True)
+                        case (-1, 0):
+                            image = pygame.transform.flip(image, flip_x=True, flip_y=True)
+                        case (0, 1):
+                            image = pygame.image.load("Sprites/PathTiles/straight.png")
+                        case (0, -1):
+                            image = pygame.image.load("Sprites/PathTiles/straight.png")
+                else:
+                    image = pygame.image.load("Sprites/PathTiles/straight.png")
+                    if direction[1] == 0:
+                        image = pygame.transform.rotate(image, 90)
+                
                 self.ground.blit(image, pos*WorldGeneration.TILE_SIZE)
+                pos = next_pos
+                direction = next_direction
+            self.ground.blit(image, pos*WorldGeneration.TILE_SIZE)
 
