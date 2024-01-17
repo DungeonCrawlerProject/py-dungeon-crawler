@@ -37,7 +37,7 @@ class WorldGeneration:
         self.active_biomes = []
 
         for name in ["forest", "planes"]:
-            with open(f"GameData/Biomes/{name}.json", 'r') as file:
+            with open(f"GameData/Biomes/{name}.json", "r") as file:
                 biome_data = json.load(file)
             self.active_biomes.append(Biome(**biome_data))
 
@@ -128,22 +128,26 @@ class WorldGeneration:
     def generate_pois(self, num_of_pois: int):
         for i in range(num_of_pois):
             _pos = (
-                random.randrange(0, self.right_border // 32),
-                random.randrange(0, self.bot_border // 32),
+                random.randrange(0, (self.right_border // 32)),
+                random.randrange(0, (self.bot_border // 32)-1),
             )
             for biome in self.active_biomes:
                 if biome.name == self.tile_map[_pos[1]][_pos[0]]:
                     cur_biome = biome
                     break
 
-            poi_name = cur_biome.points_of_interest[random.randrange(len(cur_biome.points_of_interest))]
+            poi_name = cur_biome.points_of_interest[
+                random.randrange(len(cur_biome.points_of_interest))
+            ]
 
-            with open(f"GameData/PointsOfInterest/{poi_name}.json", 'r') as file:
+            with open(f"GameData/PointsOfInterest/{poi_name}.json", "r") as file:
                 poi_data = json.load(file)
 
             poi = PointOfInterest(**poi_data)
 
-            if _pos[0] + poi.size[0] > self.right_border | _pos[1] + poi.size[1] > self.bot_border:
+            if (
+                _pos[0] + poi.size[0] > self.right_border | _pos[1] + poi.size[1] > self.bot_border-1
+            ):
                 i -= 1
                 continue
             if _pos[1] + poi.size[1] > self.bot_border:
@@ -170,11 +174,13 @@ class WorldGeneration:
         for o in self.game_objects:
             if o.tag == "poi":
                 pois.append(pygame.Vector2(o.position) // WorldGeneration.TILE_SIZE)
-        nodes = [pygame.Vector2(pos) for pos in crossroads]
-        nodes.extend(pois)
+        nodes = [[pygame.Vector2(pos), "crossroad"] for pos in crossroads]
+        nodes.extend([[x, "poi"] for x in pois])
         nodes = [[i, node] for i, node in enumerate(nodes)]
-        self.generate_min_span_tree(nodes)
-        # self.draw_paths()
+
+        edges = self.generate_min_span_tree(nodes)
+        print(edges)
+        self.draw_paths(edges, nodes)
 
     def generate_crossroads(self, num_crossroads: int):
         top_most_poi_cord = self.bot_border
@@ -199,56 +205,94 @@ class WorldGeneration:
         return crossroad_positions
 
     def generate_min_span_tree(self, nodes: list):
+        nodes = [[x[0], x[1][0]] for x in nodes]
         # Kruskalls algo
         dist_list = []
-        
+
         for source in nodes:
             for dest in nodes:
                 if source[0] >= dest[0]:
                     continue
                 s_to_d = dest[1] - source[1]
-                dist = math.sqrt(s_to_d[0]**2 + s_to_d[1]**2)
+                dist = math.sqrt(s_to_d[0] ** 2 + s_to_d[1] ** 2)
                 dist_list.append([[source[0], dest[0]], [source[1], dest[1]], dist])
-                
-        dist_list = sorted(dist_list, key= lambda x: x[2])
-        
+
+        dist_list = sorted(dist_list, key=lambda x: x[2])
+
         active_edges = []
         connected_verts = [{x[0]} for x in nodes]
-        while len((active_edges)) < len(nodes)-1:
+        while len((active_edges)) < len(nodes) - 1:
             edge = dist_list[0][0]
+
             is_cycle = self.check_cycle(edge, connected_verts)
             if is_cycle:
                 dist_list.pop(0)
                 continue
-            active_edges.append(dist_list[0][0])
+
+            too_many_incident = self.check_incident(edge=edge, edges=active_edges)
+            if too_many_incident:
+                dist_list.pop(0)
+                continue
+
+            active_edges.append(dist_list[0])
             set_1 = None
             set_2 = None
             for vert_set in connected_verts:
                 if set_1 == None:
-                    if dist_list[0][0][0] in vert_set:
+                    if edge[0] in vert_set:
                         set_1 = vert_set
-                    if dist_list[0][0][1] in vert_set:
+                    if edge[1] in vert_set:
                         set_1 = vert_set
                 else:
-                    if dist_list[0][0][0] in vert_set:
+                    if edge[0] in vert_set:
                         set_2 = vert_set
                         break
-                    if dist_list[0][0][1] in vert_set:
+                    if edge[1] in vert_set:
                         set_2 = vert_set
                         break
-            print(dist_list[0][0][0], dist_list[0][0][1])
-            print(set_1, set_2)
+
             connected_verts.append(set_1.union(set_2))
             connected_verts.remove(set_1)
             connected_verts.remove(set_2)
             dist_list.pop(0)
-
-            
-        print(connected_verts)
         print(active_edges)
-
+        return active_edges
     def check_cycle(self, edge, connected_verts):
         for vert_set in connected_verts:
             if edge[0] in vert_set and edge[1] in vert_set:
                 return True
         return False
+
+    def check_incident(self, edge, edges):
+        for vert in edge:
+            verts_incident = 0
+            for _edge in edges:
+                if vert in _edge:
+                    verts_incident += 1
+            if verts_incident > 4:
+                return True
+        return False
+    
+    def draw_paths(self, edges, nodes):
+        for edge in edges:
+            src = edge[1][0] + pygame.Vector2(0, 1)
+            dest = edge[1][1] +  pygame.Vector2(0, 1)
+
+            pos = src
+            while pos != dest:
+                image = pygame.image.load("Sprites/PathTiles/straight.png")
+                self.ground.blit(image, pos*WorldGeneration.TILE_SIZE)
+                if pos[1] - dest[1] < 0:
+                    pos = pos + pygame.Vector2(0, 1)
+                    continue
+                if pos[1] - dest[1] > 0:
+                    pos = pos - pygame.Vector2(0, 1)
+                    continue
+                if pos[0] - dest[0] < 0:
+                    pos = pos + pygame.Vector2(1, 0)
+                    continue
+                if pos[0] - dest[0] > 0:
+                    pos = pos - pygame.Vector2(1, 0)
+                    continue
+                self.ground.blit(image, pos*WorldGeneration.TILE_SIZE)
+
