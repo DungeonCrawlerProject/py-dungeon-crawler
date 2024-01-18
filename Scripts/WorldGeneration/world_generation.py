@@ -274,6 +274,7 @@ class WorldGeneration:
         return False
     
     def draw_paths(self, edges, nodes):
+        print(nodes)
         for edge in edges:
             src = edge[1][0] + pygame.Vector2(0, 1)
             dest = edge[1][1] +  pygame.Vector2(0, 1)
@@ -293,8 +294,6 @@ class WorldGeneration:
                 next_direction = next_pos - pos
                 if next_direction != direction:
                     image = pygame.image.load("Sprites/PathTiles/2way.png")
-                    print(pos, next_pos)
-                    print(next_direction + direction)
                     path_direction = tuple(next_direction + direction)
                     match path_direction:
                         case (1, 1):
@@ -321,5 +320,21 @@ class WorldGeneration:
                 self.ground.blit(image, pos*WorldGeneration.TILE_SIZE)
                 pos = next_pos
                 direction = next_direction
+            dest_node = nodes[edge[0][1]]
+            if dest_node[1][1] == "poi":
+                print(direction)
+                match tuple(direction):
+                    case (1, 0):
+                        image = pygame.image.load("Sprites/PathTiles/2way.png")
+                        image = pygame.transform.flip(image, flip_x=True, flip_y=True)
+                    case (0, 1):
+                        image = pygame.image.load("Sprites/PathTiles/straight.png")
+                    case (-1, 0):
+                        image = pygame.image.load("Sprites/PathTiles/2way.png")
+                        image = pygame.transform.flip(image, flip_x=False, flip_y=True)
+                    case (0, -1):
+                        image = pygame.image.load("Sprites/PathTiles/straight.png")
+            
+
             self.ground.blit(image, pos*WorldGeneration.TILE_SIZE)
 
