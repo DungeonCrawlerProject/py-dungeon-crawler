@@ -6,6 +6,7 @@ Last Modified: 12/31/2023
 
 import pygame
 
+from Scripts.Enemy.enemy import Enemy
 from Scripts.Engine.Engine import GameEngine
 
 from Scripts.Camera.camera import Camera
@@ -43,6 +44,9 @@ if __name__ == "__main__":
     )
     player_hud = HUD(player)
 
+    enemy = Enemy(initial_position=pygame.Vector2(init_x, init_y))
+    cam.game_objects.append(enemy)
+
     while engine.is_running():
         engine.screen.fill((0, 0, 0))
 
@@ -53,6 +57,8 @@ if __name__ == "__main__":
 
         # Update the player based on the current state
         player.update(keys, mouse_buttons, mouse_pos)
+        enemy.watch(player)
+        enemy.update()
 
         cam.center_player(player, .1)
         cam.sorted_draw()
