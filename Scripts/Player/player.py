@@ -53,16 +53,16 @@ class Player:
         self.sprinting_state_inst = SprintingState(self)
         self.dodge_state_inst = DodgeState(self)
         self.state = self.idle_state_inst
+        self._memory_attack_angle = pygame.Vector2(0, 0)
 
         # Make the sprite in the center
-        sprite_sheet = pygame.image.load('Sprites/sprite_sheet.png').convert_alpha()
-        self.sprite = PNGSprite.make_from_sprite_sheet(sprite_sheet, 32, 64)
+        self.sprite = PNGSprite.make_from_sprite_sheet('Sprites/sprite_sheet.png', 32, 64)
 
         # Store and Make Player Objects
         self.player_objects = {
             "player_sprite": GameObject(self.position, self.sprite),
             "arrow_sprite": GameObject(self.position, PNGSprite.make_single_sprite('Sprites/arrow.png')),
-            "slash_sprite": GameObject(self.position, PNGSprite.make_single_sprite('Sprites/slash.png')),
+            "slash_sprite": GameObject(self.position, PNGSprite.make_from_sprite_sheet('Sprites/slash.png', 40, 120)),
             "block_sprite": GameObject(self.position, PNGSprite.make_single_sprite('Sprites/block.png'))
         }
 
@@ -92,6 +92,7 @@ class Player:
         # Only show the slash when attacking
         if left_mouse:
             self.player_objects["slash_sprite"].sprite.visible = True
+            self.player_objects["slash_sprite"].sprite.animate_frames()
         else:
             self.player_objects["slash_sprite"].sprite.visible = False
 
@@ -112,8 +113,7 @@ class Player:
         # Change player pos
         self.draw()
 
-    @staticmethod
-    def get_left_angle(keys) -> float:
+    def get_left_angle(self, keys) -> float:
         """
         Returns the angle from WASD keyboard input
         :param keys: Keyboard pygame key event
@@ -133,7 +133,9 @@ class Player:
 
         # Default down
         if not (keys[pygame.K_w] or keys[pygame.K_a] or keys[pygame.K_s] or keys[pygame.K_d]):
-            mov_dir.x, mov_dir.y = 0, -1
+            mov_dir.x, mov_dir.y = self._memory_attack_angle.x, self._memory_attack_angle.y
+        else:
+            self._memory_attack_angle.x, self._memory_attack_angle.y = mov_dir.x, mov_dir.y
 
         return math.degrees(math.atan2(mov_dir.x, -mov_dir.y))
 

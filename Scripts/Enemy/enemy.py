@@ -6,7 +6,7 @@ from Scripts.sprite import PNGSprite
 
 class Enemy:
 
-    def __init__(self, initial_position:pygame.Vector2):
+    def __init__(self, initial_position: pygame.Vector2):
 
         # Positional Variables
         self.position = initial_position
@@ -17,8 +17,7 @@ class Enemy:
         self.stats.speed = 3
 
         # Make the sprite in the center
-        sprite_sheet = pygame.image.load('Sprites/sprite_sheet.png').convert_alpha()
-        self.sprite = PNGSprite.make_from_sprite_sheet(sprite_sheet, 32, 64)
+        self.sprite = PNGSprite.make_from_sprite_sheet('Sprites/sprite_sheet.png', 32, 64)
 
         self.stalking = None
 
@@ -34,10 +33,9 @@ class Enemy:
         self.draw()
 
         if self.stalking:
-            print(self.stalking.position - self.position)
             dp = self.stalking.position - self.position
 
-            if dp.magnitude() !=0:
+            if 0 < dp.magnitude() < 500:
                 self.position += dp.normalize() * self.stats.speed
 
     def take_damage(self, damage: float) -> None:

@@ -31,8 +31,7 @@ class WorldGeneration:
 
         for i in range(100):
             _pos = (random.randrange(0, self.ground.get_rect().right), random.randrange(0, self.ground.get_rect().bottom))
-            sprite_sheet = pygame.image.load('Sprites/Tree.png').convert_alpha()
-            sprite = PNGSprite().make_from_sprite_sheet(sprite_sheet, 20, 40)
+            sprite = PNGSprite().make_from_sprite_sheet('Sprites/Tree.png', 20, 40)
             self.game_objects.append(GameObject(_pos, sprite))
 
     #TODO
