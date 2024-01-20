@@ -1,7 +1,7 @@
 """
 The player class
 By: Sean McClanahan and Nick Petruccelli
-Last Modified: 01/15/2024
+Last Modified: 01/19/2024
 """
 
 import math
@@ -18,6 +18,7 @@ from Scripts.Player.PlayerStateMachine.PlayerStates.moving_state import MovingSt
 from Scripts.Player.PlayerStateMachine.PlayerStates.sprinting_state import SprintingState
 from Scripts.Player.Stats.player_cooldowns import PlayerCoolDownTimer
 from Scripts.Player.Stats.player_stats import PlayerStats
+from Scripts.animation import Animation
 from Scripts.sprite import PNGSprite
 from Scripts.GameObject.game_object import GameObject
 
@@ -66,6 +67,10 @@ class Player:
             "block_sprite": GameObject(self.position, PNGSprite.make_single_sprite('Sprites/block.png'))
         }
 
+        self.player_animations = {
+            "slash": Animation(500, self.player_objects["slash_sprite"].sprite)
+        }
+
         # Set Arrow Invisible
         self.player_objects["arrow_sprite"].sprite.visible = False
 
@@ -89,10 +94,26 @@ class Player:
 
         left_mouse, middle_mouse, right_mouse = mouse_buttons
 
+        # Calculate elapsed time
+        current_time = pygame.time.get_ticks()
+
         # Only show the slash when attacking
         if left_mouse:
             self.player_objects["slash_sprite"].sprite.visible = True
-            self.player_objects["slash_sprite"].sprite.animate_frames()
+            self.player_animations["slash"].start_animation()
+
+        # Animation Type Diff
+        if self.player_animations["slash"].start_time is not None:
+            _elapsed_time = current_time - self.player_animations["slash"].start_time
+        else:
+            _elapsed_time = 0
+
+        # Run the animation and get the current frame
+        render_frame = self.player_animations["slash"].run(_elapsed_time)
+
+        # Draw the current frame at the specified positions
+        if render_frame is not None:
+            self.player_objects["slash_sprite"].sprite.change_frame(render_frame)
         else:
             self.player_objects["slash_sprite"].sprite.visible = False
 

@@ -1,77 +1,65 @@
+"""
+The Animation class for animating PNGSprites
+By: Sean McClanahan
+Last Modified: 01/19/2024
+"""
+
 import pygame
-import sys
 
 from Scripts.sprite import PNGSprite
 
 
 class Animation:
 
-    def __init__(self, display_duration, sprite: PNGSprite):
+    def __init__(
+            self,
+            display_duration: float,
+            sprite: PNGSprite
+    ) -> None:
+        """
+        Creates the animator object
+        :param display_duration: The time in milliseconds that the animation should play
+        :param sprite: The PNGSprite, with more than one frame
+        """
+
+        # Initial Index Checking
+        if len(sprite.frames) <= 1:
+            raise IndexError("The Input PNGSprite must have more than one frame to animate")
+
         self.sprite = sprite
         self.display_duration = display_duration
         self.start_time = None
         self.current_sprite_index = 0
 
-    def start_animation(self):
+    def start_animation(self) -> None:
+        """
+        Begins the animation timer and sets the frame to zero
+        """
         self.start_time = pygame.time.get_ticks()
         self.current_sprite_index = 0
 
-    def run(self, elapsed_time):
-        if self.start_time is not None:
-            if elapsed_time <= self.display_duration and self.current_sprite_index < len(self.sprite.frames):
-                # Draw the current sprite at the same position
-                current_frame = self.sprite.frames[self.current_sprite_index]
+    def run(self, elapsed_time: float) -> int | None:
+        """
+        Runs the animation
+        :param elapsed_time: The timer showing the time differential
+        :return: None represents the animation should not play. An int represents the frame index to animate
+        """
 
-                # Check if it's time to switch to the next sprite
-                if elapsed_time > (self.current_sprite_index + 1) * (self.display_duration // len(self.sprite.frames)):
-                    self.current_sprite_index += 1
+        # Return if the timer has been started
+        if self.start_time is None:
+            return None
 
-                return current_frame
-        return None
+        # If exceeded the duration return
+        if elapsed_time > self.display_duration:
+            return None
 
+        # If the sprite is out of index return (this will be refactored when doing re-playable animations)
+        if self.current_sprite_index >= len(self.sprite.frames):
+            return None
 
-# THE FOLLOWING IS NOT NEEDED FOR CLASS
-pygame.init()
-screen = pygame.display.set_mode((200, 200))
-clock = pygame.time.Clock()
-screen.fill((255, 255, 255))
+        # Check if it's time to switch to the next sprite
+        if elapsed_time > (self.current_sprite_index + 1) * (self.display_duration // len(self.sprite.frames)):
+            self.current_sprite_index += 1
 
-# Define paths to PNG images (replace with your actual image paths)
-sprite_sheet = PNGSprite.make_from_sprite_sheet("../Sprites/slash.png", 40, 120)
-
-# Create an instance of Animation with a specified display duration and a list of sprite paths
-colored_animation = Animation(500, sprite_sheet)
-
-# THE FOLLOWING IS NOT NEEDED FOR CLASS
-while True:
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            pygame.quit()
-            sys.exit()
-
-        # THIS IS LIKE THE EVENT HANDLER
-        if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
-            # THIS IS SPUN UP IN THE PLAYER CLASS
-            colored_animation.start_animation()
-
-    # Calculate elapsed time
-    current_time = pygame.time.get_ticks()
-
-    if colored_animation.start_time is not None:
-        _elapsed_time = current_time - colored_animation.start_time
-    else:
-        _elapsed_time = 0
-
-    # Fill the screen with white background
-    screen.fill((255, 255, 255))
-
-    # Run the animation and get the current frame
-    render_frame = colored_animation.run(_elapsed_time)
-
-    # Draw the current frame at the specified position
-    if render_frame is not None:
-        screen.blit(render_frame, sprite_sheet.rect)
-
-    # THE FOLLOWING IS NOT NEEDED FOR CLASS
-    pygame.display.flip()
-    clock.tick(60)
+        # Return the index
+        return self.current_sprite_index
