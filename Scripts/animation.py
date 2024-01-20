@@ -61,5 +61,7 @@ class Animation:
         if elapsed_time > (self.current_sprite_index + 1) * (self.display_duration // len(self.sprite.frames)):
             self.current_sprite_index += 1
 
+        self.current_sprite_index %= len(self.sprite.frames)
+
         # Return the index
         return self.current_sprite_index

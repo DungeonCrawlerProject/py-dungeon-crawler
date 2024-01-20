@@ -44,8 +44,11 @@ if __name__ == "__main__":
     )
     player_hud = HUD(player)
 
-    enemy = Enemy(initial_position=pygame.Vector2(init_x, init_y))
+    enemy = Enemy(initial_position=pygame.Vector2(100, 100))
     cam.game_objects.append(enemy)
+
+    # TODO THIS IS A BAD PRACTICE
+    player.known_enemies.append(enemy)
 
     while engine.is_running():
         engine.screen.fill((0, 0, 0))

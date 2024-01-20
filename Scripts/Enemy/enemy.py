@@ -32,11 +32,18 @@ class Enemy:
         # Change player pos
         self.draw()
 
+        # Stop Following the Player if they are dead
+        if self.stalking.stats.current_health <= 0:
+            self.stalking = None
+
         if self.stalking:
             dp = self.stalking.position - self.position
 
             if 0 < dp.magnitude() < 500:
                 self.position += dp.normalize() * self.stats.speed
+
+        # Update Sprite Based Hit-box
+        self.sprite.rect.x, self.sprite.rect.y = self.position.xy
 
     def take_damage(self, damage: float) -> None:
         """

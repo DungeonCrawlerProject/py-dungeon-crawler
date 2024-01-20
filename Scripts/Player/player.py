@@ -44,6 +44,9 @@ class Player:
         self.left_angle = 0.0
         self.right_angle = 0.0
 
+        # TODO THIS IS A TERRIBLE PRACTICE
+        self.known_enemies = []
+
         # Dataclasses
         self.stats = PlayerStats()
         self.cooldown_timers = PlayerCoolDownTimer()
@@ -90,12 +93,16 @@ class Player:
         :param mouse_pos: The position of the mouse
         """
 
+        # Check if the player is dead
+        if self.stats.current_health <= 0:
+            self.kill_player()
+            return
+
+        # Update State-machine and Sprite Based Hit-box
+        self.sprite.rect.x, self.sprite.rect.y = self.position.xy
         self.state.update(keys)
 
         left_mouse, middle_mouse, right_mouse = mouse_buttons
-
-        # Calculate elapsed time
-        current_time = pygame.time.get_ticks()
 
         # Only show the slash when attacking
         if left_mouse:
@@ -104,7 +111,7 @@ class Player:
 
         # Animation Type Diff
         if self.player_animations["slash"].start_time is not None:
-            _elapsed_time = current_time - self.player_animations["slash"].start_time
+            _elapsed_time = pygame.time.get_ticks() - self.player_animations["slash"].start_time
         else:
             _elapsed_time = 0
 
@@ -113,6 +120,7 @@ class Player:
 
         # Draw the current frame at the specified positions
         if render_frame is not None:
+            print(render_frame)
             self.player_objects["slash_sprite"].sprite.change_frame(render_frame)
         else:
             self.player_objects["slash_sprite"].sprite.visible = False
@@ -131,8 +139,17 @@ class Player:
         self.right_angle += ROTATE_SPEED * math.sin(math.radians(target_angle - self.right_angle))
         self.right_angle %= 360
 
+        self.check_collisions()
+
         # Change player pos
         self.draw()
+
+    def check_collisions(self):
+
+        for enemy in self.known_enemies:
+
+            if self.sprite.rect.colliderect(enemy.sprite.rect):
+                self.take_damage(0.25)
 
     def get_left_angle(self, keys) -> float:
         """
@@ -182,7 +199,10 @@ class Player:
             self.kill_player()
 
     def kill_player(self) -> None:
-        raise NotImplementedError
+        self.sprite.visible = False
+
+        for obj in self.player_objects.values():
+            obj.sprite.visible = False
 
     def draw(self) -> None:
 
