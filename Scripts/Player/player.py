@@ -1,7 +1,7 @@
 """
 The player class
 By: Sean McClanahan and Nick Petruccelli
-Last Modified: 12/31/2023
+Last Modified: 01/19/2024
 """
 
 import math
@@ -18,8 +18,11 @@ from Scripts.Player.PlayerStateMachine.PlayerStates.moving_state import MovingSt
 from Scripts.Player.PlayerStateMachine.PlayerStates.sprinting_state import SprintingState
 from Scripts.Player.Stats.player_cooldowns import PlayerCoolDownTimer
 from Scripts.Player.Stats.player_stats import PlayerStats
+from Scripts.animation import Animation
 from Scripts.sprite import PNGSprite
 from Scripts.GameObject.game_object import GameObject
+
+ROTATE_SPEED = 50
 
 
 class Player:
@@ -37,16 +40,16 @@ class Player:
 
         # Positional Variables
         self.position = initial_position
-        self.hit_box = pygame.Vector2(50, 50)
-        self.angle = 0.0
-        self.mouse_position = (0, 0)
+        self.relative_position = initial_position
+        self.left_angle = 0.0
+        self.right_angle = 0.0
+
+        # TODO THIS IS A TERRIBLE PRACTICE
+        self.known_enemies = []
 
         # Dataclasses
         self.stats = PlayerStats()
         self.cooldown_timers = PlayerCoolDownTimer()
-
-        # TODO: Make State Machine For Combat
-        self.combat_color_cursor = (0, 0, 0)
 
         # The player's state, Store the states' instances to prevent circular imports
         self.idle_state_inst = IdleState(self)
@@ -54,10 +57,25 @@ class Player:
         self.sprinting_state_inst = SprintingState(self)
         self.dodge_state_inst = DodgeState(self)
         self.state = self.idle_state_inst
+        self._memory_attack_angle = pygame.Vector2(0, 0)
 
         # Make the sprite in the center
-        sprite_sheet = pygame.image.load('Sprites/sprite_sheet.png').convert_alpha()
-        self.sprite = PNGSprite.make_from_sprite_sheet(camera, sprite_sheet, 32, 64)
+        self.sprite = PNGSprite.make_from_sprite_sheet('Sprites/sprite_sheet.png', 32, 64)
+
+        # Store and Make Player Objects
+        self.player_objects = {
+            "player_sprite": GameObject(self.position, self.sprite),
+            "arrow_sprite": GameObject(self.position, PNGSprite.make_single_sprite('Sprites/arrow.png')),
+            "slash_sprite": GameObject(self.position, PNGSprite.make_from_sprite_sheet('Sprites/slash.png', 40, 120)),
+            "block_sprite": GameObject(self.position, PNGSprite.make_single_sprite('Sprites/block.png'))
+        }
+
+        self.player_animations = {
+            "slash": Animation(500, self.player_objects["slash_sprite"].sprite)
+        }
+
+        # Set Arrow Invisible
+        self.player_objects["arrow_sprite"].sprite.visible = False
 
         # Give the player the camera
         self.add_camera(camera)
@@ -75,47 +93,174 @@ class Player:
         :param mouse_pos: The position of the mouse
         """
 
-        self.mouse_position = mouse_pos
+        # Check if the player is dead
+        if self.stats.current_health <= 0:
+            self.kill_player()
+            return
 
+        # Update State-machine and Sprite Based Hit-box
+        self.sprite.rect.x, self.sprite.rect.y = self.position.xy
+        self.player_objects["slash_sprite"].sprite.rect.x, self.player_objects["slash_sprite"].sprite.rect.y = self.position.xy
         self.state.update(keys)
 
         left_mouse, middle_mouse, right_mouse = mouse_buttons
 
+        # Only show the slash when attacking
         if left_mouse:
-            self.combat_color_cursor = (255, 0, 0)
-        elif right_mouse:
-            self.combat_color_cursor = (0, 255, 0)
+            self.player_objects["slash_sprite"].sprite.visible = True
+            self.player_animations["slash"].start_animation()
+
+        # Animation Type Diff
+        if self.player_animations["slash"].start_time is not None:
+            _elapsed_time = pygame.time.get_ticks() - self.player_animations["slash"].start_time
         else:
-            self.combat_color_cursor = (0, 0, 0)
+            _elapsed_time = 0
 
-        if mouse_pos:
-            # Get the mouse position
-            mouse_x, mouse_y = self.mouse_position
+        # Run the animation and get the current frame
+        render_frame = self.player_animations["slash"].run(_elapsed_time)
 
-            self.angle = math.degrees(
-                math.atan2(
-                    mouse_y - (self.position.y + self.hit_box[1] // 2),
-                    mouse_x - (self.position.x + self.hit_box[0] // 2)
-                )
-            )
+        # Draw the current frame at the specified positions
+        if render_frame is not None:
+            print(render_frame)
+            self.player_objects["slash_sprite"].sprite.change_frame(render_frame)
+        else:
+            self.player_objects["slash_sprite"].sprite.visible = False
 
+        # Only show the block when blocking
+        if right_mouse:
+            self.player_objects["block_sprite"].sprite.visible = True
+        else:
+            self.player_objects["block_sprite"].sprite.visible = False
+
+        # Cursor Rotation
+        target_angle = self.get_mouse_relative_angle(mouse_pos, self.relative_position)
+
+        # Set Right and Left Angle Logic
+        self.left_angle = self.get_left_angle(keys)
+        self.right_angle += ROTATE_SPEED * math.sin(math.radians(target_angle - self.right_angle))
+        self.right_angle %= 360
+
+        self.check_collisions()
+
+        # Change player pos
         self.draw()
 
+    def check_collisions(self):
+
+        for enemy in self.known_enemies:
+
+            if self.sprite.rect.colliderect(enemy.sprite.rect):
+                self.take_damage(0.25)
+
+    def get_left_angle(self, keys) -> float:
+        """
+        Returns the angle from WASD keyboard input
+        :param keys: Keyboard pygame key event
+        :return: The angle is degrees
+        """
+
+        mov_dir = pygame.Vector2(0, 0)
+
+        if keys[pygame.K_w]:
+            mov_dir.y = 1
+        if keys[pygame.K_s]:
+            mov_dir.y = -1
+        if keys[pygame.K_a]:
+            mov_dir.x = -1
+        if keys[pygame.K_d]:
+            mov_dir.x = 1
+
+        # Default down
+        if not (keys[pygame.K_w] or keys[pygame.K_a] or keys[pygame.K_s] or keys[pygame.K_d]):
+            mov_dir.x, mov_dir.y = self._memory_attack_angle.x, self._memory_attack_angle.y
+        else:
+            self._memory_attack_angle.x, self._memory_attack_angle.y = mov_dir.x, mov_dir.y
+
+        return math.degrees(math.atan2(mov_dir.x, -mov_dir.y))
+
     def add_camera(self, camera):
-        camera.game_objects.append(GameObject(self.position, self.sprite))
+        """
+        Adds a camera instance to the player.
+        :param camera: The camera instance
+        :return:
+        """
+
+        camera.game_objects.extend(self.player_objects.values())
         camera.position = self.position.copy()
 
     def take_damage(self, damage: float) -> None:
-        self.stats.current_health -= damage
+        """
+        Deals damage to the player
+        :param damage: The damage
+        """
 
-        # healthBar.SetHealth(curHealth / maxHealth);
+        self.stats.current_health -= damage
 
         if self.stats.current_health < 0:
             self.kill_player()
 
     def kill_player(self) -> None:
-        raise NotImplementedError
+        self.sprite.visible = False
+
+        for obj in self.player_objects.values():
+            obj.sprite.visible = False
 
     def draw(self) -> None:
 
         self.state.draw()
+
+        # Update the rotate functions
+        self.rotate_around_player_center(self.player_objects["arrow_sprite"], self.left_angle, 200.0)
+        self.rotate_around_player_center(self.player_objects["block_sprite"], self.left_angle, 50.0)
+        self.rotate_around_player_center(self.player_objects["slash_sprite"], self.left_angle, 30.0)
+
+    def set_relative_position(self, offset):
+
+        self.relative_position = self.position + offset
+
+    @staticmethod
+    def get_mouse_relative_angle(mouse_pos, image_center) -> float:
+
+        # Get the mouse position
+        dx, dy = mouse_pos - image_center
+        target_angle = (math.degrees(math.atan2(dx, dy)) + 360) % 360
+
+        return target_angle
+
+    def rotate_around_player_center(
+            self,
+            game_object: GameObject,
+            angle: float,
+            offset: float
+    ) -> None:
+        """
+        Updates the position and angle of a game object owned by the player
+        :param game_object: The object to rotate about the player
+        :param angle: The angle of the object in degrees
+        :param offset: The distance between the objects center and the player's center
+        """
+
+        # Rotate the object first to prevent bouncy animation
+        game_object.sprite.rotate(angle)
+
+        # Get the offset for the object
+        offset_vector = pygame.Vector2(
+            offset * math.sin(math.radians(angle)),
+            offset * math.cos(math.radians(angle))
+        )
+
+        # Grab the half of the size of the player
+        player_half_size = pygame.Vector2(
+            self.sprite.image.get_width() // 2,
+            self.sprite.image.get_height() // 2
+        )
+
+        # Grab half of the size of the object
+        obj_half_size = pygame.Vector2(
+            game_object.sprite.image.get_width() // 2,
+            game_object.sprite.image.get_height() // 2
+        )
+
+        full_offset = player_half_size - obj_half_size + offset_vector
+
+        game_object.position = self.position + full_offset

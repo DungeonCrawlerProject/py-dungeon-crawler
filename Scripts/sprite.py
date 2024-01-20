@@ -1,3 +1,5 @@
+import math
+import time
 from typing import List
 
 import pygame
@@ -9,27 +11,42 @@ class PNGSprite(Sprite):
     @classmethod
     def make_from_sprite_sheet(
             cls,
-            group: Sprite,
-            sprite_sheet: pygame.Surface,
+            location: str,
             width: int,
             height: int,
     ):
+        img = pygame.image.load(location).convert_alpha()
 
-        inst = cls(group=group)
-        inst.frames = inst.chop_sprite(sprite_sheet, width, height)
-        inst.image = inst.frames[0]
+        inst = cls()
+        inst.frames = inst.chop_sprite(img, width, height)
+        inst.original_image = inst.frames[0]
+        inst.image = inst.original_image.copy()  # Make a copy of the original image
+        inst.rect = inst.image.get_rect()
         return inst
 
-    def __init__(
-            self,
-            group: Sprite
-    ) -> None:
+    @classmethod
+    def make_single_sprite(cls, location):
 
-        super().__init__(group)
+        img = pygame.image.load(location).convert_alpha()
+
+        inst = cls()
+        inst.frames = inst.chop_sprite(img, img.get_width(), img.get_height())
+        inst.original_image = inst.frames[0]
+        inst.image = inst.original_image.copy()  # Make a copy of the original image
+        inst.rect = inst.image.get_rect()
+        return inst
+
+    def __init__(self) -> None:
+
+        super().__init__()
 
         self.frames = []
+        self.original_image = None  # Store the original image for rotation
         self.image = None
         self.rect = None
+        self.visible = True
+        self.anchor = []
+        self._animation_start_clock = math.inf
 
     @staticmethod
     def chop_sprite(
@@ -56,9 +73,22 @@ class PNGSprite(Sprite):
 
         return lst_img
 
+    def change_frame(self, image_index: int) -> None:
+        self.image = self.frames[image_index]
+        self.original_image = self.frames[image_index]
+
+    def animate_frames(self):
+        for img in self.frames:
+            self.original_image = img
+            self.image = img
+
     def move(
             self,
             x: float | int,
             y: float | int
     ):
         self.rect = self.image.get_rect(center=(x, y))
+
+    def rotate(self, deg: float) -> None:
+        self.image = pygame.transform.rotate(self.original_image, deg)
+        self.rect = self.image.get_rect(center=self.rect.center)
