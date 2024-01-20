@@ -107,8 +107,6 @@ class WorldGeneration:
                     self.placed_tiles[biome.name].append(rand_tile_pos)
                     self.tile_map[rand_tile_pos[1]][rand_tile_pos[0]] = biome.name
                     break
-        print("tiles Placed ", tiles_placed)
-        print(num_tiles_to_place + 2)
 
     def get_zero_neighbor(self, tile_map, position):
         out = []
@@ -135,7 +133,6 @@ class WorldGeneration:
             for biome in self.active_biomes:
                 if biome.name == self.tile_map[_pos[1]][_pos[0]]:
                     cur_biome = biome
-                    print(cur_biome)
                     break
 
             poi_name = cur_biome.points_of_interest[
@@ -181,7 +178,6 @@ class WorldGeneration:
         nodes = [[i, node] for i, node in enumerate(nodes)]
 
         edges = self.generate_min_span_tree(nodes)
-        print(edges)
         self.draw_paths(edges, nodes)
 
     def generate_crossroads(self, num_crossroads: int):
@@ -257,7 +253,6 @@ class WorldGeneration:
             connected_verts.remove(set_1)
             connected_verts.remove(set_2)
             dist_list.pop(0)
-        print(active_edges)
         return active_edges
     def check_cycle(self, edge, connected_verts):
         for vert_set in connected_verts:
@@ -276,7 +271,6 @@ class WorldGeneration:
         return False
     
     def draw_paths(self, edges, nodes):
-        print(nodes)
         for edge in edges:
             src = edge[1][0] + pygame.Vector2(0, 1)
             dest = edge[1][1] +  pygame.Vector2(0, 1)
@@ -324,7 +318,6 @@ class WorldGeneration:
                 direction = next_direction
             dest_node = nodes[edge[0][1]]
             if dest_node[1][1] == "poi":
-                print(direction)
                 match tuple(direction):
                     case (1, 0):
                         image = pygame.image.load("Sprites/PathTiles/2way.png")
