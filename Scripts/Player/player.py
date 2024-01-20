@@ -100,6 +100,7 @@ class Player:
 
         # Update State-machine and Sprite Based Hit-box
         self.sprite.rect.x, self.sprite.rect.y = self.position.xy
+        self.player_objects["slash_sprite"].sprite.rect.x, self.player_objects["slash_sprite"].sprite.rect.y = self.position.xy
         self.state.update(keys)
 
         left_mouse, middle_mouse, right_mouse = mouse_buttons

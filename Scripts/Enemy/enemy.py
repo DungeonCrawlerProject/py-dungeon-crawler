@@ -42,6 +42,10 @@ class Enemy:
             if 0 < dp.magnitude() < 500:
                 self.position += dp.normalize() * self.stats.speed
 
+            if self.sprite.rect.colliderect(self.stalking.player_objects["slash_sprite"].sprite.rect):
+                if self.stalking.player_objects["slash_sprite"].sprite.visible:
+                    self.take_damage(10)
+
         # Update Sprite Based Hit-box
         self.sprite.rect.x, self.sprite.rect.y = self.position.xy
 
@@ -57,7 +61,10 @@ class Enemy:
             self.kill()
 
     def kill(self) -> None:
-        raise NotImplementedError
+        self.sprite.visible = False
+
+        # for the time being move off-screen
+        self.position.x, self.position.y = -100, -100
 
     def draw(self) -> None:
         ...
