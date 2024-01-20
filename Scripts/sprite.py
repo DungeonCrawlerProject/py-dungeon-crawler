@@ -1,3 +1,5 @@
+import math
+import time
 from typing import List
 
 import pygame
@@ -9,12 +11,14 @@ class PNGSprite(Sprite):
     @classmethod
     def make_from_sprite_sheet(
             cls,
-            sprite_sheet: pygame.Surface,
+            location: str,
             width: int,
             height: int,
     ):
+        img = pygame.image.load(location).convert_alpha()
+
         inst = cls()
-        inst.frames = inst.chop_sprite(sprite_sheet, width, height)
+        inst.frames = inst.chop_sprite(img, width, height)
         inst.original_image = inst.frames[0]
         inst.image = inst.original_image.copy()  # Make a copy of the original image
         inst.rect = inst.image.get_rect()
@@ -42,6 +46,7 @@ class PNGSprite(Sprite):
         self.rect = None
         self.visible = True
         self.anchor = []
+        self._animation_start_clock = math.inf
 
     @staticmethod
     def chop_sprite(
@@ -67,6 +72,15 @@ class PNGSprite(Sprite):
                 lst_img.append(_sprite)
 
         return lst_img
+
+    def change_frame(self, image_index: int) -> None:
+        self.image = self.frames[image_index]
+        self.original_image = self.frames[image_index]
+
+    def animate_frames(self):
+        for img in self.frames:
+            self.original_image = img
+            self.image = img
 
     def move(
             self,

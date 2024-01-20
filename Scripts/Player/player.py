@@ -1,7 +1,7 @@
 """
 The player class
 By: Sean McClanahan and Nick Petruccelli
-Last Modified: 01/15/2024
+Last Modified: 01/19/2024
 """
 
 import math
@@ -18,6 +18,7 @@ from Scripts.Player.PlayerStateMachine.PlayerStates.moving_state import MovingSt
 from Scripts.Player.PlayerStateMachine.PlayerStates.sprinting_state import SprintingState
 from Scripts.Player.Stats.player_cooldowns import PlayerCoolDownTimer
 from Scripts.Player.Stats.player_stats import PlayerStats
+from Scripts.animation import Animation
 from Scripts.sprite import PNGSprite
 from Scripts.GameObject.game_object import GameObject
 
@@ -43,6 +44,9 @@ class Player:
         self.left_angle = 0.0
         self.right_angle = 0.0
 
+        # TODO THIS IS A TERRIBLE PRACTICE
+        self.known_enemies = []
+
         # Dataclasses
         self.stats = PlayerStats()
         self.cooldown_timers = PlayerCoolDownTimer()
@@ -53,17 +57,21 @@ class Player:
         self.sprinting_state_inst = SprintingState(self)
         self.dodge_state_inst = DodgeState(self)
         self.state = self.idle_state_inst
+        self._memory_attack_angle = pygame.Vector2(0, 0)
 
         # Make the sprite in the center
-        sprite_sheet = pygame.image.load('Sprites/sprite_sheet.png').convert_alpha()
-        self.sprite = PNGSprite.make_from_sprite_sheet(sprite_sheet, 32, 64)
+        self.sprite = PNGSprite.make_from_sprite_sheet('Sprites/sprite_sheet.png', 32, 64)
 
         # Store and Make Player Objects
         self.player_objects = {
             "player_sprite": GameObject(self.position, self.sprite),
             "arrow_sprite": GameObject(self.position, PNGSprite.make_single_sprite('Sprites/arrow.png')),
-            "slash_sprite": GameObject(self.position, PNGSprite.make_single_sprite('Sprites/slash.png')),
+            "slash_sprite": GameObject(self.position, PNGSprite.make_from_sprite_sheet('Sprites/slash.png', 40, 120)),
             "block_sprite": GameObject(self.position, PNGSprite.make_single_sprite('Sprites/block.png'))
+        }
+
+        self.player_animations = {
+            "slash": Animation(500, self.player_objects["slash_sprite"].sprite)
         }
 
         # Set Arrow Invisible
@@ -85,6 +93,14 @@ class Player:
         :param mouse_pos: The position of the mouse
         """
 
+        # Check if the player is dead
+        if self.stats.current_health <= 0:
+            self.kill_player()
+            return
+
+        # Update State-machine and Sprite Based Hit-box
+        self.sprite.rect.x, self.sprite.rect.y = self.position.xy
+        self.player_objects["slash_sprite"].sprite.rect.x, self.player_objects["slash_sprite"].sprite.rect.y = self.position.xy
         self.state.update(keys)
 
         left_mouse, middle_mouse, right_mouse = mouse_buttons
@@ -92,6 +108,21 @@ class Player:
         # Only show the slash when attacking
         if left_mouse:
             self.player_objects["slash_sprite"].sprite.visible = True
+            self.player_animations["slash"].start_animation()
+
+        # Animation Type Diff
+        if self.player_animations["slash"].start_time is not None:
+            _elapsed_time = pygame.time.get_ticks() - self.player_animations["slash"].start_time
+        else:
+            _elapsed_time = 0
+
+        # Run the animation and get the current frame
+        render_frame = self.player_animations["slash"].run(_elapsed_time)
+
+        # Draw the current frame at the specified positions
+        if render_frame is not None:
+            print(render_frame)
+            self.player_objects["slash_sprite"].sprite.change_frame(render_frame)
         else:
             self.player_objects["slash_sprite"].sprite.visible = False
 
@@ -109,11 +140,19 @@ class Player:
         self.right_angle += ROTATE_SPEED * math.sin(math.radians(target_angle - self.right_angle))
         self.right_angle %= 360
 
+        self.check_collisions()
+
         # Change player pos
         self.draw()
 
-    @staticmethod
-    def get_left_angle(keys) -> float:
+    def check_collisions(self):
+
+        for enemy in self.known_enemies:
+
+            if self.sprite.rect.colliderect(enemy.sprite.rect):
+                self.take_damage(0.25)
+
+    def get_left_angle(self, keys) -> float:
         """
         Returns the angle from WASD keyboard input
         :param keys: Keyboard pygame key event
@@ -133,7 +172,9 @@ class Player:
 
         # Default down
         if not (keys[pygame.K_w] or keys[pygame.K_a] or keys[pygame.K_s] or keys[pygame.K_d]):
-            mov_dir.x, mov_dir.y = 0, -1
+            mov_dir.x, mov_dir.y = self._memory_attack_angle.x, self._memory_attack_angle.y
+        else:
+            self._memory_attack_angle.x, self._memory_attack_angle.y = mov_dir.x, mov_dir.y
 
         return math.degrees(math.atan2(mov_dir.x, -mov_dir.y))
 
@@ -159,7 +200,10 @@ class Player:
             self.kill_player()
 
     def kill_player(self) -> None:
-        raise NotImplementedError
+        self.sprite.visible = False
+
+        for obj in self.player_objects.values():
+            obj.sprite.visible = False
 
     def draw(self) -> None:
 
