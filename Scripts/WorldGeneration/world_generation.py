@@ -26,7 +26,7 @@ class WorldGeneration:
     TILE_SIZE = 32
 
     def __init__(self):
-        self.ground = self.make_background(50, 40)
+        self.ground = self.make_background(60, 50)
         self.right_border = self.ground.get_rect().right
         self.bot_border = self.ground.get_rect().bottom
         self.tile_map = [
@@ -84,10 +84,9 @@ class WorldGeneration:
             self.placed_tiles[biome.name].append(_pos)
             self.tile_map[_pos[1]][_pos[0]] = biome.name
 
-        for i in range(
-            ((self.right_border // 32) * (self.bot_border // 32) - 2)
-            // len(active_biomes)
-        ):
+        num_tiles_to_place = ((self.right_border // WorldGeneration.TILE_SIZE) * (self.bot_border // WorldGeneration.TILE_SIZE)) - 2
+        tiles_placed = 0
+        while tiles_placed < num_tiles_to_place:
             for biome in active_biomes:
                 for tile_pos in self.placed_tiles[biome.name]:
                     zero_neighbors = self.get_zero_neighbor(
@@ -98,28 +97,30 @@ class WorldGeneration:
                     rand_tile_pos = zero_neighbors[
                         random.randrange(0, len(zero_neighbors))
                     ]
+
                     image = pygame.image.load(biome.tile_set)
                     self.ground.blit(
                         image,
-                        tuple(
-                            [WorldGeneration.TILE_SIZE * cord for cord in rand_tile_pos]
-                        ),
+                        tuple([WorldGeneration.TILE_SIZE * cord for cord in rand_tile_pos])
                     )
+                    tiles_placed += 1
                     self.placed_tiles[biome.name].append(rand_tile_pos)
                     self.tile_map[rand_tile_pos[1]][rand_tile_pos[0]] = biome.name
                     break
+        print("tiles Placed ", tiles_placed)
+        print(num_tiles_to_place + 2)
 
     def get_zero_neighbor(self, tile_map, position):
         out = []
         for i in [-1, 0, 1]:
-            if position[1] + i >= 40:
+            if position[1] + i >= self.bot_border // WorldGeneration.TILE_SIZE:
                 continue
             if position[1] + i < 0:
                 continue
             for j in [-1, 0, 1]:
                 if position[0] + j < 0:
                     continue
-                if position[0] + j >= 50:
+                if position[0] + j >= self.right_border // WorldGeneration.TILE_SIZE:
                     continue
                 if tile_map[position[1] + i][position[0] + j] == 0:
                     out.append((position[0] + j, position[1] + i))
@@ -134,6 +135,7 @@ class WorldGeneration:
             for biome in self.active_biomes:
                 if biome.name == self.tile_map[_pos[1]][_pos[0]]:
                     cur_biome = biome
+                    print(cur_biome)
                     break
 
             poi_name = cur_biome.points_of_interest[
