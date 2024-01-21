@@ -4,29 +4,22 @@ from typing import List
 import random
 import math
 import json
+
+from Scripts.WorldGeneration.biome import Biome
+from Scripts.WorldGeneration.point_of_interest import PointOfInterest
 from Scripts.sprite import PNGSprite
 from collections import defaultdict
-from pydantic import BaseModel
 
-
-class PointOfInterest(BaseModel):
-    name: str
-    sprite_sheet: str
-    size: List[int]
-
-
-class Biome(BaseModel):
-    name: str
-    tile_set: str
-    points_of_interest: List[str]
-    environment_objects: List[str]
+import numpy as np
+import matplotlib.pyplot as plt
+from perlin_noise import PerlinNoise
 
 
 class WorldGeneration:
     TILE_SIZE = 32
 
     def __init__(self):
-        self.ground = self.make_background(60, 50)
+        self.ground = self.make_background(256, 128)
         self.right_border = self.ground.get_rect().right
         self.bot_border = self.ground.get_rect().bottom
         self.tile_map = [
@@ -41,11 +34,11 @@ class WorldGeneration:
                 biome_data = json.load(file)
             self.active_biomes.append(Biome(**biome_data))
 
-        self.generate_biomes(self.active_biomes)
+        self.generate_biomes()
 
-        self.generate_pois(num_of_pois=5)
+        self.generate_pois(num_of_pois=25)
 
-        self.generate_paths(4)
+        self.generate_paths(16)
 
         for i in range(100):
             _pos = (
@@ -65,48 +58,30 @@ class WorldGeneration:
             size=(width * WorldGeneration.TILE_SIZE, height * WorldGeneration.TILE_SIZE)
         )
 
-    def generate_biomes(self, active_biomes: List[Biome]):
-        for biome in active_biomes:
-            _pos = (
-                random.randrange(0, self.right_border // 32),
-                random.randrange(0, self.bot_border // 32),
-            )
-            while self.tile_map[_pos[1]][_pos[0]] != 0:
-                _pos = (
-                    random.randrange(0, self.right_border // 32),
-                    random.randrange(0, self.bot_border // 32),
-                )
-            image = pygame.image.load(biome.tile_set)
-            self.ground.blit(
-                image, tuple([WorldGeneration.TILE_SIZE * cord for cord in _pos])
-            )
-            self.placed_tiles[biome.name].append(_pos)
-            self.tile_map[_pos[1]][_pos[0]] = biome.name
+    def generate_biomes(self):
 
-        num_tiles_to_place = ((self.right_border // WorldGeneration.TILE_SIZE) * (
-                    self.bot_border // WorldGeneration.TILE_SIZE)) - 2
-        tiles_placed = 0
-        while tiles_placed < num_tiles_to_place:
-            for biome in active_biomes:
-                for tile_pos in self.placed_tiles[biome.name]:
-                    zero_neighbors = self.get_zero_neighbor(
-                        tile_map=self.tile_map, position=tile_pos
-                    )
-                    if len(zero_neighbors) == 0:
-                        continue
-                    rand_tile_pos = zero_neighbors[
-                        random.randrange(0, len(zero_neighbors))
-                    ]
+        # Generate Perlin noise
+        perlin_noise = WorldGeneration.generate_perlin_noise(256, 128, octaves=4, is_debug=True)
 
-                    image = pygame.image.load(biome.tile_set)
-                    self.ground.blit(
-                        image,
-                        tuple([WorldGeneration.TILE_SIZE * cord for cord in rand_tile_pos])
-                    )
-                    tiles_placed += 1
-                    self.placed_tiles[biome.name].append(rand_tile_pos)
-                    self.tile_map[rand_tile_pos[1]][rand_tile_pos[0]] = biome.name
-                    break
+        x_size, y_size = perlin_noise.shape
+        for _x in range(x_size):
+            for _y in range(y_size):
+                intensity = perlin_noise[_x][_y]
+                biome = self.set_biome_by_intensity(intensity)
+                self.make_biome_at_coordinate((_y, _x), biome)
+
+    def make_biome_at_coordinate(self, coordinate, biome):
+
+        image = pygame.image.load(biome.tile_set)
+
+        self.ground.blit(
+            image,
+            tuple([WorldGeneration.TILE_SIZE * cord for cord in coordinate])
+        )
+
+        self.placed_tiles[biome.name].append(coordinate)
+        _x, _y = coordinate
+        self.tile_map[_y][_x] = biome.name
 
     def get_zero_neighbor(self, tile_map, position):
         out = []
@@ -254,6 +229,12 @@ class WorldGeneration:
             dist_list.pop(0)
         return active_edges
 
+    def set_biome_by_intensity(self, val):
+        if val >= 0:
+            return self.active_biomes[0]
+        elif val < 0:
+            return self.active_biomes[1]
+
     @staticmethod
     def check_cycle(edge, connected_verts):
         for vert_set in connected_verts:
@@ -335,3 +316,26 @@ class WorldGeneration:
                         raise ValueError("poi direction not found")
 
             self.ground.blit(image, pos * WorldGeneration.TILE_SIZE)
+
+    @staticmethod
+    def generate_perlin_noise(width, height, scale=100.0, octaves=6, seed=None, is_debug=False):
+        noise_gen = PerlinNoise(octaves=octaves, seed=seed)
+
+        world = np.zeros((height, width))
+
+        for i in range(height):
+            for j in range(width):
+                world[i][j] = noise_gen([i / scale, j / scale])
+
+        # Display the Perlin noise sample
+        if is_debug:
+            plt.imshow(world, cmap='gray', interpolation='bilinear')
+            plt.colorbar()
+            plt.show()
+
+        return world
+
+
+if __name__ == "__main__":
+    # Generate Perlin noise
+    perlin_noise = WorldGeneration.generate_perlin_noise(256, 256, octaves=1, is_debug=True)
