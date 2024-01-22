@@ -78,7 +78,10 @@ class Camera(pygame.sprite.Group):
             self.display_surface.blit(game_object.sprite.image, sprite_offset)
 
     def rescale(self, scalar):
-        self.ground_surf = pygame.transform.scale_by(self.ground_surf, scalar)
+        new_area = pygame.Vector2(self.ground_surf.get_rect().width, self.ground_surf.get_rect().height)
+        self.ground_surf = pygame.transform.scale(self.ground_surf, scalar*new_area)
 
         for object in self.game_objects:
-            object.sprite.image = pygame.transform.scale_by(object.sprite.image, scalar)
+            image = object.sprite.image
+            new_area = pygame.Vector2(image.get_rect().width, image.get_rect().height)
+            object.sprite.image = pygame.transform.scale(image, scalar*new_area)
