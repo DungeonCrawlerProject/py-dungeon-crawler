@@ -53,6 +53,14 @@ if __name__ == "__main__":
     while engine.is_running():
         engine.screen.fill((0, 0, 0))
 
+        window_size = pygame.display.get_window_size()
+        if window_size != (engine.screen_width, engine.screen_height):
+            print("hit")
+            scalar = window_size[0]/engine.screen_width
+            cam.rescale(scalar)
+            engine.screen_width = window_size[0]
+            engine.screen_height = window_size[1]
+
         # Get the state of all keys
         keys = pygame.key.get_pressed()
         mouse_buttons = pygame.mouse.get_pressed()

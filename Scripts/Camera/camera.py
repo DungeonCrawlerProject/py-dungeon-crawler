@@ -76,3 +76,9 @@ class Camera(pygame.sprite.Group):
 
             # Draws the player last
             self.display_surface.blit(game_object.sprite.image, sprite_offset)
+
+    def rescale(self, scalar):
+        self.ground_surf = pygame.transform.scale_by(self.ground_surf, scalar)
+
+        for object in self.game_objects:
+            object.sprite.image = pygame.transform.scale_by(object.sprite.image, scalar)
