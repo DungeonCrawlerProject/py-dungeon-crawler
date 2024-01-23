@@ -12,6 +12,7 @@ from Scripts.Engine.Engine import GameEngine
 from Scripts.Camera.camera import Camera
 from Scripts.Player.player import Player
 from Scripts.UI.hud import HUD
+from Scripts.UI.options import Options
 from Scripts.WorldGeneration.world_generation import WorldGeneration
 
 if __name__ == "__main__":
@@ -43,6 +44,7 @@ if __name__ == "__main__":
         engine.screen_height // 2 - player_size // 2
     )
     player_hud = HUD(player)
+    options_menu = Options(engine)
 
     enemy = Enemy(initial_position=pygame.Vector2(100, 100))
     cam.game_objects.append(enemy)
@@ -84,6 +86,9 @@ if __name__ == "__main__":
 
         player_hud.update()
         player_hud.draw(engine.screen)
+
+        if keys[pygame.K_ESCAPE]:
+            options_menu.draw(engine.screen)
 
         engine.tick()
 

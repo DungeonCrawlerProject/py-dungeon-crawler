@@ -32,7 +32,7 @@ class HUD:
     def draw(self, screen) -> None:
         """
         Updates all graphics for the hud
-        :param screen: The pymunk screen
+        :param screen: The pygame screen
         """
 
         self.health_bar.draw(screen)
