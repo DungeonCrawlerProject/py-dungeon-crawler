@@ -1,0 +1,6 @@
+{
+    "name": "ocean",
+    "tile_set": "Sprites/BiomeTileSheets/Ocean.png",
+    "points_of_interest": [],
+    "environment_objects": []
+}

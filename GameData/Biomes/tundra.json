@@ -1,0 +1,6 @@
+{
+    "name": "tundra",
+    "tile_set": "Sprites/BiomeTileSheets/tundra.png",
+    "points_of_interest": [],
+    "environment_objects": []
+}
