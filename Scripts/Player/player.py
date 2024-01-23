@@ -167,12 +167,12 @@ class Player:
         mov_dir = game_controls.get_movement_vector(keys)
 
         # Default down
-        if not (keys[pygame.K_w] or keys[pygame.K_a] or keys[pygame.K_s] or keys[pygame.K_d]):
+        if not any(keys[key] for key in game_controls.key_movement):
             mov_dir.x, mov_dir.y = self._memory_attack_angle.x, self._memory_attack_angle.y
         else:
             self._memory_attack_angle.x, self._memory_attack_angle.y = mov_dir.x, mov_dir.y
 
-        return math.degrees(math.atan2(mov_dir.x, -mov_dir.y))
+        return math.degrees(math.atan2(mov_dir.x, mov_dir.y))
 
     def add_camera(self, camera):
         """

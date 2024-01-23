@@ -36,16 +36,9 @@ class SprintingState(IPlayerState):
         :param keys: The keys from pygame to determine direction
         """
 
-        movement_input = pygame.Vector2(0, 0)
-
-        if keys[pygame.K_w]:
-            movement_input.y = -1
-        if keys[pygame.K_s]:
-            movement_input.y = 1
-        if keys[pygame.K_a]:
-            movement_input.x = -1
-        if keys[pygame.K_d]:
-            movement_input.x = 1
+        # Create an instance of GameControls
+        game_controls = GameControls()
+        movement_input = game_controls.get_movement_vector(keys)
 
         # Take max of that and 1 to prevent zero division error
         mag = math.sqrt(movement_input.x ** 2 + movement_input.y ** 2)
