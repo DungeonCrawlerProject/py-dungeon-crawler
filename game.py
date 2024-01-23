@@ -55,15 +55,18 @@ if __name__ == "__main__":
 
         window_size = pygame.display.get_window_size()
         if window_size != (engine.screen_width, engine.screen_height):
-            if window_size[0] > engine.min_window_width and window_size[1] > engine.min_window_height:
-                print("hit")
-                scalar = window_size[0]/engine.screen_width
+            if window_size[0] > engine.min_window_width:
+                scalar = window_size[0]/engine.min_window_width
+                print(scalar)
                 cam.rescale(scalar)
                 engine.screen_width = window_size[0]
                 engine.screen_height = window_size[1]
-            elif window_size[0] < engine.min_window_width and window_size[1] < engine.min_window_height:
-                print(window_size[0], engine.min_window_width)
-                print(window_size[1], engine.min_window_height)
+            if window_size[0] < engine.min_window_width and window_size[1] < engine.min_window_height:
+                scalar = 1
+                print(scalar)
+                cam.rescale(scalar)
+                engine.screen_width = engine.min_window_width
+                engine.screen_height = engine.min_window_height
                 engine.screen = pygame.display.set_mode((engine.min_window_width, engine.min_window_height), pygame.RESIZABLE)
 
         # Get the state of all keys

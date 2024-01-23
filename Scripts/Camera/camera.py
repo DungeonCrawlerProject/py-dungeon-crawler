@@ -21,6 +21,7 @@ class Camera(pygame.sprite.Group):
         super().__init__()
 
         self.position = None
+        self.position_scalar = 1
 
         self.display_surface = pygame.display.get_surface()
 
@@ -28,6 +29,7 @@ class Camera(pygame.sprite.Group):
         self.center = pygame.Vector2(_x // 2, _y // 2)
 
         self.ground_surf = world.ground
+        self.ground_surf_scaled = self.ground_surf
         self.ground_rect = self.ground_surf.get_rect(topleft=(0, 0))
         self.offset = pygame.Vector2(0, 0)
         self.game_objects = world.game_objects
@@ -60,10 +62,10 @@ class Camera(pygame.sprite.Group):
         """
 
         # Ground
-        ground_offset = self.center - self.position
+        ground_offset = self.position_scalar * (self.center - self.position)
 
         # Draws the ground first
-        self.display_surface.blit(self.ground_surf, ground_offset)
+        self.display_surface.blit(self.ground_surf_scaled, ground_offset)
 
         # Env Player and Enemies
         for game_object in sorted(self.game_objects, key= lambda game_object: game_object.position[1]):
@@ -72,16 +74,18 @@ class Camera(pygame.sprite.Group):
             if not game_object.sprite.visible:
                 continue
 
-            sprite_offset = game_object.position + ground_offset
+            sprite_offset = (self.position_scalar * pygame.Vector2(game_object.position)) + ground_offset
 
             # Draws the player last
             self.display_surface.blit(game_object.sprite.image, sprite_offset)
 
     def rescale(self, scalar):
-        new_area = pygame.Vector2(self.ground_surf.get_rect().width, self.ground_surf.get_rect().height)
-        self.ground_surf = pygame.transform.scale(self.ground_surf, scalar*new_area)
+        area = pygame.Vector2(self.ground_surf.get_rect().width, self.ground_surf.get_rect().height)
+        self.ground_surf_scaled = pygame.transform.scale(self.ground_surf, scalar * area)
 
         for object in self.game_objects:
-            image = object.sprite.image
-            new_area = pygame.Vector2(image.get_rect().width, image.get_rect().height)
-            object.sprite.image = pygame.transform.scale(image, scalar*new_area)
+            image = object.sprite.original_image
+            area = pygame.Vector2(image.get_rect().width, image.get_rect().height)
+            object.sprite.image = pygame.transform.scale(image, scalar * area)
+        
+        self.position_scalar = scalar

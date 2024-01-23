@@ -121,7 +121,6 @@ class Player:
 
         # Draw the current frame at the specified positions
         if render_frame is not None:
-            print(render_frame)
             self.player_objects["slash_sprite"].sprite.change_frame(render_frame)
         else:
             self.player_objects["slash_sprite"].sprite.visible = False
