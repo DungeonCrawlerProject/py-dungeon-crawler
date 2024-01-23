@@ -32,7 +32,9 @@ class WorldGeneration:
             "forest": Biome.from_json("GameData/Biomes/forest.json"),
             "mountain_hills": Biome.from_json("GameData/Biomes/mountain_hills.json"),
             "planes": Biome.from_json("GameData/Biomes/planes.json"),
+            "taiga": Biome.from_json("GameData/Biomes/taiga.json"),
             "tundra": Biome.from_json("GameData/Biomes/tundra.json"),
+            "ocean": Biome.from_json("GameData/Biomes/ocean.json"),
         }
 
         self.generate_biomes(self.active_biomes)
@@ -41,11 +43,14 @@ class WorldGeneration:
 
         self.generate_paths(16)
 
-        for i in range(100):
+        for i in range(1000):
             _pos = (
                 random.randrange(0, self.ground.get_rect().right),
                 random.randrange(0, self.ground.get_rect().bottom),
             )
+
+            if self.set_biome_by_intensity(self.noise_map[_pos[1]//self.TILE_SIZE][_pos[0]//self.TILE_SIZE], self.active_biomes) != self.active_biomes["forest"]:
+                continue
             self.game_objects.append(GameObject(_pos, PNGSprite().make_single_sprite("Sprites/Tree.png")))
 
     # TODO
@@ -62,7 +67,7 @@ class WorldGeneration:
     def generate_biomes(self, biome_types: Dict[str, Biome]) -> None:
 
         # Generate Perlin noise
-        perlin_noise = WorldGeneration.generate_perlin_noise(256, 128, octaves=4, is_debug=True)
+        perlin_noise = self.generate_perlin_noise(256, 128, octaves=3, is_debug=False)
         self.noise_map = perlin_noise
 
         x_size, y_size = perlin_noise.shape
@@ -251,14 +256,19 @@ class WorldGeneration:
         :param biome_dict: The dictionary containing the biome information
         :return: The Biome type
         """
-        if 0.35 > val >= 0:
+
+        if 0.25 > val >= 0:
             return biome_dict["forest"]
+        elif 0.35 > val >= 0.25:
+            return biome_dict["taiga"]
         elif val >= 0.45:
             return biome_dict["tundra"]
         elif 0.45 > val >= 0.35:
             return biome_dict["mountain_hills"]
-        elif val < 0:
+        elif -0.4 <= val < 0:
             return biome_dict["planes"]
+        elif val < -0.4:
+            return biome_dict["ocean"]
 
     @staticmethod
     def check_cycle(edge, connected_vertices):
