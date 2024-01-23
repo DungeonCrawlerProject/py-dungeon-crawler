@@ -9,6 +9,7 @@ import time
 
 import pygame
 
+from GameData.game_controls import GameControls
 from Scripts.Player.PlayerStateMachine.player_state import IPlayerState
 
 
@@ -22,9 +23,12 @@ class DodgeState(IPlayerState):
 
         dt = time.perf_counter() - self.player.cooldown_timers.dodge_cooldown_timer
 
-        if keys[pygame.K_SPACE] and dt >= self.player.stats.dodge_cooldown:
+        # Create an instance of GameControls
+        game_controls = GameControls()
+
+        if keys[game_controls.key_dodge] and dt >= self.player.stats.dodge_cooldown:
             self.dodge(keys)
-        elif keys[pygame.K_w] or keys[pygame.K_a] or keys[pygame.K_s] or keys[pygame.K_d]:
+        elif any(keys[key] for key in game_controls.key_movement):
             self.player.state = self.player.moving_state_inst
         else:
             self.player.state = self.player.idle_state_inst

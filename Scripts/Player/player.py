@@ -12,6 +12,7 @@ from typing import (
 
 import pygame
 
+from GameData.game_controls import GameControls
 from Scripts.Player.PlayerStateMachine.PlayerStates.dodge_state import DodgeState
 from Scripts.Player.PlayerStateMachine.PlayerStates.idle_state import IdleState
 from Scripts.Player.PlayerStateMachine.PlayerStates.moving_state import MovingState
@@ -93,6 +94,8 @@ class Player:
         :param mouse_pos: The position of the mouse
         """
 
+        game_controls = GameControls()
+
         # Check if the player is dead
         if self.stats.current_health <= 0:
             self.kill_player()
@@ -159,16 +162,9 @@ class Player:
         :return: The angle is degrees
         """
 
-        mov_dir = pygame.Vector2(0, 0)
-
-        if keys[pygame.K_w]:
-            mov_dir.y = 1
-        if keys[pygame.K_s]:
-            mov_dir.y = -1
-        if keys[pygame.K_a]:
-            mov_dir.x = -1
-        if keys[pygame.K_d]:
-            mov_dir.x = 1
+        # Create an instance of GameControls
+        game_controls = GameControls()
+        mov_dir = game_controls.get_movement_vector(keys)
 
         # Default down
         if not (keys[pygame.K_w] or keys[pygame.K_a] or keys[pygame.K_s] or keys[pygame.K_d]):

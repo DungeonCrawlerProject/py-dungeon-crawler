@@ -6,6 +6,7 @@ Last Modified: 01/04/2024
 
 import pygame
 
+from GameData.game_controls import GameControls
 from Scripts.Player.PlayerStateMachine.player_state import IPlayerState
 
 
@@ -16,9 +17,12 @@ class IdleState(IPlayerState):
         :param keys: The pygame input keys
         """
 
-        if keys[pygame.K_w] or keys[pygame.K_a] or keys[pygame.K_s] or keys[pygame.K_d]:
+        # Create an instance of GameControls
+        game_controls = GameControls()
+
+        if any(keys[key] for key in game_controls.key_movement):
             self.player.state = self.player.moving_state_inst
-        elif keys[pygame.K_LSHIFT]:
+        elif keys[game_controls.key_sprint]:
             self.player.state = self.player.sprinting_state_inst
         else:
             self.player.stats.current_stamina += 2.0

@@ -8,6 +8,7 @@ import math
 
 import pygame
 
+from GameData.game_controls import GameControls
 from Scripts.Player.PlayerStateMachine.player_state import IPlayerState
 
 
@@ -19,7 +20,10 @@ class SprintingState(IPlayerState):
         :param keys: The pygame input keys
         """
 
-        if not keys[pygame.K_LSHIFT]:
+        # Create an instance of GameControls
+        game_controls = GameControls()
+
+        if not keys[game_controls.key_sprint]:
             self.player.state = self.player.idle_state_inst
         else:
             self.player.stats.current_stamina -= 2
