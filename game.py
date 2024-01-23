@@ -7,7 +7,7 @@ Last Modified: 12/31/2023
 import pygame
 
 from Scripts.Enemy.enemy import Enemy
-from Scripts.Engine.Engine import GameEngine
+from Scripts.Engine.engine import GameEngine
 
 from Scripts.Camera.camera import Camera
 from Scripts.Player.player import Player
@@ -43,8 +43,7 @@ if __name__ == "__main__":
         engine.screen_width // 2 - player_size // 2,
         engine.screen_height // 2 - player_size // 2
     )
-    player_hud = HUD(player)
-    options_menu = Options(engine)
+    player_hud = HUD(player, engine)
 
     enemy = Enemy(initial_position=pygame.Vector2(100, 100))
     cam.game_objects.append(enemy)
@@ -84,11 +83,8 @@ if __name__ == "__main__":
         cam.center_player(player, .1)
         cam.sorted_draw()
 
-        player_hud.update()
+        player_hud.update(keys)
         player_hud.draw(engine.screen)
-
-        if keys[pygame.K_ESCAPE]:
-            options_menu.draw(engine.screen)
 
         engine.tick()
 

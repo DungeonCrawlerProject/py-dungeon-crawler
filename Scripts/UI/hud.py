@@ -5,14 +5,17 @@ Last Modified: 12/31/23
 """
 
 from Scripts.Player.player import Player
+from Scripts.Engine.engine import GameEngine
 from Scripts.UI.status_bar import StatusBar
+from Scripts.UI.options import Options
 
 
 class HUD:
 
     def __init__(
             self,
-            player: Player
+            player: Player,
+            engine: GameEngine
     ) -> None:
         """
         The HUD is a container for all GUI elements
@@ -21,13 +24,15 @@ class HUD:
         self.player = player
         self.health_bar = StatusBar(50, 20, 200, 20, (255, 0, 0))
         self.stamina_bar = StatusBar(50, 50, 200, 20, (255, 255, 0))
+        self.options_menu = Options(engine)
 
-    def update(self) -> None:
+    def update(self, keys) -> None:
         """
         Updates the HUD using the attributes fed into the constructor
         """
         self.health_bar.update(100.0 * self.player.stats.current_health / self.player.stats.max_health)
         self.stamina_bar.update(100.0 * self.player.stats.current_stamina / self.player.stats.max_stamina)
+        self.options_menu.update(keys)
 
     def draw(self, screen) -> None:
         """
