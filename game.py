@@ -83,7 +83,7 @@ if __name__ == "__main__":
         cam.center_player(player, .1)
         cam.sorted_draw()
 
-        player_hud.update(keys)
+        player_hud.update(keys, mouse_buttons, mouse_pos)
         player_hud.draw(engine.screen)
 
         engine.tick()

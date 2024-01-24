@@ -10,3 +10,6 @@ class Button:
     
     def draw(self, screen) -> None:
         pygame.draw.rect(screen, (211, 211, 211), (self.x, self.y, self.width, self. height))
+
+    def click(self):
+        self.func()
