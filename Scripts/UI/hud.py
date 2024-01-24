@@ -7,7 +7,7 @@ Last Modified: 12/31/23
 from Scripts.Player.player import Player
 from Scripts.Engine.engine import GameEngine
 from Scripts.UI.status_bar import StatusBar
-from Scripts.UI.options import Options
+from Scripts.UI.esc_menu import EscMenu
 
 
 class HUD:
@@ -24,7 +24,7 @@ class HUD:
         self.player = player
         self.health_bar = StatusBar(50, 20, 200, 20, (255, 0, 0))
         self.stamina_bar = StatusBar(50, 50, 200, 20, (255, 255, 0))
-        self.options_menu = Options(engine)
+        self.options_menu = EscMenu(engine)
 
     def update(self, keys) -> None:
         """
@@ -42,3 +42,4 @@ class HUD:
 
         self.health_bar.draw(screen)
         self.stamina_bar.draw(screen)
+        self.options_menu.draw(screen)

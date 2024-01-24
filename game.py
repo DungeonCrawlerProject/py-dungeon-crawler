@@ -12,7 +12,7 @@ from Scripts.Engine.engine import GameEngine
 from Scripts.Camera.camera import Camera
 from Scripts.Player.player import Player
 from Scripts.UI.hud import HUD
-from Scripts.UI.options import Options
+from Scripts.UI.esc_menu import EscMenu
 from Scripts.WorldGeneration.world_generation import WorldGeneration
 
 if __name__ == "__main__":
