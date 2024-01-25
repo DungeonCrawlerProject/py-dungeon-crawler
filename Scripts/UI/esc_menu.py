@@ -6,8 +6,11 @@ from Scripts.UI.button import Button
 class EscMenu:
     def __init__(self, engine: GameEngine):
         self.engine = engine
-        self.width = engine.screen_width * 0.40
-        self.height = self.width * 1.3
+        self.background = pygame.image.load('Sprites/EscMenu/EscMenuBackround.png')
+        scalar = self.engine.screen_width/self.engine.min_window_width
+        self.scaled_background = pygame.transform.scale_by(self.background, scalar)
+        self.width = self.scaled_background.get_rect().width
+        self.height = self.scaled_background.get_rect().height
         self.x = engine.screen_width * 0.30
         self.y = (engine.screen_height - self.height) / 2
         self.fit_buttons()
@@ -30,30 +33,33 @@ class EscMenu:
             if mouse_buttons[0]:
                 button.click()
 
-        self.engine = self.engine
-        self.width = self.engine.screen_width * 0.40
-        self.height = self.width * 1.3
+        scalar = self.engine.screen_width/self.engine.min_window_width
+        self.scaled_background = pygame.transform.scale_by(self.background, scalar)
+        self.width = self.scaled_background.get_rect().width
+        self.height = self.scaled_background.get_rect().height
         self.x = self.engine.screen_width * 0.30
         self.y = (self.engine.screen_height - self.height) / 2
         self.fit_buttons()
 
-    def draw(self, screen):
+    def draw(self, screen: pygame.Surface):
         if self.in_menu:
-            pygame.draw.rect(
-                screen, (100, 100, 100), (self.x, self.y, self.width, self.height)
-            )
+            screen_center = screen.get_rect().center
+            background_center = self.scaled_background.get_rect().center
+            pos = tuple(map(lambda x, y: x - y, screen_center, background_center))
+            print(pos)
+            screen.blit(self.scaled_background, pos)
             for button in self.buttons:
                 button.draw(screen)
 
     def fit_buttons(self):
         self.buttons = []
-        button_width = self.width * 0.9
-        button_height = self.height * 0.15
+        button_width = self.width * 0.7
+        button_height = self.height * 0.1
         num_buttons = 4
-        spacer = (self.height - (4 * button_height)) / (4 + 1)
+        spacer = (self.height - (num_buttons * button_height)) / (num_buttons + 1)
         y = self.y + spacer
         resume = Button(
-            x=self.x + self.width * 0.05,
+            x=self.x + self.width * .15,
             y=y,
             width=button_width,
             height=button_height,
@@ -61,7 +67,7 @@ class EscMenu:
         )
         y += button_height + spacer
         settings = Button(
-            x=self.x + self.width * 0.05,
+            x=self.x + self.width * 0.15,
             y=y,
             width=button_width,
             height=button_height,
@@ -69,7 +75,7 @@ class EscMenu:
         )
         y += button_height + spacer
         quit_menu = Button(
-            x=self.x + self.width * 0.05,
+            x=self.x + self.width * 0.15,
             y=y,
             width=button_width,
             height=button_height,
@@ -77,7 +83,7 @@ class EscMenu:
         )
         y += button_height + spacer
         quit_game = Button(
-            x=self.x + self.width * 0.05,
+            x=self.x + self.width * 0.15,
             y=y,
             width=button_width,
             height=button_height,
@@ -89,7 +95,7 @@ class EscMenu:
         self.buttons.append(quit_game)
 
     def resume(self):
-        print("resume")
+        self.in_menu = False
 
     def open_settings(self):
         print("settings")
@@ -98,4 +104,4 @@ class EscMenu:
         print("quit to menu")
 
     def quit_game(self):
-        print("quit game")
+        self.engine.quit()
