@@ -7,13 +7,7 @@ class EscMenu:
     def __init__(self, engine: GameEngine):
         self.engine = engine
         self.background = pygame.image.load('Sprites/EscMenu/EscMenuBackround.png')
-        scalar = self.engine.screen_width/self.engine.min_window_width
-        self.scaled_background = pygame.transform.scale_by(self.background, scalar)
-        self.width = self.scaled_background.get_rect().width
-        self.height = self.scaled_background.get_rect().height
-        self.x = engine.screen_width * 0.30
-        self.y = (engine.screen_height - self.height) / 2
-        self.fit_buttons()
+        self.size_menu()
         self.in_menu = False
 
     def update(self, keys, mouse_buttons, mouse_pos):
@@ -33,13 +27,7 @@ class EscMenu:
             if mouse_buttons[0]:
                 button.click()
 
-        scalar = self.engine.screen_width/self.engine.min_window_width
-        self.scaled_background = pygame.transform.scale_by(self.background, scalar)
-        self.width = self.scaled_background.get_rect().width
-        self.height = self.scaled_background.get_rect().height
-        self.x = self.engine.screen_width * 0.30
-        self.y = (self.engine.screen_height - self.height) / 2
-        self.fit_buttons()
+        self.size_menu()
 
     def draw(self, screen: pygame.Surface):
         if self.in_menu:
@@ -51,6 +39,15 @@ class EscMenu:
             for button in self.buttons:
                 button.draw(screen)
 
+    def size_menu(self):
+        scalar = self.engine.screen_width/self.engine.min_window_width
+        self.scaled_background = pygame.transform.scale_by(self.background, scalar)
+        self.width = self.scaled_background.get_rect().width
+        self.height = self.scaled_background.get_rect().height
+        self.x = self.engine.screen_width * 0.30
+        self.y = (self.engine.screen_height - self.height) / 2
+        self.fit_buttons()
+
     def fit_buttons(self):
         self.buttons = []
         button_width = self.width * 0.7
@@ -59,6 +56,7 @@ class EscMenu:
         spacer = (self.height - (num_buttons * button_height)) / (num_buttons + 1)
         y = self.y + spacer
         resume = Button(
+            text="RESUME",
             x=self.x + self.width * .15,
             y=y,
             width=button_width,
@@ -67,6 +65,7 @@ class EscMenu:
         )
         y += button_height + spacer
         settings = Button(
+            text="SETTINGS",
             x=self.x + self.width * 0.15,
             y=y,
             width=button_width,
@@ -75,6 +74,7 @@ class EscMenu:
         )
         y += button_height + spacer
         quit_menu = Button(
+            text="QUIT TO MENU",
             x=self.x + self.width * 0.15,
             y=y,
             width=button_width,
@@ -83,6 +83,7 @@ class EscMenu:
         )
         y += button_height + spacer
         quit_game = Button(
+            text="QUIT GAME",
             x=self.x + self.width * 0.15,
             y=y,
             width=button_width,

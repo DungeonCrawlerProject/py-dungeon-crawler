@@ -15,7 +15,7 @@ class HUD:
     def __init__(
             self,
             player: Player,
-            engine: GameEngine
+            engine: GameEngine,
     ) -> None:
         """
         The HUD is a container for all GUI elements
