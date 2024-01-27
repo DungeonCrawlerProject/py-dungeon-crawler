@@ -11,16 +11,18 @@ from Scripts.Player.PlayerStateMachine.player_state import IPlayerState
 
 
 class IdleState(IPlayerState):
-    def update(self, keys) -> None:
+
+    def update(self, keys, controller) -> None:
         """
         Updates the players state, includes player movement and state switching
         :param keys: The pygame input keys
+        :param controller: The controller instance
         """
 
         # Create an instance of GameControls
         game_controls = GameControls()
 
-        if any(keys[key] for key in game_controls.key_movement):
+        if game_controls.get_movement_vector(keys, controller) != pygame.Vector2(0, 0):
             self.player.state = self.player.moving_state_inst
         elif keys[game_controls.key_sprint]:
             self.player.state = self.player.sprinting_state_inst

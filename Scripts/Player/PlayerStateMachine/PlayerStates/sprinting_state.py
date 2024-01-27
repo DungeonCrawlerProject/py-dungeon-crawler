@@ -14,10 +14,11 @@ from Scripts.Player.PlayerStateMachine.player_state import IPlayerState
 
 class SprintingState(IPlayerState):
 
-    def update(self, keys) -> None:
+    def update(self, keys, controller) -> None:
         """
         Updates the players state, includes player movement and state switching
         :param keys: The pygame input keys
+        :param controller: The controller instance
         """
 
         # Create an instance of GameControls
@@ -28,17 +29,18 @@ class SprintingState(IPlayerState):
         else:
             self.player.stats.current_stamina -= 2
             self.player.stats.current_stamina = max(self.player.stats.current_stamina, 0)
-            self.move(keys)
+            self.move(keys, controller)
 
-    def move(self, keys) -> None:
+    def move(self, keys, controller) -> None:
         """
         Moves the player quickly
         :param keys: The keys from pygame to determine direction
+        :param controller: The controller instance
         """
 
         # Create an instance of GameControls
         game_controls = GameControls()
-        movement_input = game_controls.get_movement_vector(keys)
+        movement_input = game_controls.get_movement_vector(keys, controller)
 
         # Take max of that and 1 to prevent zero division error
         mag = math.sqrt(movement_input.x ** 2 + movement_input.y ** 2)

@@ -19,6 +19,8 @@ class GameControls:
         :param config_file_path: The relative path from the game.py file
         """
 
+        self.CONTROLLER_DEAD_ZONE = 0.15
+
         # Define Pygame key constants for keyboard
         self.pygame_key_mapping_keyboard = {
             'A': pygame.K_a,
@@ -53,6 +55,21 @@ class GameControls:
             'SHIFT_LEFT': pygame.K_LSHIFT
         }
 
+        # Define Pygame key constants for controller
+        self.pygame_key_mapping_controller = {
+            'A': 0,
+            'B': 1,
+            'X': 2,
+            'Y': 3,
+            'LB': 4,
+            'RB': 5,
+            'SELECT': 6,
+            'START': 7,
+            'L3': 8,
+            'R3': 9,
+            'HOME': 10
+        }
+
         # Read INI file
         self.config = configparser.ConfigParser()
         self.config.read(config_file_path)
@@ -68,14 +85,28 @@ class GameControls:
         self.key_move_right = self.get_pygame_key('keyboard', 'move_right')
         self.key_movement = [self.key_move_up, self.key_move_down, self.key_move_left, self.key_move_right]
 
-    def get_movement_vector(self, keys) -> pygame.Vector2:
+        self.btn_dodge = self.get_pygame_btn('controller', 'dodge')
+        self.btn_sprint = self.get_pygame_btn('controller', 'sprint')
+        self.btn_attack = self.get_pygame_btn('controller', 'attack')
+
+    def check_user_input(self, keys, controller):
+        ...
+
+    def get_movement_vector(self, keys, controller) -> pygame.Vector2:
         """
         Returns the movement vector.
         :param keys: The pygame keyboard reading
+        :param controller: The controller instance
         :return: The movement vector
         """
 
         mov_dir = pygame.Vector2(0, 0)
+
+        if controller:
+            if abs(controller.get_axis(0)) > self.CONTROLLER_DEAD_ZONE:
+                mov_dir.x = controller.get_axis(0)
+            if abs(controller.get_axis(1)) > self.CONTROLLER_DEAD_ZONE:
+                mov_dir.y = controller.get_axis(1)
 
         if keys[self.key_move_up]:
             mov_dir.y = -1
@@ -100,3 +131,16 @@ class GameControls:
         :return: The key-bound statement
         """
         return self.pygame_key_mapping_keyboard.get(self.config[section].get(key, 'default_value'), pygame.K_UNKNOWN)
+
+    def get_pygame_btn(
+            self,
+            section: str,
+            key: str
+    ) -> int:
+        """
+        Returns the int value for action.
+        :param section: The header for the ini subsection
+        :param key: The key to use to extract the value
+        :return: The key-bound statement
+        """
+        return self.pygame_key_mapping_controller.get(self.config[section].get(key, 'default_value'), pygame.K_UNKNOWN)

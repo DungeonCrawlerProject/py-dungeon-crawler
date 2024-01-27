@@ -21,10 +21,11 @@ class IPlayerState(ABC):
         self.player = player
 
     @abstractmethod
-    def update(self, keys) -> None:
+    def update(self, keys, controller) -> None:
         """
         Updates the players state, includes player movement and state switching
         :param keys: The pygame input keys
+        :param controller: The controller instance
         """
         pass
 

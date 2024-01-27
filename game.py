@@ -50,6 +50,13 @@ if __name__ == "__main__":
     # TODO THIS IS A BAD PRACTICE
     player.known_enemies.append(enemy)
 
+    # Initialize the first connected controller
+    controller = None
+    for i in range(pygame.joystick.get_count()):
+        controller = pygame.joystick.Joystick(i)
+        controller.init()
+        break  # Initialize only the first connected controller
+
     while engine.is_running():
         engine.screen.fill((0, 0, 0))
 
@@ -59,7 +66,7 @@ if __name__ == "__main__":
         mouse_pos = pygame.mouse.get_pos()
 
         # Update the player based on the current state
-        player.update(keys, mouse_buttons, mouse_pos)
+        player.update(keys, mouse_buttons, mouse_pos, controller)
         enemy.watch(player)
         enemy.update()
 
