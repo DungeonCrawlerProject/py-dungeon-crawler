@@ -61,7 +61,7 @@ if __name__ == "__main__":
                 cam.rescale(scalar)
                 engine.screen_width = window_size[0]
                 engine.screen_height = window_size[1]
-            if window_size[0] < engine.min_window_width and window_size[1] < engine.min_window_height:
+            if window_size[0] <= engine.min_window_width and window_size[1] <= engine.min_window_height:
                 scalar = 1
                 cam.rescale(scalar)
                 engine.screen_width = engine.min_window_width

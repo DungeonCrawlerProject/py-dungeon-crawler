@@ -8,6 +8,7 @@ from Scripts.Player.player import Player
 from Scripts.Engine.engine import GameEngine
 from Scripts.UI.status_bar import StatusBar
 from Scripts.UI.esc_menu import EscMenu
+from Scripts.UI.settings_menu import SettingsMenu
 
 
 class HUD:
@@ -24,7 +25,8 @@ class HUD:
         self.player = player
         self.health_bar = StatusBar(50, 20, 200, 20, (255, 0, 0))
         self.stamina_bar = StatusBar(50, 50, 200, 20, (255, 255, 0))
-        self.options_menu = EscMenu(engine)
+        self.settings_menu = SettingsMenu(engine)
+        self.esc_menu = EscMenu(engine, self.settings_menu)
 
     def update(self, esc_down, mouse_button_down, mouse_pos) -> None:
         """
@@ -32,14 +34,15 @@ class HUD:
         """
         self.health_bar.update(100.0 * self.player.stats.current_health / self.player.stats.max_health)
         self.stamina_bar.update(100.0 * self.player.stats.current_stamina / self.player.stats.max_stamina)
-        self.options_menu.update(esc_down, mouse_button_down, mouse_pos)
+        self.esc_menu.update(esc_down, mouse_button_down, mouse_pos)
+        self.settings_menu.update(mouse_button_down, mouse_pos)
 
     def draw(self, screen) -> None:
         """
         Updates all graphics for the hud
         :param screen: The pygame screen
         """
-
         self.health_bar.draw(screen)
         self.stamina_bar.draw(screen)
-        self.options_menu.draw(screen)
+        self.esc_menu.draw(screen)
+        self.settings_menu.draw(screen)
