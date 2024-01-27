@@ -7,11 +7,12 @@ class Button:
         self.y = y
         self.width = width
         self.height = height
+        self.txt_color = (0, 0, 0)
         self.func = func
     
     def draw(self, screen) -> None:
         #pygame.draw.rect(screen, (211, 211, 211), (self.x, self.y, self.width, self. height))
-        self.draw_text(screen, self.text, self.height, (0, 0, 0))
+        self.draw_text(screen, self.text, self.height, self.txt_color)
 
 
     def draw_text(self, screen, text, size, color):

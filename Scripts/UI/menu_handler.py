@@ -8,7 +8,6 @@ class MenuHandler:
         self.current_menu = self.esc_menu
 
     def update_current(self, esc_down, mouse_button_down, mouse_pos):
-        print(self.current_menu)
         self.current_menu.update(esc_down, mouse_button_down, mouse_pos)
 
     def draw_current(self, screen):

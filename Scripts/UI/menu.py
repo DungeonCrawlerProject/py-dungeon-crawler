@@ -23,9 +23,13 @@ class Menu:
 
         for button in self.buttons:
             if mouse_pos[0] < button.x or mouse_pos[0] > button.x + button.width:
+                button.txt_color = (0, 0, 0)
                 continue
             if mouse_pos[1] < button.y or mouse_pos[1] > button.y + button.height:
+                button.txt_color = (0, 0, 0)
                 continue
+            if button.txt_color[0] < 65:
+                button.txt_color = tuple([x + 20 for x in button.txt_color])
             if mouse_button_down:
                 button.click()
         
