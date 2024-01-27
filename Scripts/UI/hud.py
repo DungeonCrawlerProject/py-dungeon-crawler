@@ -26,13 +26,13 @@ class HUD:
         self.stamina_bar = StatusBar(50, 50, 200, 20, (255, 255, 0))
         self.options_menu = EscMenu(engine)
 
-    def update(self, keys, mouse_buttons, mouse_pos) -> None:
+    def update(self, esc_down, mouse_button_down, mouse_pos) -> None:
         """
         Updates the HUD using the attributes fed into the constructor
         """
         self.health_bar.update(100.0 * self.player.stats.current_health / self.player.stats.max_health)
         self.stamina_bar.update(100.0 * self.player.stats.current_stamina / self.player.stats.max_stamina)
-        self.options_menu.update(keys, mouse_buttons, mouse_pos)
+        self.options_menu.update(esc_down, mouse_button_down, mouse_pos)
 
     def draw(self, screen) -> None:
         """
