@@ -108,6 +108,20 @@ class GameControls:
             if abs(controller.get_axis(1)) > self.CONTROLLER_DEAD_ZONE:
                 mov_dir.y = controller.get_axis(1)
 
+            if mov_dir.x > 0.33:
+                mov_dir.x = 1
+            elif 0.33 >= mov_dir.x >= - 0.33:
+                mov_dir.x = 0
+            elif -0.33 > mov_dir.x:
+                mov_dir.x = -1
+
+            if mov_dir.y > 0.33:
+                mov_dir.y = 1
+            elif 0.33 >= mov_dir.y >= - 0.33:
+                mov_dir.y = 0
+            elif -0.33 > mov_dir.y:
+                mov_dir.y = -1
+
         if keys[self.key_move_up]:
             mov_dir.y = -1
         if keys[self.key_move_down]:
