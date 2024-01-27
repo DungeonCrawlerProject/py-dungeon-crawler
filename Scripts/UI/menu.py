@@ -1,11 +1,12 @@
 import pygame
 from Scripts.Engine.engine import GameEngine
 from Scripts.UI.button import Button
-
+from Scripts.UI.menu_handler import MenuHandler
 
 class Menu:
-    def __init__(self, engine: GameEngine):
+    def __init__(self, engine: GameEngine, menu_handler: MenuHandler):
         self.engine = engine
+        self.menu_handler = menu_handler
         self.background = pygame.image.load("Sprites/EscMenu/EscMenuBackround.png")
         self.buttons = []
         self.size_menu()

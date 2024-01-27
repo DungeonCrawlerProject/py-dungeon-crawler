@@ -2,17 +2,21 @@ import pygame
 from Scripts.Engine.engine import GameEngine
 from Scripts.UI.button import Button
 from Scripts.UI.menu import Menu
+from Scripts.UI.menu_handler import MenuHandler
 
 class SettingsMenu(Menu):
-    def __init__(self, engine: GameEngine):
-        super().__init__(engine)
+    def __init__(self, engine: GameEngine, menu_handler: MenuHandler):
+        super().__init__(engine, menu_handler)
         self.add_buttons()
+        self.in_menu = True
         self.fullscreen = False
         self.resolution_scale = 1
         self.base_resolution = pygame.Vector2(480, 270)
         self.back_clicked = False
 
-    def update(self, mouse_button_down, mouse_pos):
+    def update(self, esc_down, mouse_button_down, mouse_pos):
+        print(self.in_menu)
+        print(self.back_clicked)
         if not self.in_menu and self.back_clicked:
             self.in_menu = True
         elif self.in_menu and self.back_clicked:
@@ -78,7 +82,7 @@ class SettingsMenu(Menu):
         else:
             self.fullscreen = True
             self.fullscreen_btn.text = "FULLSCREEN"
-            pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
+            pygame.display.set_mode((2256, 1504), pygame.FULLSCREEN)
     
     def resolution_cycle(self):
         self.resolution_scale += 1
@@ -97,4 +101,4 @@ class SettingsMenu(Menu):
                 self.resolution_btn.text = "RESOLUTION: 1920x1080"
 
     def go_back(self):
-        self.back_clicked = True
+        self.menu_handler.switch_menu(self.menu_handler.esc_menu)

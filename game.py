@@ -13,6 +13,9 @@ from Scripts.Camera.camera import Camera
 from Scripts.Player.player import Player
 from Scripts.UI.hud import HUD
 from Scripts.WorldGeneration.world_generation import WorldGeneration
+from Scripts.UI.menu_handler import MenuHandler
+from Scripts.UI.esc_menu import EscMenu
+from Scripts.UI.settings_menu import SettingsMenu
 
 if __name__ == "__main__":
 
@@ -27,6 +30,12 @@ if __name__ == "__main__":
 
     # Camera Setup
     cam = Camera(world)
+
+    # UI Setup
+    menu_handler = MenuHandler()
+    esc_menu = EscMenu(engine, menu_handler)
+    setting_menu = SettingsMenu(engine, menu_handler)
+    menu_handler.set_menus(esc_menu=esc_menu, setting_menu=setting_menu)
 
     # Player Setup
     player_size = 50
@@ -90,6 +99,9 @@ if __name__ == "__main__":
 
         cam.center_player(player, .1)
         cam.sorted_draw()
+
+        menu_handler.update_current(esc_down, mouse_button_down, mouse_pos)
+        menu_handler.draw_current(engine.screen)
 
         player_hud.update(esc_down, mouse_button_down, mouse_pos)
         player_hud.draw(engine.screen)

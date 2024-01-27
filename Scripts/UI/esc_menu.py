@@ -1,14 +1,13 @@
 from Scripts.Engine.engine import GameEngine
 from Scripts.UI.button import Button
 from Scripts.UI.menu import Menu
-from Scripts.UI.settings_menu import SettingsMenu
+from Scripts.UI.menu_handler import MenuHandler
 
 
 class EscMenu(Menu):
-    def __init__(self, engine: GameEngine, settings_menu: SettingsMenu):
-        super().__init__(engine)
+    def __init__(self, engine: GameEngine, menu_handler: MenuHandler):
+        super().__init__(engine, menu_handler)
         self.add_buttons()
-        self.settings_menu = settings_menu
 
     def add_buttons(self):
         self.buttons = []
@@ -62,8 +61,7 @@ class EscMenu(Menu):
         self.in_menu = False
 
     def open_settings(self):
-        self.in_menu = False
-        self.settings_menu.in_menu = True
+        self.menu_handler.switch_menu(self.menu_handler.setting_menu)
         
     def quit_to_menu(self):
         print("quit to menu")
