@@ -1,8 +1,9 @@
 """
 The GameControl Handler
 By: Sean McClanahan
-Last Modified: 01/22/2024
+Last Modified: 01/27/2024
 """
+from typing import Optional
 
 import pygame
 import configparser
@@ -18,6 +19,9 @@ class GameControls:
         Initializes the GameControls object
         :param config_file_path: The relative path from the game.py file
         """
+
+        self.input_key = None
+        self.input_btn = None
 
         self.CONTROLLER_DEAD_ZONE = 0.15
 
@@ -89,10 +93,23 @@ class GameControls:
         self.btn_sprint = self.get_pygame_btn('controller', 'sprint')
         self.btn_attack = self.get_pygame_btn('controller', 'attack')
 
+    def update_inputs(self, keys, controller):
+        """
+        :param keys: The pygame keyboard reading
+        :param controller: The controller instance
+        :return: The movement vector
+        """
+        self.input_key = keys
+        self.input_btn = controller
+
     def check_user_input(self, keys, controller):
         ...
 
-    def get_movement_vector(self, keys, controller) -> pygame.Vector2:
+    def get_movement_vector(
+            self,
+            keys: Optional = None,
+            controller: Optional = None
+    ) -> pygame.Vector2:
         """
         Returns the movement vector.
         :param keys: The pygame keyboard reading
@@ -100,22 +117,42 @@ class GameControls:
         :return: The movement vector
         """
 
+        if keys is None:
+            keys = self.input_key
+        if controller is None:
+            controller = self.input_btn
+
         mov_dir = pygame.Vector2(0, 0)
 
-        if controller:
+        if controller is not None:
             if abs(controller.get_axis(0)) > self.CONTROLLER_DEAD_ZONE:
                 mov_dir.x = controller.get_axis(0)
             if abs(controller.get_axis(1)) > self.CONTROLLER_DEAD_ZONE:
                 mov_dir.y = controller.get_axis(1)
 
-        if keys[self.key_move_up]:
-            mov_dir.y = -1
-        if keys[self.key_move_down]:
-            mov_dir.y = 1
-        if keys[self.key_move_left]:
-            mov_dir.x = -1
-        if keys[self.key_move_right]:
-            mov_dir.x = 1
+            if mov_dir.x > 0.33:
+                mov_dir.x = 1
+            elif 0.33 >= mov_dir.x >= - 0.33:
+                mov_dir.x = 0
+            elif -0.33 > mov_dir.x:
+                mov_dir.x = -1
+
+            if mov_dir.y > 0.33:
+                mov_dir.y = 1
+            elif 0.33 >= mov_dir.y >= - 0.33:
+                mov_dir.y = 0
+            elif -0.33 > mov_dir.y:
+                mov_dir.y = -1
+
+        if keys is not None:
+            if keys[self.key_move_up]:
+                mov_dir.y = -1
+            if keys[self.key_move_down]:
+                mov_dir.y = 1
+            if keys[self.key_move_left]:
+                mov_dir.x = -1
+            if keys[self.key_move_right]:
+                mov_dir.x = 1
 
         return mov_dir
 

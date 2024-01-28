@@ -1,11 +1,12 @@
 """
 The Entry File for the Dungeon Crawler Game
 By: Sean McClanahan
-Last Modified: 12/31/2023
+Last Modified: 01/27/2024
 """
 
 import pygame
 
+from GameData.game_controls import GameControls
 from Scripts.Enemy.enemy import Enemy
 from Scripts.Engine.Engine import GameEngine
 
@@ -22,7 +23,7 @@ if __name__ == "__main__":
     # Hide the mouse cursor
     # pygame.mouse.set_visible(False)
 
-    #World Gen
+    # World Gen
     world = WorldGeneration()
 
     # Camera Setup
@@ -55,7 +56,9 @@ if __name__ == "__main__":
     for i in range(pygame.joystick.get_count()):
         controller = pygame.joystick.Joystick(i)
         controller.init()
-        break  # Initialize only the first connected controller
+        break
+
+    game_controller = GameControls()
 
     while engine.is_running():
         engine.screen.fill((0, 0, 0))
@@ -65,8 +68,9 @@ if __name__ == "__main__":
         mouse_buttons = pygame.mouse.get_pressed()
         mouse_pos = pygame.mouse.get_pos()
 
+        game_controller.update_inputs(keys, controller)
         # Update the player based on the current state
-        player.update(keys, mouse_buttons, mouse_pos, controller)
+        player.update(game_controller, mouse_buttons, mouse_pos)
         enemy.watch(player)
         enemy.update()
 

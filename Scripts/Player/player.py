@@ -1,7 +1,7 @@
 """
 The player class
 By: Sean McClanahan and Nick Petruccelli
-Last Modified: 01/19/2024
+Last Modified: 01/27/2024
 """
 
 import math
@@ -83,19 +83,16 @@ class Player:
 
     def update(
             self,
-            keys: pygame.key.ScancodeWrapper,
+            game_controller: GameControls,
             mouse_buttons: Tuple[bool, bool, bool],
             mouse_pos: Optional[Tuple[float, float]],
-            controller
     ) -> None:
         """
         Updates the player object
-        :param keys: The keybindings
+        :param game_controller: The Game Controller Instance
         :param mouse_buttons: Booleans representing whether each button on a mouse is pressed.
         :param mouse_pos: The position of the mouse
         """
-
-        game_controls = GameControls()
 
         # Check if the player is dead
         if self.stats.current_health <= 0:
@@ -105,7 +102,7 @@ class Player:
         # Update State-machine and Sprite Based Hit-box
         self.sprite.rect.x, self.sprite.rect.y = self.position.xy
         self.player_objects["slash_sprite"].sprite.rect.x, self.player_objects["slash_sprite"].sprite.rect.y = self.position.xy
-        self.state.update(keys, controller)
+        self.state.update(game_controller)
 
         left_mouse, middle_mouse, right_mouse = mouse_buttons
 
@@ -140,7 +137,7 @@ class Player:
         target_angle = self.get_mouse_relative_angle(mouse_pos, self.relative_position)
 
         # Set Right and Left Angle Logic
-        self.left_angle = self.get_left_angle(keys, controller)
+        self.left_angle = self.get_left_angle(game_controller)
         self.right_angle += ROTATE_SPEED * math.sin(math.radians(target_angle - self.right_angle))
         self.right_angle %= 360
 
@@ -156,19 +153,18 @@ class Player:
             if self.sprite.rect.colliderect(enemy.sprite.rect):
                 self.take_damage(0.25)
 
-    def get_left_angle(self, keys, controller) -> float:
+    def get_left_angle(self, game_controller) -> float:
         """
         Returns the angle from WASD keyboard input
-        :param keys: Keyboard pygame key event
+        :param game_controller: The Game Controller Instance
         :return: The angle is degrees
         """
 
         # Create an instance of GameControls
-        game_controls = GameControls()
-        mov_dir = game_controls.get_movement_vector(keys, controller)
+        mov_dir = game_controller.get_movement_vector()
 
         # Default down
-        if not any(keys[key] for key in game_controls.key_movement):
+        if not any(game_controller.input_key[key] for key in game_controller.key_movement):
             mov_dir.x, mov_dir.y = self._memory_attack_angle.x, self._memory_attack_angle.y
         else:
             self._memory_attack_angle.x, self._memory_attack_angle.y = mov_dir.x, mov_dir.y

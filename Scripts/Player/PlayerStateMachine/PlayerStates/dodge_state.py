@@ -1,7 +1,7 @@
 """
 Dodge State
 By: Sean McClanahan
-Last Modified: 01/04/2024
+Last Modified: 01/27/2024
 """
 
 import math
@@ -13,43 +13,33 @@ from Scripts.Player.PlayerStateMachine.player_state import IPlayerState
 
 class DodgeState(IPlayerState):
 
-    def update(self, keys, controller) -> None:
+    def update(self, game_controller: GameControls) -> None:
         """
         Updates the players state, includes player movement and state switching
-        :param keys: The pygame input keys
-        :param controller: The controller instance
+        :param game_controller: The Game Controller Instance
         """
 
         dt = time.perf_counter() - self.player.cooldown_timers.dodge_cooldown_timer
 
-        # Create an instance of GameControls
-        game_controls = GameControls()
-
-
-
-        if (keys[game_controls.key_dodge] or controller.get_button(game_controls.btn_dodge)) and dt >= self.player.stats.dodge_cooldown:
-            self.dodge(keys, controller)
-        elif any(keys[key] for key in game_controls.key_movement):
+        if (game_controller.input_key[game_controller.key_dodge] or game_controller.input_btn.get_button(game_controller.btn_dodge)) and dt >= self.player.stats.dodge_cooldown:
+            self.dodge(game_controller)
+        elif any(game_controller.input_key[key] for key in game_controller.key_movement):
             self.player.state = self.player.moving_state_inst
         else:
             self.player.state = self.player.idle_state_inst
 
-    def dodge(self, keys, controller) -> None:
+    def dodge(self, game_controller: GameControls) -> None:
         """
         Performs a dodge
-        :param keys: The keys from pygame to determine direction
-        :param controller: The controller instance
+        :param game_controller: The Game Controller Instance
         """
 
         current_time = time.perf_counter()
         if current_time - self.player.cooldown_timers.dodge_cooldown_timer < self.player.stats.dodge_cooldown:
             return
 
-        # Create an instance of GameControls
-        game_controls = GameControls()
-
         # Use the movement input from the MovingState
-        movement_input = game_controls.get_movement_vector(keys, controller)
+        movement_input = game_controller.get_movement_vector()
 
         mag = math.sqrt(movement_input.x ** 2 + movement_input.y ** 2)
         mag = max(1.0, mag)

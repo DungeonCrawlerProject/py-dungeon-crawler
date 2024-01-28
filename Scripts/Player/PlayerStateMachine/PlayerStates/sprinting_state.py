@@ -1,12 +1,10 @@
 """
 Sprint State
 By: Sean McClanahan
-Last Modified: 01/04/2024
+Last Modified: 01/27/2024
 """
 
 import math
-
-import pygame
 
 from GameData.game_controls import GameControls
 from Scripts.Player.PlayerStateMachine.player_state import IPlayerState
@@ -14,33 +12,27 @@ from Scripts.Player.PlayerStateMachine.player_state import IPlayerState
 
 class SprintingState(IPlayerState):
 
-    def update(self, keys, controller) -> None:
+    def update(self, game_controller: GameControls) -> None:
         """
         Updates the players state, includes player movement and state switching
-        :param keys: The pygame input keys
-        :param controller: The controller instance
+        :param game_controller: The Game Controller Instance
         """
 
-        # Create an instance of GameControls
-        game_controls = GameControls()
-
-        if not keys[game_controls.key_sprint]:
+        if not game_controller.input_key[game_controller.key_sprint]:
             self.player.state = self.player.idle_state_inst
         else:
             self.player.stats.current_stamina -= 2
             self.player.stats.current_stamina = max(self.player.stats.current_stamina, 0)
-            self.move(keys, controller)
+            self.move(game_controller)
 
-    def move(self, keys, controller) -> None:
+    def move(self, game_controller: GameControls) -> None:
         """
         Moves the player quickly
-        :param keys: The keys from pygame to determine direction
-        :param controller: The controller instance
+        :param game_controller: The Game Controller Instance
         """
 
         # Create an instance of GameControls
-        game_controls = GameControls()
-        movement_input = game_controls.get_movement_vector(keys, controller)
+        movement_input = game_controller.get_movement_vector()
 
         # Take max of that and 1 to prevent zero division error
         mag = math.sqrt(movement_input.x ** 2 + movement_input.y ** 2)

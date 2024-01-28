@@ -1,7 +1,7 @@
 """
 Idle State
 By: Sean McClanahan
-Last Modified: 01/04/2024
+Last Modified: 01/27/2024
 """
 
 import pygame
@@ -12,19 +12,15 @@ from Scripts.Player.PlayerStateMachine.player_state import IPlayerState
 
 class IdleState(IPlayerState):
 
-    def update(self, keys, controller) -> None:
+    def update(self, game_controller: GameControls) -> None:
         """
         Updates the players state, includes player movement and state switching
-        :param keys: The pygame input keys
-        :param controller: The controller instance
+        :param game_controller: The Game Controller Instance
         """
 
-        # Create an instance of GameControls
-        game_controls = GameControls()
-
-        if game_controls.get_movement_vector(keys, controller) != pygame.Vector2(0, 0):
+        if game_controller.get_movement_vector() != pygame.Vector2(0, 0):
             self.player.state = self.player.moving_state_inst
-        elif keys[game_controls.key_sprint]:
+        elif game_controller.input_key[game_controller.key_sprint]:
             self.player.state = self.player.sprinting_state_inst
         else:
             self.player.stats.current_stamina += 2.0
