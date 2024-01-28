@@ -7,15 +7,14 @@ Last Modified: 01/27/2024
 import math
 import time
 
-import pygame
-
-from GameData.game_controls import GameControls
+from Scripts.Utility.input import Input
+from Scripts.Utility.game_controller import GameController
 from Scripts.Player.PlayerStateMachine.player_state import IPlayerState
 
 
 class MovingState(IPlayerState):
 
-    def update(self, game_controller: GameControls) -> None:
+    def update(self, game_controller: GameController) -> None:
         """
         Updates the players state, includes player movement and state switching
         :param game_controller: The Game Controller Instance
@@ -23,18 +22,16 @@ class MovingState(IPlayerState):
 
         dt = time.perf_counter() - self.player.cooldown_timers.dodge_cooldown_timer
 
-        if game_controller.get_movement_vector() == pygame.Vector2(0, 0):
+        if not game_controller.is_moving():
             self.player.state = self.player.idle_state_inst
-        elif (game_controller.input_key[game_controller.key_dodge] or game_controller.input_btn.get_button(game_controller.btn_dodge)) and dt >= self.player.stats.dodge_cooldown:
+        elif game_controller.check_user_input(Input.DODGE) and dt >= self.player.stats.dodge_cooldown:
             self.player.state = self.player.dodge_state_inst
-        elif game_controller.input_key[game_controller.key_sprint]:
-            self.player.state = self.player.sprinting_state_inst
         else:
             self.player.stats.current_stamina += 1.5
             self.player.stats.current_stamina = min(self.player.stats.current_stamina, self.player.stats.max_stamina)
             self.move(game_controller)
 
-    def move(self, game_controller: GameControls) -> None:
+    def move(self, game_controller: GameController) -> None:
         """
         Moves the player quickly
         :param game_controller: The Game Controller Instance

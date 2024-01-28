@@ -8,8 +8,10 @@ from typing import Optional
 import pygame
 import configparser
 
+from Scripts.Utility.input import Input
 
-class GameControls:
+
+class GameController:
 
     def __init__(
             self,
@@ -79,19 +81,11 @@ class GameControls:
         self.config.read(config_file_path)
 
         # Map INI values to Pygame key constants for keyboard
-        self.key_dodge = self.get_pygame_key('keyboard', 'dodge')
-        self.key_attack = self.get_pygame_key('keyboard', 'attack')
-        self.key_sprint = self.get_pygame_key('keyboard', 'sprint')
-        self.key_interact = self.get_pygame_key('keyboard', 'interact')
         self.key_move_up = self.get_pygame_key('keyboard', 'move_up')
         self.key_move_down = self.get_pygame_key('keyboard', 'move_down')
         self.key_move_left = self.get_pygame_key('keyboard', 'move_left')
         self.key_move_right = self.get_pygame_key('keyboard', 'move_right')
         self.key_movement = [self.key_move_up, self.key_move_down, self.key_move_left, self.key_move_right]
-
-        self.btn_dodge = self.get_pygame_btn('controller', 'dodge')
-        self.btn_sprint = self.get_pygame_btn('controller', 'sprint')
-        self.btn_attack = self.get_pygame_btn('controller', 'attack')
 
     def update_inputs(self, keys, controller):
         """
@@ -102,8 +96,34 @@ class GameControls:
         self.input_key = keys
         self.input_btn = controller
 
-    def check_user_input(self, keys, controller):
-        ...
+    def check_user_input(
+            self,
+            player_input: str
+         ) -> bool:
+        """
+        Returns the movement vector.
+        :param player_input: The string input for the key/button press
+        :return: Whether the button was pressed
+        """
+
+        # If there is a controller
+        if self.input_btn:
+            if self.input_btn.get_button(self.get_pygame_btn('controller', player_input)):
+                return True
+
+        if player_input == Input.OMIT:
+            return False
+
+        if self.input_key[self.get_pygame_key('keyboard', player_input)]:
+            return True
+
+        return False
+
+    def is_moving(self) -> bool:
+        """
+        Returns whether the player's movement input is pressed
+        """
+        return self.get_movement_vector() != pygame.Vector2(0, 0)
 
     def get_movement_vector(
             self,

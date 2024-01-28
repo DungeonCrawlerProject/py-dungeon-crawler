@@ -6,26 +6,22 @@ Last Modified: 01/27/2024
 
 import math
 
-from GameData.game_controls import GameControls
+from Scripts.Utility.game_controller import GameController
 from Scripts.Player.PlayerStateMachine.player_state import IPlayerState
 
 
 class SprintingState(IPlayerState):
 
-    def update(self, game_controller: GameControls) -> None:
+    def update(self, game_controller: GameController) -> None:
         """
         Updates the players state, includes player movement and state switching
         :param game_controller: The Game Controller Instance
         """
 
-        if not game_controller.input_key[game_controller.key_sprint]:
+        if True:
             self.player.state = self.player.idle_state_inst
-        else:
-            self.player.stats.current_stamina -= 2
-            self.player.stats.current_stamina = max(self.player.stats.current_stamina, 0)
-            self.move(game_controller)
 
-    def move(self, game_controller: GameControls) -> None:
+    def move(self, game_controller: GameController) -> None:
         """
         Moves the player quickly
         :param game_controller: The Game Controller Instance

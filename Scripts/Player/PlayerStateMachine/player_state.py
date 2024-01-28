@@ -9,7 +9,7 @@ from abc import (
     abstractmethod
 )
 
-from GameData.game_controls import GameControls
+from Scripts.Utility.game_controller import GameController
 
 
 class IPlayerState(ABC):
@@ -23,7 +23,7 @@ class IPlayerState(ABC):
         self.player = player
 
     @abstractmethod
-    def update(self, game_controller: GameControls) -> None:
+    def update(self, game_controller: GameController) -> None:
         """
         Updates the players state, includes player movement and state switching
         :param game_controller: The Game Controller Instance

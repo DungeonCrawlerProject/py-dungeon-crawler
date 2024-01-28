@@ -7,13 +7,14 @@ Last Modified: 01/27/2024
 import math
 import time
 
-from GameData.game_controls import GameControls
+from Scripts.Utility.input import Input
+from Scripts.Utility.game_controller import GameController
 from Scripts.Player.PlayerStateMachine.player_state import IPlayerState
 
 
 class DodgeState(IPlayerState):
 
-    def update(self, game_controller: GameControls) -> None:
+    def update(self, game_controller: GameController) -> None:
         """
         Updates the players state, includes player movement and state switching
         :param game_controller: The Game Controller Instance
@@ -21,14 +22,14 @@ class DodgeState(IPlayerState):
 
         dt = time.perf_counter() - self.player.cooldown_timers.dodge_cooldown_timer
 
-        if (game_controller.input_key[game_controller.key_dodge] or game_controller.input_btn.get_button(game_controller.btn_dodge)) and dt >= self.player.stats.dodge_cooldown:
+        if game_controller.check_user_input(Input.DODGE) and dt >= self.player.stats.dodge_cooldown:
             self.dodge(game_controller)
-        elif any(game_controller.input_key[key] for key in game_controller.key_movement):
+        elif game_controller.is_moving():
             self.player.state = self.player.moving_state_inst
         else:
             self.player.state = self.player.idle_state_inst
 
-    def dodge(self, game_controller: GameControls) -> None:
+    def dodge(self, game_controller: GameController) -> None:
         """
         Performs a dodge
         :param game_controller: The Game Controller Instance

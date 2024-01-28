@@ -6,7 +6,7 @@ Last Modified: 01/27/2024
 
 import pygame
 
-from GameData.game_controls import GameControls
+from Scripts.Utility.game_controller import GameController
 from Scripts.Enemy.enemy import Enemy
 from Scripts.Engine.Engine import GameEngine
 
@@ -58,7 +58,7 @@ if __name__ == "__main__":
         controller.init()
         break
 
-    game_controller = GameControls()
+    game_controller = GameController()
 
     while engine.is_running():
         engine.screen.fill((0, 0, 0))
@@ -69,6 +69,7 @@ if __name__ == "__main__":
         mouse_pos = pygame.mouse.get_pos()
 
         game_controller.update_inputs(keys, controller)
+
         # Update the player based on the current state
         player.update(game_controller, mouse_buttons, mouse_pos)
         enemy.watch(player)

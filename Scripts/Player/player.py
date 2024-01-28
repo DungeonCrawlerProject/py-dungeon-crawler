@@ -12,13 +12,14 @@ from typing import (
 
 import pygame
 
-from GameData.game_controls import GameControls
+from Scripts.Utility.game_controller import GameController
 from Scripts.Player.PlayerStateMachine.PlayerStates.dodge_state import DodgeState
 from Scripts.Player.PlayerStateMachine.PlayerStates.idle_state import IdleState
 from Scripts.Player.PlayerStateMachine.PlayerStates.moving_state import MovingState
 from Scripts.Player.PlayerStateMachine.PlayerStates.sprinting_state import SprintingState
 from Scripts.Player.Stats.player_cooldowns import PlayerCoolDownTimer
 from Scripts.Player.Stats.player_stats import PlayerStats
+from Scripts.Utility.input import Input
 from Scripts.animation import Animation
 from Scripts.sprite import PNGSprite
 from Scripts.GameObject.game_object import GameObject
@@ -83,7 +84,7 @@ class Player:
 
     def update(
             self,
-            game_controller: GameControls,
+            game_controller: GameController,
             mouse_buttons: Tuple[bool, bool, bool],
             mouse_pos: Optional[Tuple[float, float]],
     ) -> None:
@@ -107,7 +108,7 @@ class Player:
         left_mouse, middle_mouse, right_mouse = mouse_buttons
 
         # Only show the slash when attacking
-        if left_mouse:
+        if left_mouse or game_controller.check_user_input(Input.ATTACK):
             self.player_objects["slash_sprite"].sprite.visible = True
             self.player_animations["slash"].start_animation()
 
@@ -128,7 +129,7 @@ class Player:
             self.player_objects["slash_sprite"].sprite.visible = False
 
         # Only show the block when blocking
-        if right_mouse:
+        if right_mouse or game_controller.check_user_input(Input.BLOCK):
             self.player_objects["block_sprite"].sprite.visible = True
         else:
             self.player_objects["block_sprite"].sprite.visible = False
@@ -164,7 +165,7 @@ class Player:
         mov_dir = game_controller.get_movement_vector()
 
         # Default down
-        if not any(game_controller.input_key[key] for key in game_controller.key_movement):
+        if not game_controller.is_moving():
             mov_dir.x, mov_dir.y = self._memory_attack_angle.x, self._memory_attack_angle.y
         else:
             self._memory_attack_angle.x, self._memory_attack_angle.y = mov_dir.x, mov_dir.y
