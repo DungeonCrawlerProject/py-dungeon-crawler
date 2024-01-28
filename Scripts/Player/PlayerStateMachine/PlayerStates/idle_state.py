@@ -1,25 +1,23 @@
 """
 Idle State
 By: Sean McClanahan
-Last Modified: 01/04/2024
+Last Modified: 01/27/2024
 """
 
-import pygame
-
+from Scripts.Utility.game_controller import GameController
 from Scripts.Player.PlayerStateMachine.player_state import IPlayerState
 
 
 class IdleState(IPlayerState):
-    def update(self, keys) -> None:
+
+    def update(self, game_controller: GameController) -> None:
         """
         Updates the players state, includes player movement and state switching
-        :param keys: The pygame input keys
+        :param game_controller: The Game Controller Instance
         """
 
-        if keys[pygame.K_w] or keys[pygame.K_a] or keys[pygame.K_s] or keys[pygame.K_d]:
+        if game_controller.is_moving():
             self.player.state = self.player.moving_state_inst
-        elif keys[pygame.K_LSHIFT]:
-            self.player.state = self.player.sprinting_state_inst
         else:
             self.player.stats.current_stamina += 2.0
             self.player.stats.current_stamina = min(self.player.stats.current_stamina, self.player.stats.max_stamina)

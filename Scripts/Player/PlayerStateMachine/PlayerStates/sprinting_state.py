@@ -1,47 +1,34 @@
 """
 Sprint State
 By: Sean McClanahan
-Last Modified: 01/04/2024
+Last Modified: 01/27/2024
 """
 
 import math
 
-import pygame
-
+from Scripts.Utility.game_controller import GameController
 from Scripts.Player.PlayerStateMachine.player_state import IPlayerState
 
 
 class SprintingState(IPlayerState):
 
-    def update(self, keys) -> None:
+    def update(self, game_controller: GameController) -> None:
         """
         Updates the players state, includes player movement and state switching
-        :param keys: The pygame input keys
+        :param game_controller: The Game Controller Instance
         """
 
-        if not keys[pygame.K_LSHIFT]:
+        if True:
             self.player.state = self.player.idle_state_inst
-        else:
-            self.player.stats.current_stamina -= 2
-            self.player.stats.current_stamina = max(self.player.stats.current_stamina, 0)
-            self.move(keys)
 
-    def move(self, keys) -> None:
+    def move(self, game_controller: GameController) -> None:
         """
         Moves the player quickly
-        :param keys: The keys from pygame to determine direction
+        :param game_controller: The Game Controller Instance
         """
 
-        movement_input = pygame.Vector2(0, 0)
-
-        if keys[pygame.K_w]:
-            movement_input.y = -1
-        if keys[pygame.K_s]:
-            movement_input.y = 1
-        if keys[pygame.K_a]:
-            movement_input.x = -1
-        if keys[pygame.K_d]:
-            movement_input.x = 1
+        # Create an instance of GameControls
+        movement_input = game_controller.get_movement_vector()
 
         # Take max of that and 1 to prevent zero division error
         mag = math.sqrt(movement_input.x ** 2 + movement_input.y ** 2)

@@ -1,38 +1,38 @@
 """
 Dodge State
 By: Sean McClanahan
-Last Modified: 01/04/2024
+Last Modified: 01/27/2024
 """
 
 import math
 import time
 
-import pygame
-
+from Scripts.Utility.input import Input
+from Scripts.Utility.game_controller import GameController
 from Scripts.Player.PlayerStateMachine.player_state import IPlayerState
 
 
 class DodgeState(IPlayerState):
 
-    def update(self, keys) -> None:
+    def update(self, game_controller: GameController) -> None:
         """
         Updates the players state, includes player movement and state switching
-        :param keys: The pygame input keys
+        :param game_controller: The Game Controller Instance
         """
 
         dt = time.perf_counter() - self.player.cooldown_timers.dodge_cooldown_timer
 
-        if keys[pygame.K_SPACE] and dt >= self.player.stats.dodge_cooldown:
-            self.dodge(keys)
-        elif keys[pygame.K_w] or keys[pygame.K_a] or keys[pygame.K_s] or keys[pygame.K_d]:
+        if game_controller.check_user_input(Input.DODGE) and dt >= self.player.stats.dodge_cooldown:
+            self.dodge(game_controller)
+        elif game_controller.is_moving():
             self.player.state = self.player.moving_state_inst
         else:
             self.player.state = self.player.idle_state_inst
 
-    def dodge(self, keys) -> None:
+    def dodge(self, game_controller: GameController) -> None:
         """
         Performs a dodge
-        :param keys: The keys from pygame to determine direction
+        :param game_controller: The Game Controller Instance
         """
 
         current_time = time.perf_counter()
@@ -40,15 +40,7 @@ class DodgeState(IPlayerState):
             return
 
         # Use the movement input from the MovingState
-        movement_input = pygame.Vector2(0, 0)
-        if keys[pygame.K_w]:
-            movement_input.y = -1
-        if keys[pygame.K_s]:
-            movement_input.y = 1
-        if keys[pygame.K_a]:
-            movement_input.x = -1
-        if keys[pygame.K_d]:
-            movement_input.x = 1
+        movement_input = game_controller.get_movement_vector()
 
         mag = math.sqrt(movement_input.x ** 2 + movement_input.y ** 2)
         mag = max(1.0, mag)

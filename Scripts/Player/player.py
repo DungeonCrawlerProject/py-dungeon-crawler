@@ -1,7 +1,7 @@
 """
 The player class
 By: Sean McClanahan and Nick Petruccelli
-Last Modified: 01/19/2024
+Last Modified: 01/27/2024
 """
 
 import math
@@ -12,12 +12,14 @@ from typing import (
 
 import pygame
 
+from Scripts.Utility.game_controller import GameController
 from Scripts.Player.PlayerStateMachine.PlayerStates.dodge_state import DodgeState
 from Scripts.Player.PlayerStateMachine.PlayerStates.idle_state import IdleState
 from Scripts.Player.PlayerStateMachine.PlayerStates.moving_state import MovingState
 from Scripts.Player.PlayerStateMachine.PlayerStates.sprinting_state import SprintingState
 from Scripts.Player.Stats.player_cooldowns import PlayerCoolDownTimer
 from Scripts.Player.Stats.player_stats import PlayerStats
+from Scripts.Utility.input import Input
 from Scripts.animation import Animation
 from Scripts.sprite import PNGSprite
 from Scripts.GameObject.game_object import GameObject
@@ -82,13 +84,13 @@ class Player:
 
     def update(
             self,
-            keys: pygame.key.ScancodeWrapper,
+            game_controller: GameController,
             mouse_buttons: Tuple[bool, bool, bool],
-            mouse_pos: Optional[Tuple[float, float]]
+            mouse_pos: Optional[Tuple[float, float]],
     ) -> None:
         """
         Updates the player object
-        :param keys: The keybindings
+        :param game_controller: The Game Controller Instance
         :param mouse_buttons: Booleans representing whether each button on a mouse is pressed.
         :param mouse_pos: The position of the mouse
         """
@@ -101,12 +103,12 @@ class Player:
         # Update State-machine and Sprite Based Hit-box
         self.sprite.rect.x, self.sprite.rect.y = self.position.xy
         self.player_objects["slash_sprite"].sprite.rect.x, self.player_objects["slash_sprite"].sprite.rect.y = self.position.xy
-        self.state.update(keys)
+        self.state.update(game_controller)
 
         left_mouse, middle_mouse, right_mouse = mouse_buttons
 
         # Only show the slash when attacking
-        if left_mouse:
+        if left_mouse or game_controller.check_user_input(Input.ATTACK):
             self.player_objects["slash_sprite"].sprite.visible = True
             self.player_animations["slash"].start_animation()
 
@@ -126,7 +128,7 @@ class Player:
             self.player_objects["slash_sprite"].sprite.visible = False
 
         # Only show the block when blocking
-        if right_mouse:
+        if right_mouse or game_controller.check_user_input(Input.BLOCK):
             self.player_objects["block_sprite"].sprite.visible = True
         else:
             self.player_objects["block_sprite"].sprite.visible = False
@@ -135,7 +137,7 @@ class Player:
         target_angle = self.get_mouse_relative_angle(mouse_pos, self.relative_position)
 
         # Set Right and Left Angle Logic
-        self.left_angle = self.get_left_angle(keys)
+        self.left_angle = self.get_left_angle(game_controller)
         self.right_angle += ROTATE_SPEED * math.sin(math.radians(target_angle - self.right_angle))
         self.right_angle %= 360
 
@@ -151,31 +153,23 @@ class Player:
             if self.sprite.rect.colliderect(enemy.sprite.rect):
                 self.take_damage(0.25)
 
-    def get_left_angle(self, keys) -> float:
+    def get_left_angle(self, game_controller) -> float:
         """
         Returns the angle from WASD keyboard input
-        :param keys: Keyboard pygame key event
+        :param game_controller: The Game Controller Instance
         :return: The angle is degrees
         """
 
-        mov_dir = pygame.Vector2(0, 0)
-
-        if keys[pygame.K_w]:
-            mov_dir.y = 1
-        if keys[pygame.K_s]:
-            mov_dir.y = -1
-        if keys[pygame.K_a]:
-            mov_dir.x = -1
-        if keys[pygame.K_d]:
-            mov_dir.x = 1
+        # Create an instance of GameControls
+        mov_dir = game_controller.get_movement_vector()
 
         # Default down
-        if not (keys[pygame.K_w] or keys[pygame.K_a] or keys[pygame.K_s] or keys[pygame.K_d]):
+        if not game_controller.is_moving():
             mov_dir.x, mov_dir.y = self._memory_attack_angle.x, self._memory_attack_angle.y
         else:
             self._memory_attack_angle.x, self._memory_attack_angle.y = mov_dir.x, mov_dir.y
 
-        return math.degrees(math.atan2(mov_dir.x, -mov_dir.y))
+        return math.degrees(math.atan2(mov_dir.x, mov_dir.y))
 
     def add_camera(self, camera):
         """

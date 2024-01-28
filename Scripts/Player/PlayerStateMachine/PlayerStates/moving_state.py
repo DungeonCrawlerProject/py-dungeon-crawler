@@ -1,54 +1,43 @@
 """
 Walking State
 By: Sean McClanahan
-Last Modified: 01/04/2024
+Last Modified: 01/27/2024
 """
 
 import math
 import time
 
-import pygame
-
+from Scripts.Utility.input import Input
+from Scripts.Utility.game_controller import GameController
 from Scripts.Player.PlayerStateMachine.player_state import IPlayerState
 
 
 class MovingState(IPlayerState):
 
-    def update(self, keys) -> None:
+    def update(self, game_controller: GameController) -> None:
         """
         Updates the players state, includes player movement and state switching
-        :param keys: The pygame input keys
+        :param game_controller: The Game Controller Instance
         """
 
         dt = time.perf_counter() - self.player.cooldown_timers.dodge_cooldown_timer
 
-        if not (keys[pygame.K_w] or keys[pygame.K_a] or keys[pygame.K_s] or keys[pygame.K_d]):
+        if not game_controller.is_moving():
             self.player.state = self.player.idle_state_inst
-        elif keys[pygame.K_SPACE] and dt >= self.player.stats.dodge_cooldown:
+        elif game_controller.check_user_input(Input.DODGE) and dt >= self.player.stats.dodge_cooldown:
             self.player.state = self.player.dodge_state_inst
-        elif keys[pygame.K_LSHIFT]:
-            self.player.state = self.player.sprinting_state_inst
         else:
             self.player.stats.current_stamina += 1.5
             self.player.stats.current_stamina = min(self.player.stats.current_stamina, self.player.stats.max_stamina)
-            self.move(keys)
+            self.move(game_controller)
 
-    def move(self, keys) -> None:
+    def move(self, game_controller: GameController) -> None:
         """
         Moves the player quickly
-        :param keys: The keys from pygame to determine direction
+        :param game_controller: The Game Controller Instance
         """
 
-        movement_input = pygame.Vector2(0, 0)
-
-        if keys[pygame.K_w]:
-            movement_input.y = -1
-        if keys[pygame.K_s]:
-            movement_input.y = 1
-        if keys[pygame.K_a]:
-            movement_input.x = -1
-        if keys[pygame.K_d]:
-            movement_input.x = 1
+        movement_input = game_controller.get_movement_vector()
 
         # Take max of that and 1 to prevent zero division error
         mag = math.sqrt(movement_input.x ** 2 + movement_input.y ** 2)

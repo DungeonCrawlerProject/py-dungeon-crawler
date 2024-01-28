@@ -1,13 +1,15 @@
 """
 Player State Machine
 By: Sean McClanahan
-Last Modified: 01/04/2024
+Last Modified: 01/27/2024
 """
 
 from abc import (
     ABC,
     abstractmethod
 )
+
+from Scripts.Utility.game_controller import GameController
 
 
 class IPlayerState(ABC):
@@ -21,10 +23,10 @@ class IPlayerState(ABC):
         self.player = player
 
     @abstractmethod
-    def update(self, keys) -> None:
+    def update(self, game_controller: GameController) -> None:
         """
         Updates the players state, includes player movement and state switching
-        :param keys: The pygame input keys
+        :param game_controller: The Game Controller Instance
         """
         pass
 
