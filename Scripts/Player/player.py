@@ -46,9 +46,6 @@ class Player:
         self.left_angle = 0.0
         self.right_angle = 0.0
 
-        # TODO THIS IS A TERRIBLE PRACTICE
-        self.known_enemies = []
-
         # Dataclasses
         self.stats = PlayerStats()
         self.cooldown_timers = PlayerCoolDownTimer()
@@ -147,11 +144,7 @@ class Player:
         self.draw()
 
     def check_collisions(self):
-
-        for enemy in self.known_enemies:
-
-            if self.sprite.rect.colliderect(enemy.sprite.rect):
-                self.take_damage(0.25)
+        pass
 
     def get_left_angle(self, game_controller) -> float:
         """

@@ -17,6 +17,7 @@ from Scripts.WorldGeneration.world_generation import WorldGeneration
 from Scripts.UI.menu_handler import MenuHandler
 from Scripts.UI.esc_menu import EscMenu
 from Scripts.UI.settings_menu import SettingsMenu
+from Scripts.Enemy.enemy_handler import EnemyHandler
 
 if __name__ == "__main__":
 
@@ -26,8 +27,10 @@ if __name__ == "__main__":
     # Hide the mouse cursor
     # pygame.mouse.set_visible(False)
 
+    enemy_handler = EnemyHandler()
+
     # World Gen
-    world = WorldGeneration()
+    world = WorldGeneration(enemy_handler)
 
     # Camera Setup
     cam = Camera(world)
@@ -53,12 +56,6 @@ if __name__ == "__main__":
         engine.screen_height // 2 - player_size // 2
     )
     player_hud = HUD(player, engine)
-
-    enemy = Enemy(initial_position=pygame.Vector2(100, 100))
-    cam.game_objects.append(enemy)
-
-    # TODO THIS IS A BAD PRACTICE
-    player.known_enemies.append(enemy)
 
     # Initialize the first connected controller
     controller = None
@@ -106,8 +103,6 @@ if __name__ == "__main__":
 
         # Update the player based on the current state
         player.update(game_controller, mouse_buttons, mouse_pos)
-        enemy.watch(player)
-        enemy.update()
 
         cam.center_player(player, .1)
         cam.sorted_draw()

@@ -6,6 +6,7 @@ import math
 
 from Scripts.WorldGeneration.biome import Biome
 from Scripts.WorldGeneration.point_of_interest import PointOfInterest
+from Scripts.Enemy.enemy_handler import EnemyHandler
 from Scripts.sprite import PNGSprite
 from collections import defaultdict
 
@@ -17,7 +18,8 @@ from perlin_noise import PerlinNoise
 class WorldGeneration:
     TILE_SIZE = 32
 
-    def __init__(self):
+    def __init__(self, enemy_handler: EnemyHandler):
+        self.enemy_handler = enemy_handler
         self.noise_map = None
         self.ground = self.make_background(256, 128)
         self.right_border = self.ground.get_rect().right
@@ -39,7 +41,8 @@ class WorldGeneration:
 
         self.generate_biomes(self.active_biomes)
 
-        self.generate_pois(num_of_pois=25)
+        self.generate_pois(num_of_pois=100)
+        self.game_objects.extend(self.enemy_handler.active_enemys)
 
         self.generate_paths(16)
 
@@ -140,6 +143,8 @@ class WorldGeneration:
 
             position = pygame.Vector2(*_pos) * WorldGeneration.TILE_SIZE
 
+            poi.spawn_enemys(pos=position, enemy_handler=self.enemy_handler)
+
             self.game_objects.append(
                 GameObject(
                     position=position,
@@ -171,7 +176,6 @@ class WorldGeneration:
         right_most_poi_cord = 0
         crossroad_positions = []
         for game_object in self.game_objects:
-
             if game_object.tag != "poi":
                 continue
 
@@ -350,6 +354,10 @@ class WorldGeneration:
                         image = pygame.image.load("Sprites/PathTiles/2way.png")
                         image = pygame.transform.flip(image, flip_x=False, flip_y=True)
                     case (0, -1):
+                        image = pygame.image.load("Sprites/PathTiles/straight.png")
+                    case (0, 0):
+                        # TODO
+                        # might cause an error
                         image = pygame.image.load("Sprites/PathTiles/straight.png")
                     case _:
                         raise ValueError("poi direction not found")

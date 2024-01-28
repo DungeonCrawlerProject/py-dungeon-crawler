@@ -1,5 +1,6 @@
 {
     "name": "building_2x1",
     "sprite_sheet": "Sprites/PointsOfInterest/building_2x1.png",
-    "size": [2, 1]
+    "size": [2, 1],
+    "enemys": [["bandit", 5]]
 }

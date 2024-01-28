@@ -1,74 +1,48 @@
 import pygame
-
-from Scripts.Player.Stats.player_stats import PlayerStats
+import json
+from abc import ABC, abstractmethod
 from Scripts.sprite import PNGSprite
+from Scripts.GameObject.game_object import GameObject
 
 
-class Enemy:
+class Enemy(ABC, GameObject):
+    def __init__(
+        self,
+        position: pygame.Vector2,
+        sprite: PNGSprite,
+        max_health: int,
+        speed: float,
+        attack_damage: int,
+        attack_range: int,
+        aggro_range: int,
+    ) -> None:
+        super().__init__(position=position, sprite=sprite, tag="Enemy")
+        self.max_health: int = max_health
+        self.cur_health: int = max_health
+        self.speed: float = speed
+        self.attack_damage: int = attack_damage
+        self.attack_range: int = attack_range
+        self.aggro_range = aggro_range
+        self.target = None
 
-    def __init__(self, initial_position: pygame.Vector2):
+    def idle(self, targets: list):
+        for target in targets:
+            target_distance = (target.position - self.position).length()
+            if target_distance <= self.aggro_range:
+                self.target = target
+                break
 
-        # Positional Variables
-        self.position = initial_position
-        self.relative_position = initial_position
-
-        # Dataclasses
-        self.stats = PlayerStats()
-        self.stats.speed = 3
-
-        # Make the sprite in the center
-        self.sprite = PNGSprite.make_from_sprite_sheet('Sprites/sprite_sheet.png', 8, 16)
-
-        self.stalking = None
-
-    def watch(self, item):
-        self.stalking = item
-
-    def update(self) -> None:
+    @abstractmethod
+    def move(self) -> None:
         """
-        Updates the Enemy object
+        dictates how the enemy movement will work
+
         """
+        pass
 
-        # Change player pos
-        self.draw()
-
-        # Stop Following the Player if they are dead
-        if self.stalking.stats.current_health <= 0:
-            self.stalking = None
-
-        if self.stalking:
-            dp = self.stalking.position - self.position
-
-            if 0 < dp.magnitude() < 500:
-                self.position += dp.normalize() * self.stats.speed
-
-            if self.sprite.rect.colliderect(self.stalking.player_objects["slash_sprite"].sprite.rect):
-                if self.stalking.player_objects["slash_sprite"].sprite.visible:
-                    self.take_damage(10)
-
-        # Update Sprite Based Hit-box
-        self.sprite.rect.x, self.sprite.rect.y = self.position.xy
-
-    def take_damage(self, damage: float) -> None:
+    @abstractmethod
+    def attack(self):
         """
-        Deals damage to the enemy
-        :param damage: The damage
+        dictates how the enemy will attack
         """
-
-        self.stats.current_health -= damage
-
-        if self.stats.current_health < 0:
-            self.kill()
-
-    def kill(self) -> None:
-        self.sprite.visible = False
-
-        # for the time being move off-screen
-        self.position.x, self.position.y = -100, -100
-
-    def draw(self) -> None:
-        ...
-
-    def set_relative_position(self, offset):
-
-        self.relative_position = self.position + offset
+        pass
