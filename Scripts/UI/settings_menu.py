@@ -1,4 +1,5 @@
 import pygame
+import ctypes
 from Scripts.Engine.engine import GameEngine
 from Scripts.UI.button import Button
 from Scripts.UI.menu import Menu
@@ -13,10 +14,12 @@ class SettingsMenu(Menu):
         self.resolution_scale = 1
         self.base_resolution = pygame.Vector2(480, 270)
         self.back_clicked = False
+        scaleFactor = ctypes.windll.shcore.GetScaleFactorForDevice(0) / 100
+        self.rec_res = (ctypes.windll.user32.GetSystemMetrics(0) * scaleFactor,
+                         ctypes.windll.user32.GetSystemMetrics(1) * scaleFactor)
+        print(self.rec_res)
 
     def update(self, esc_down, mouse_button_down, mouse_pos):
-        print(self.in_menu)
-        print(self.back_clicked)
         if not self.in_menu and self.back_clicked:
             self.in_menu = True
         elif self.in_menu and self.back_clicked:
@@ -82,27 +85,50 @@ class SettingsMenu(Menu):
         if self.fullscreen:
             self.fullscreen = False
             self.fullscreen_btn.text = "WINDOW"
+            self.resolution_scale = -1
+            self.resolution_cycle()
             pygame.display.set_mode(self.base_resolution * self.resolution_scale)
         else:
             self.fullscreen = True
             self.fullscreen_btn.text = "FULLSCREEN"
-            pygame.display.set_mode((2256, 1504), pygame.FULLSCREEN)
+            self.resolution_btn.text = "RESOLUTION: RECOMMENDED"
+            self.resolution_scale = 0
+            pygame.display.set_mode(self.rec_res, pygame.FULLSCREEN)
     
     def resolution_cycle(self):
         self.resolution_scale += 1
         if self.resolution_scale == 4:
-            self.resolution_scale = 1
-
-        match self.resolution_scale:
-            case 1:
-                pygame.display.set_mode((480, 270))
-                self.resolution_btn.text = "RESOLUTION: 480x270"
-            case 2:
-                pygame.display.set_mode((960, 540))
-                self.resolution_btn.text = "RESOLUTION: 960x540"
-            case 3:
-                pygame.display.set_mode((1920, 1080))
-                self.resolution_btn.text = "RESOLUTION: 1920x1080"
+            self.resolution_scale = 0
+        if self.fullscreen:
+            match self.resolution_scale:
+                case 0:
+                    pygame.display.set_mode(self.rec_res, pygame.FULLSCREEN)
+                    self.resolution_btn.text = "RESOLUTION: RECOMMENDED"
+                case 1:
+                    pygame.display.set_mode((480, 270), pygame.FULLSCREEN)
+                    self.resolution_btn.text = "RESOLUTION: 480x270"
+                case 2:
+                    pygame.display.set_mode((960, 540), pygame.FULLSCREEN)
+                    self.resolution_btn.text = "RESOLUTION: 960x540"
+                case 3:
+                    pygame.display.set_mode((1920, 1080), pygame.FULLSCREEN)
+                    self.resolution_btn.text = "RESOLUTION: 1920x1080"
+        else:
+            match self.resolution_scale:
+                case 0:
+                    pygame.display.set_mode(self.rec_res)
+                    self.resolution_btn.text = "RESOLUTION: RECOMMENDED"
+                case 1:
+                    pygame.display.set_mode((480, 270))
+                    self.resolution_btn.text = "RESOLUTION: 480x270"
+                case 2:
+                    pygame.display.set_mode((960, 540))
+                    self.resolution_btn.text = "RESOLUTION: 960x540"
+                case 3:
+                    pygame.display.set_mode((1920, 1080))
+                    self.resolution_btn.text = "RESOLUTION: 1920x1080"
+            if self.resolution_scale == 4:
+                self.resolution_scale = 0
 
     def go_back(self):
         self.menu_handler.switch_menu(self.menu_handler.esc_menu)
