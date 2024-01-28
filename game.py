@@ -57,6 +57,8 @@ if __name__ == "__main__":
     )
     player_hud = HUD(player, engine)
 
+    enemy_handler.add_target(target=player)
+
     # Initialize the first connected controller
     controller = None
     for i in range(pygame.joystick.get_count()):
@@ -103,6 +105,9 @@ if __name__ == "__main__":
 
         # Update the player based on the current state
         player.update(game_controller, mouse_buttons, mouse_pos)
+
+        #Update Enemys
+        enemy_handler.update()
 
         cam.center_player(player, .1)
         cam.sorted_draw()

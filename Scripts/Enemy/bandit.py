@@ -27,7 +27,6 @@ class Bandit(Enemy):
 
     @classmethod
     def load_from_json(cls, data_path, pos):
-        print(data_path)
         with open(data_path, "r") as file:
             data = json.load(file)
             sprite = data["sprite"]
@@ -50,20 +49,19 @@ class Bandit(Enemy):
         return enemy
 
     def move(self):
+        print("move")
         if self.target is None:
             return
-        self_to_target = self.target - self.position
+        self_to_target = self.target.position - self.position
         move_dir = self_to_target.normalize()
         if self_to_target.length() > self.attack_range:
             self.position += move_dir * self.speed
-        elif self_to_target < self.aggro_range / 2:
-            self.position += -move_dir * self.speed
+
 
     def attack(self):
-        pass
         if self.target is None:
             return
-        dist_to_target = (self.target - self.position).length()
+        dist_to_target = (self.target.position - self.position).length()
         if dist_to_target < self.attack_range:
-            ...
+            print("attack")
         

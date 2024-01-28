@@ -32,6 +32,17 @@ class Enemy(ABC, GameObject):
                 self.target = target
                 break
 
+    def update(self, targets):
+        if self.target is None:
+            self.idle(targets)
+            return
+        self.move()
+        self.attack()
+
+        dist_to_target = pygame.Vector2(self.target.position - self.position).length()
+        if dist_to_target > self.aggro_range * 1.5:
+            self.target = None
+
     @abstractmethod
     def move(self) -> None:
         """
