@@ -12,8 +12,10 @@ class GameEngine:
         pygame.init()
 
         # Pygame Setup
-        self.screen_width = 1920/1.5
-        self.screen_height = 1080/1.5
+        self.min_window_width = 480
+        self.min_window_height = 270
+        self.screen_width = 480
+        self.screen_height = 270
         self.screen = pygame.display.set_mode((self.screen_width, self.screen_height))
         pygame.display.set_caption("Dungeon Crawler Prototype")
 

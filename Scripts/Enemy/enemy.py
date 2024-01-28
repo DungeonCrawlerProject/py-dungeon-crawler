@@ -17,7 +17,7 @@ class Enemy:
         self.stats.speed = 3
 
         # Make the sprite in the center
-        self.sprite = PNGSprite.make_from_sprite_sheet('Sprites/sprite_sheet.png', 32, 64)
+        self.sprite = PNGSprite.make_from_sprite_sheet('Sprites/sprite_sheet.png', 8, 16)
 
         self.stalking = None
 

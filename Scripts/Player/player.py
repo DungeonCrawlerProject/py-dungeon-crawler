@@ -60,7 +60,7 @@ class Player:
         self._memory_attack_angle = pygame.Vector2(0, 0)
 
         # Make the sprite in the center
-        self.sprite = PNGSprite.make_from_sprite_sheet('Sprites/sprite_sheet.png', 32, 64)
+        self.sprite = PNGSprite.make_from_sprite_sheet('Sprites/sprite_sheet.png', 8, 16)
 
         # Store and Make Player Objects
         self.player_objects = {
@@ -121,7 +121,6 @@ class Player:
 
         # Draw the current frame at the specified positions
         if render_frame is not None:
-            print(render_frame)
             self.player_objects["slash_sprite"].sprite.change_frame(render_frame)
         else:
             self.player_objects["slash_sprite"].sprite.visible = False
