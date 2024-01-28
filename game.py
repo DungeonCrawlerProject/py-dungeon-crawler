@@ -48,7 +48,7 @@ if __name__ == "__main__":
         initial_position=pygame.Vector2(init_x, init_y),
         camera=cam
     )
-    player.sprite.move(
+    player.game_obj["player"].sprite.move(
         engine.screen_width // 2 - player_size // 2,
         engine.screen_height // 2 - player_size // 2
     )

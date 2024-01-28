@@ -50,4 +50,4 @@ class MovingState(IPlayerState):
         """
         Changes the sprite for the character depending on the state
         """
-        self.player.sprite.image = self.player.sprite.frames[1]
+        self.player.game_obj["player"].sprite.change_frame(1)

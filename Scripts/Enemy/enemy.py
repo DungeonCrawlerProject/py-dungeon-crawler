@@ -42,8 +42,8 @@ class Enemy:
             if 0 < dp.magnitude() < 500:
                 self.position += dp.normalize() * self.stats.speed
 
-            if self.sprite.rect.colliderect(self.stalking.player_objects["slash_sprite"].sprite.rect):
-                if self.stalking.player_objects["slash_sprite"].sprite.visible:
+            if self.sprite.rect.colliderect(self.stalking.game_obj["slash"].sprite.rect):
+                if self.stalking.game_obj["slash"].sprite.visible:
                     self.take_damage(10)
 
         # Update Sprite Based Hit-box

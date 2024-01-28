@@ -55,4 +55,4 @@ class DodgeState(IPlayerState):
         """
         Changes the sprite for the character depending on the state
         """
-        self.player.sprite.image = self.player.sprite.frames[3]
+        self.player.game_obj["player"].sprite.change_frame(3)

@@ -61,23 +61,20 @@ class Player:
         self.state = self.idle_state_inst
         self._memory_attack_angle = pygame.Vector2(0, 0)
 
-        # Make the sprite in the center
-        self.sprite = PNGSprite.make_from_sprite_sheet('Sprites/sprite_sheet.png', 8, 16)
-
         # Store and Make Player Objects
-        self.player_objects = {
-            "player_sprite": GameObject(self.position, self.sprite),
-            "arrow_sprite": GameObject(self.position, PNGSprite.make_single_sprite('Sprites/arrow.png')),
-            "slash_sprite": GameObject(self.position, PNGSprite.make_from_sprite_sheet('Sprites/slash.png', 40, 120)),
-            "block_sprite": GameObject(self.position, PNGSprite.make_single_sprite('Sprites/block.png'))
+        self.game_obj = {
+            "player": GameObject(self.position, PNGSprite.make_from_sprite_sheet('Sprites/sprite_sheet.png', 8, 16)),
+            "arrow": GameObject(self.position, PNGSprite.make_single_sprite('Sprites/arrow.png')),
+            "slash": GameObject(self.position, PNGSprite.make_from_sprite_sheet('Sprites/slash.png', 40, 120)),
+            "block": GameObject(self.position, PNGSprite.make_single_sprite('Sprites/block.png'))
         }
 
-        self.player_animations = {
-            "slash": Animation(500, self.player_objects["slash_sprite"].sprite)
+        self.animations = {
+            "slash": Animation(500, self.game_obj["slash"].sprite)
         }
 
         # Set Arrow Invisible
-        self.player_objects["arrow_sprite"].sprite.visible = False
+        self.game_obj["arrow"].sprite.visible = False
 
         # Give the player the camera
         self.add_camera(camera)
@@ -101,37 +98,37 @@ class Player:
             return
 
         # Update State-machine and Sprite Based Hit-box
-        self.sprite.rect.x, self.sprite.rect.y = self.position.xy
-        self.player_objects["slash_sprite"].sprite.rect.x, self.player_objects["slash_sprite"].sprite.rect.y = self.position.xy
+        self.game_obj["player"].sprite.rect.x, self.game_obj["player"].sprite.rect.y = self.position.xy
+        self.game_obj["slash"].sprite.rect.x, self.game_obj["slash"].sprite.rect.y = self.position.xy
         self.state.update(game_controller)
 
         left_mouse, middle_mouse, right_mouse = mouse_buttons
 
         # Only show the slash when attacking
         if left_mouse or game_controller.check_user_input(Input.ATTACK):
-            self.player_objects["slash_sprite"].sprite.visible = True
-            self.player_animations["slash"].start_animation()
+            self.game_obj["slash"].sprite.visible = True
+            self.animations["slash"].start_animation()
 
         # Animation Type Diff
-        if self.player_animations["slash"].start_time is not None:
-            _elapsed_time = pygame.time.get_ticks() - self.player_animations["slash"].start_time
+        if self.animations["slash"].start_time is not None:
+            _elapsed_time = pygame.time.get_ticks() - self.animations["slash"].start_time
         else:
             _elapsed_time = 0
 
         # Run the animation and get the current frame
-        render_frame = self.player_animations["slash"].run(_elapsed_time)
+        ind = self.animations["slash"].run(_elapsed_time)
 
         # Draw the current frame at the specified positions
-        if render_frame is not None:
-            self.player_objects["slash_sprite"].sprite.change_frame(render_frame)
+        if ind is not None:
+            self.game_obj["slash"].sprite.change_frame(ind)
         else:
-            self.player_objects["slash_sprite"].sprite.visible = False
+            self.game_obj["slash"].sprite.visible = False
 
         # Only show the block when blocking
         if right_mouse or game_controller.check_user_input(Input.BLOCK):
-            self.player_objects["block_sprite"].sprite.visible = True
+            self.game_obj["block"].sprite.visible = True
         else:
-            self.player_objects["block_sprite"].sprite.visible = False
+            self.game_obj["block"].sprite.visible = False
 
         # Cursor Rotation
         target_angle = self.get_mouse_relative_angle(mouse_pos, self.relative_position)
@@ -150,7 +147,7 @@ class Player:
 
         for enemy in self.known_enemies:
 
-            if self.sprite.rect.colliderect(enemy.sprite.rect):
+            if self.game_obj["player"].sprite.rect.colliderect(enemy.sprite.rect):
                 self.take_damage(0.25)
 
     def get_left_angle(self, game_controller) -> float:
@@ -178,7 +175,8 @@ class Player:
         :return:
         """
 
-        camera.game_objects.extend(self.player_objects.values())
+        camera.game_objects.extend(self.game_obj.values())
+
         camera.position = self.position.copy()
 
     def take_damage(self, damage: float) -> None:
@@ -193,9 +191,9 @@ class Player:
             self.kill_player()
 
     def kill_player(self) -> None:
-        self.sprite.visible = False
+        self.game_obj["player"].sprite.visible = False
 
-        for obj in self.player_objects.values():
+        for obj in self.game_obj.values():
             obj.sprite.visible = False
 
     def draw(self) -> None:
@@ -203,9 +201,9 @@ class Player:
         self.state.draw()
 
         # Update the rotate functions
-        self.rotate_around_player_center(self.player_objects["arrow_sprite"], self.left_angle, 200.0)
-        self.rotate_around_player_center(self.player_objects["block_sprite"], self.left_angle, 50.0)
-        self.rotate_around_player_center(self.player_objects["slash_sprite"], self.left_angle, 30.0)
+        self.rotate_around_player_center(self.game_obj["arrow"], self.left_angle, 200.0)
+        self.rotate_around_player_center(self.game_obj["block"], self.left_angle, 50.0)
+        self.rotate_around_player_center(self.game_obj["slash"], self.left_angle, 30.0)
 
     def set_relative_position(self, offset):
 
@@ -244,8 +242,8 @@ class Player:
 
         # Grab the half of the size of the player
         player_half_size = pygame.Vector2(
-            self.sprite.image.get_width() // 2,
-            self.sprite.image.get_height() // 2
+            self.game_obj["player"].sprite.image.get_width() // 2,
+            self.game_obj["player"].sprite.image.get_height() // 2
         )
 
         # Grab half of the size of the object

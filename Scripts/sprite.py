@@ -19,8 +19,9 @@ class PNGSprite(Sprite):
 
         inst = cls()
         inst.frames = inst.chop_sprite(img, width, height)
-        inst.original_image = inst.frames[0]
-        inst.image = inst.original_image.copy()  # Make a copy of the original image
+        inst.__original_frames = inst.chop_sprite(img, width, height)
+        inst.__original_image = inst.frames[0]
+        inst.image = inst.__original_image.copy()  # Make a copy of the original image
         inst.rect = inst.image.get_rect()
         return inst
 
@@ -31,8 +32,9 @@ class PNGSprite(Sprite):
 
         inst = cls()
         inst.frames = inst.chop_sprite(img, img.get_width(), img.get_height())
-        inst.original_image = inst.frames[0]
-        inst.image = inst.original_image.copy()  # Make a copy of the original image
+        inst.__original_frames = inst.chop_sprite(img, img.get_width(), img.get_height())
+        inst.__original_image = inst.frames[0]
+        inst.image = inst.__original_image.copy()  # Make a copy of the original image
         inst.rect = inst.image.get_rect()
         return inst
 
@@ -41,7 +43,9 @@ class PNGSprite(Sprite):
         super().__init__()
 
         self.frames = []
-        self.original_image = None  # Store the original image for rotation
+        self.__original_frames = []
+        self.__original_image = None  # Store the original image for rotation
+
         self.image = None
         self.rect = None
         self.visible = True
@@ -74,13 +78,21 @@ class PNGSprite(Sprite):
         return lst_img
 
     def change_frame(self, image_index: int) -> None:
-        self.image = self.frames[image_index]
-        self.original_image = self.frames[image_index]
 
-    def animate_frames(self):
-        for img in self.frames:
-            self.original_image = img
-            self.image = img
+        self.image = self.frames[image_index]
+
+    def get_original_image(self):
+        return self.__original_image
+
+    def get_original_frames(self):
+        return self.__original_frames
+
+    def scale_frames(self, scalar):
+
+        for i, frame in enumerate(self.frames):
+            size = self.get_original_image().get_rect()
+            a = pygame.Vector2(size.width, size.height)
+            self.frames[i] = pygame.transform.scale(self.image, scalar * a)
 
     def move(
             self,
@@ -90,5 +102,6 @@ class PNGSprite(Sprite):
         self.rect = self.image.get_rect(center=(x, y))
 
     def rotate(self, deg: float) -> None:
-        self.image = pygame.transform.rotate(self.original_image, deg)
+        # THE ORIGINAL IMAGE NEEDS A REWORK
+        self.image = pygame.transform.rotate(self.__original_image, deg)
         self.rect = self.image.get_rect(center=self.rect.center)
