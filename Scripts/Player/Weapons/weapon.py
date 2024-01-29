@@ -8,7 +8,10 @@ from dataclasses import dataclass
 
 @dataclass
 class Weapon:
-    weapon_name: str
-    base_damage: float
-    crit_chance: float
-    crit_mult: float
+    # weapon_name: str
+    # base_damage: float
+    # crit_chance: float
+    # crit_mult: float
+
+    #: Attacks per second
+    attack_speed: float

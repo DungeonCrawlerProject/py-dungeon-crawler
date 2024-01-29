@@ -5,6 +5,7 @@ Last Modified: 01/27/2024
 """
 
 import math
+import time
 from typing import (
     Optional,
     Tuple
@@ -12,6 +13,7 @@ from typing import (
 
 import pygame
 
+from Scripts.Player.Weapons.weapon import Weapon
 from Scripts.Utility.game_controller import GameController
 from Scripts.Player.PlayerStateMachine.PlayerStates.dodge_state import DodgeState
 from Scripts.Player.PlayerStateMachine.PlayerStates.idle_state import IdleState
@@ -46,6 +48,10 @@ class Player:
         self.left_angle = 0.0
         self.right_angle = 0.0
 
+        self._button_down_since_last_attack = False
+
+        self.weapon = Weapon(3)
+
         # TODO THIS IS A TERRIBLE PRACTICE
         self.known_enemies = []
 
@@ -64,17 +70,13 @@ class Player:
         # Store and Make Player Objects
         self.game_obj = {
             "player": GameObject(self.position, PNGSprite.make_from_sprite_sheet('Sprites/sprite_sheet.png', 8, 16)),
-            "arrow": GameObject(self.position, PNGSprite.make_single_sprite('Sprites/arrow.png')),
             "slash": GameObject(self.position, PNGSprite.make_from_sprite_sheet('Sprites/slash.png', 40, 120)),
             "block": GameObject(self.position, PNGSprite.make_single_sprite('Sprites/block.png'))
         }
 
         self.animations = {
-            "slash": Animation(500, self.game_obj["slash"].sprite)
+            "slash": Animation(1000/self.weapon.attack_speed, self.game_obj["slash"].sprite)
         }
-
-        # Set Arrow Invisible
-        self.game_obj["arrow"].sprite.visible = False
 
         # Give the player the camera
         self.add_camera(camera)
@@ -104,10 +106,36 @@ class Player:
 
         left_mouse, middle_mouse, right_mouse = mouse_buttons
 
+        self.update_attack(left_mouse, game_controller)
+        self.update_block(right_mouse, game_controller)
+
+        # Cursor Rotation
+        target_angle = self.get_mouse_relative_angle(mouse_pos, self.relative_position)
+
+        # Set Right and Left Angle Logic
+        self.left_angle = self.get_left_angle(game_controller)
+        self.right_angle += ROTATE_SPEED * math.sin(math.radians(target_angle - self.right_angle))
+        self.right_angle %= 360
+
+        self.check_collisions()
+
+        # Change player pos
+        self.draw()
+
+    def update_attack(self, left_mouse, game_controller):
         # Only show the slash when attacking
+        dt = time.perf_counter() - self.cooldown_timers.dodge_cooldown_timer
+
         if left_mouse or game_controller.check_user_input(Input.ATTACK):
-            self.game_obj["slash"].sprite.visible = True
-            self.animations["slash"].start_animation()
+            if not self._button_down_since_last_attack:
+                if dt >= 1 / self.weapon.attack_speed:
+                    self.game_obj["slash"].sprite.visible = True
+                    self.animations["slash"].start_animation()
+                    # Store last dodge time
+                    self.cooldown_timers.dodge_cooldown_timer = time.perf_counter()
+                    self._button_down_since_last_attack = True
+        else:
+            self._button_down_since_last_attack = False
 
         # Animation Type Diff
         if self.animations["slash"].start_time is not None:
@@ -124,24 +152,12 @@ class Player:
         else:
             self.game_obj["slash"].sprite.visible = False
 
+    def update_block(self, right_mouse, game_controller):
         # Only show the block when blocking
         if right_mouse or game_controller.check_user_input(Input.BLOCK):
             self.game_obj["block"].sprite.visible = True
         else:
             self.game_obj["block"].sprite.visible = False
-
-        # Cursor Rotation
-        target_angle = self.get_mouse_relative_angle(mouse_pos, self.relative_position)
-
-        # Set Right and Left Angle Logic
-        self.left_angle = self.get_left_angle(game_controller)
-        self.right_angle += ROTATE_SPEED * math.sin(math.radians(target_angle - self.right_angle))
-        self.right_angle %= 360
-
-        self.check_collisions()
-
-        # Change player pos
-        self.draw()
 
     def check_collisions(self):
 
@@ -201,7 +217,6 @@ class Player:
         self.state.draw()
 
         # Update the rotate functions
-        self.rotate_around_player_center(self.game_obj["arrow"], self.left_angle, 200.0)
         self.rotate_around_player_center(self.game_obj["block"], self.left_angle, 50.0)
         self.rotate_around_player_center(self.game_obj["slash"], self.left_angle, 30.0)
 
