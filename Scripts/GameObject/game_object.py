@@ -12,7 +12,7 @@ class GameObject:
     position: pygame.Vector2 | Tuple[float | int, float | int]
 
     #: The sprite for rendering the game object
-    sprite: PNGSprite
+    sprite: PNGSprite | pygame.Surface | None
 
     #: The type of gameobject
     tag: Optional[str] = None

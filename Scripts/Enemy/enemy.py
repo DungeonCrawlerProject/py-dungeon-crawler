@@ -3,7 +3,7 @@ import json
 from abc import ABC, abstractmethod
 from Scripts.sprite import PNGSprite
 from Scripts.GameObject.game_object import GameObject
-
+from Scripts.CollisionBox.collision_box import CollisionBox
 
 class Enemy(ABC, GameObject):
     def __init__(
@@ -15,6 +15,7 @@ class Enemy(ABC, GameObject):
         attack_damage: int,
         attack_range: int,
         aggro_range: int,
+        collider: CollisionBox
     ) -> None:
         super().__init__(position=position, sprite=sprite, tag="Enemy")
         self.max_health: int = max_health
@@ -24,6 +25,7 @@ class Enemy(ABC, GameObject):
         self.attack_range: int = attack_range
         self.aggro_range = aggro_range
         self.target = None
+        self.collider = collider
 
     def idle(self, targets: list):
         for target in targets:

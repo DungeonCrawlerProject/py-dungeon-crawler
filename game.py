@@ -18,6 +18,7 @@ from Scripts.UI.menu_handler import MenuHandler
 from Scripts.UI.esc_menu import EscMenu
 from Scripts.UI.settings_menu import SettingsMenu
 from Scripts.Enemy.enemy_handler import EnemyHandler
+from Scripts.CollisionBox.collision_handler import CollisionHandler
 
 if __name__ == "__main__":
 
@@ -28,9 +29,11 @@ if __name__ == "__main__":
     # pygame.mouse.set_visible(False)
 
     enemy_handler = EnemyHandler()
+    
+    collision_handler = CollisionHandler()
 
     # World Gen
-    world = WorldGeneration(enemy_handler)
+    world = WorldGeneration(enemy_handler, collision_handler)
 
     # Camera Setup
     cam = Camera(world)
@@ -108,6 +111,9 @@ if __name__ == "__main__":
 
         #Update Enemys
         enemy_handler.update()
+
+        # Update Colliders
+        collision_handler.update()
 
         cam.center_player(player, .1)
         cam.sorted_draw()

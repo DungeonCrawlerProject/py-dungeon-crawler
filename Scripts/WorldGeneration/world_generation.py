@@ -7,6 +7,7 @@ import math
 from Scripts.WorldGeneration.biome import Biome
 from Scripts.WorldGeneration.point_of_interest import PointOfInterest
 from Scripts.Enemy.enemy_handler import EnemyHandler
+from Scripts.CollisionBox.collision_handler import CollisionHandler
 from Scripts.sprite import PNGSprite
 from collections import defaultdict
 
@@ -18,8 +19,9 @@ from perlin_noise import PerlinNoise
 class WorldGeneration:
     TILE_SIZE = 32
 
-    def __init__(self, enemy_handler: EnemyHandler):
+    def __init__(self, enemy_handler: EnemyHandler, collision_handler: CollisionHandler):
         self.enemy_handler = enemy_handler
+        self.collision_handler = collision_handler
         self.noise_map = None
         self.ground = self.make_background(256, 128)
         self.right_border = self.ground.get_rect().right
@@ -143,7 +145,7 @@ class WorldGeneration:
 
             position = pygame.Vector2(*_pos) * WorldGeneration.TILE_SIZE
 
-            poi.spawn_enemys(pos=position, enemy_handler=self.enemy_handler)
+            poi.spawn_enemys(pos=position, enemy_handler=self.enemy_handler, collision_handler=self.collision_handler)
 
             self.game_objects.append(
                 GameObject(

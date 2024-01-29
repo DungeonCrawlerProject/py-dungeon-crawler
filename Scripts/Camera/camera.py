@@ -68,7 +68,7 @@ class Camera(pygame.sprite.Group):
         self.display_surface.blit(self.ground_surf_scaled, ground_offset)
 
         # Env Player and Enemies
-        for game_object in sorted(self.game_objects, key= lambda game_object: game_object.position[1]):
+        for game_object in sorted(self.game_objects, key= lambda game_object: game_object.position[1] + game_object.sprite.rect.height):
 
             # Skip if the sprite is set to invisible
             if not game_object.sprite.visible:
