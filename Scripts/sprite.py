@@ -1,5 +1,4 @@
 import math
-import time
 from typing import List
 
 import pygame
@@ -21,6 +20,7 @@ class PNGSprite(Sprite):
         inst.frames = inst.chop_sprite(img, width, height)
         inst.__original_frames = inst.chop_sprite(img, width, height)
         inst.__original_image = inst.frames[0]
+        inst.__unrotated_image = inst.chop_sprite(img, width, height)
         inst.image = inst.__original_image.copy()  # Make a copy of the original image
         inst.rect = inst.image.get_rect()
         return inst
@@ -34,6 +34,7 @@ class PNGSprite(Sprite):
         inst.frames = inst.chop_sprite(img, img.get_width(), img.get_height())
         inst.__original_frames = inst.chop_sprite(img, img.get_width(), img.get_height())
         inst.__original_image = inst.frames[0]
+        inst.__unrotated_image = inst.chop_sprite(img, img.get_width(), img.get_height())
         inst.image = inst.__original_image.copy()  # Make a copy of the original image
         inst.rect = inst.image.get_rect()
         return inst
@@ -45,7 +46,8 @@ class PNGSprite(Sprite):
         self.frames = []
         self.__original_frames = []
         self.__original_image = None  # Store the original image for rotation
-
+        self.__unrotated_image = None
+        self.current_frame = 0
         self.image = None
         self.rect = None
         self.visible = True
@@ -80,6 +82,7 @@ class PNGSprite(Sprite):
     def change_frame(self, image_index: int) -> None:
 
         self.image = self.frames[image_index]
+        self.current_frame = image_index
 
     def get_original_image(self):
         return self.__original_image
@@ -92,7 +95,9 @@ class PNGSprite(Sprite):
         for i, frame in enumerate(self.frames):
             size = self.get_original_image().get_rect()
             a = pygame.Vector2(size.width, size.height)
-            self.frames[i] = pygame.transform.scale(self.image, scalar * a)
+            self.frames[i] = pygame.transform.scale(frame, scalar * a)
+            self.__unrotated_image[i] = pygame.transform.scale(frame, scalar * a)
+
 
     def move(
             self,
@@ -103,5 +108,6 @@ class PNGSprite(Sprite):
 
     def rotate(self, deg: float) -> None:
         # THE ORIGINAL IMAGE NEEDS A REWORK
-        self.image = pygame.transform.rotate(self.__original_image, deg)
+        safe_ref = self.__unrotated_image[self.current_frame]
+        self.image = pygame.transform.rotate(safe_ref, deg)
         self.rect = self.image.get_rect(center=self.rect.center)
