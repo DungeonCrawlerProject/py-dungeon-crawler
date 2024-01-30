@@ -52,7 +52,8 @@ if __name__ == "__main__":
     init_y = ds.get_size()[1]//2
     player = Player(
         initial_position=pygame.Vector2(init_x, init_y),
-        camera=cam
+        camera=cam,
+        collision_handler=collision_handler
     )
     player.sprite.move(
         engine.screen_width // 2 - player_size // 2,

@@ -5,10 +5,7 @@ Last Modified: 01/27/2024
 """
 
 import math
-from typing import (
-    Optional,
-    Tuple
-)
+from typing import Optional, Tuple
 
 import pygame
 
@@ -16,23 +13,24 @@ from Scripts.Utility.game_controller import GameController
 from Scripts.Player.PlayerStateMachine.PlayerStates.dodge_state import DodgeState
 from Scripts.Player.PlayerStateMachine.PlayerStates.idle_state import IdleState
 from Scripts.Player.PlayerStateMachine.PlayerStates.moving_state import MovingState
-from Scripts.Player.PlayerStateMachine.PlayerStates.sprinting_state import SprintingState
+from Scripts.Player.PlayerStateMachine.PlayerStates.sprinting_state import (
+    SprintingState,
+)
 from Scripts.Player.Stats.player_cooldowns import PlayerCoolDownTimer
 from Scripts.Player.Stats.player_stats import PlayerStats
 from Scripts.Utility.input import Input
 from Scripts.animation import Animation
 from Scripts.sprite import PNGSprite
 from Scripts.GameObject.game_object import GameObject
+from Scripts.CollisionBox.collision_box import CollisionBox
+from Scripts.CollisionBox.collision_handler import CollisionHandler
 
 ROTATE_SPEED = 50
 
 
 class Player:
-
     def __init__(
-            self,
-            initial_position: pygame.Vector2,
-            camera
+        self, initial_position: pygame.Vector2, camera, collision_handler
     ) -> None:
         """
         The player is the controllable character for the user.
@@ -59,14 +57,23 @@ class Player:
         self._memory_attack_angle = pygame.Vector2(0, 0)
 
         # Make the sprite in the center
-        self.sprite = PNGSprite.make_from_sprite_sheet('Sprites/sprite_sheet.png', 8, 16)
+        self.sprite = PNGSprite.make_from_sprite_sheet(
+            "Sprites/sprite_sheet.png", 8, 16
+        )
 
         # Store and Make Player Objects
         self.player_objects = {
             "player_sprite": GameObject(self.position, self.sprite),
-            "arrow_sprite": GameObject(self.position, PNGSprite.make_single_sprite('Sprites/arrow.png')),
-            "slash_sprite": GameObject(self.position, PNGSprite.make_from_sprite_sheet('Sprites/slash.png', 40, 120)),
-            "block_sprite": GameObject(self.position, PNGSprite.make_single_sprite('Sprites/block.png'))
+            "arrow_sprite": GameObject(
+                self.position, PNGSprite.make_single_sprite("Sprites/arrow.png")
+            ),
+            "slash_sprite": GameObject(
+                self.position,
+                PNGSprite.make_from_sprite_sheet("Sprites/slash.png", 40, 120),
+            ),
+            "block_sprite": GameObject(
+                self.position, PNGSprite.make_single_sprite("Sprites/block.png")
+            ),
         }
 
         self.player_animations = {
@@ -79,11 +86,22 @@ class Player:
         # Give the player the camera
         self.add_camera(camera)
 
+        # Add collision box
+        collider_dims = pygame.Vector2(self.sprite.rect.width, self.sprite.rect.height)
+        self.collider = CollisionBox(
+            position=initial_position,
+            dimensions=collider_dims,
+            collision_handler=collision_handler,
+            tag="player"
+        )
+        collision_handler.add_collider(self.collider)
+        self.collider.add_parent(self)
+
     def update(
-            self,
-            game_controller: GameController,
-            mouse_buttons: Tuple[bool, bool, bool],
-            mouse_pos: Optional[Tuple[float, float]],
+        self,
+        game_controller: GameController,
+        mouse_buttons: Tuple[bool, bool, bool],
+        mouse_pos: Optional[Tuple[float, float]],
     ) -> None:
         """
         Updates the player object
@@ -99,7 +117,10 @@ class Player:
 
         # Update State-machine and Sprite Based Hit-box
         self.sprite.rect.x, self.sprite.rect.y = self.position.xy
-        self.player_objects["slash_sprite"].sprite.rect.x, self.player_objects["slash_sprite"].sprite.rect.y = self.position.xy
+        (
+            self.player_objects["slash_sprite"].sprite.rect.x,
+            self.player_objects["slash_sprite"].sprite.rect.y,
+        ) = self.position.xy
         self.state.update(game_controller)
 
         left_mouse, middle_mouse, right_mouse = mouse_buttons
@@ -111,7 +132,9 @@ class Player:
 
         # Animation Type Diff
         if self.player_animations["slash"].start_time is not None:
-            _elapsed_time = pygame.time.get_ticks() - self.player_animations["slash"].start_time
+            _elapsed_time = (
+                pygame.time.get_ticks() - self.player_animations["slash"].start_time
+            )
         else:
             _elapsed_time = 0
 
@@ -135,7 +158,9 @@ class Player:
 
         # Set Right and Left Angle Logic
         self.left_angle = self.get_left_angle(game_controller)
-        self.right_angle += ROTATE_SPEED * math.sin(math.radians(target_angle - self.right_angle))
+        self.right_angle += ROTATE_SPEED * math.sin(
+            math.radians(target_angle - self.right_angle)
+        )
         self.right_angle %= 360
 
         self.check_collisions()
@@ -158,9 +183,15 @@ class Player:
 
         # Default down
         if not game_controller.is_moving():
-            mov_dir.x, mov_dir.y = self._memory_attack_angle.x, self._memory_attack_angle.y
+            mov_dir.x, mov_dir.y = (
+                self._memory_attack_angle.x,
+                self._memory_attack_angle.y,
+            )
         else:
-            self._memory_attack_angle.x, self._memory_attack_angle.y = mov_dir.x, mov_dir.y
+            self._memory_attack_angle.x, self._memory_attack_angle.y = (
+                mov_dir.x,
+                mov_dir.y,
+            )
 
         return math.degrees(math.atan2(mov_dir.x, mov_dir.y))
 
@@ -192,21 +223,24 @@ class Player:
             obj.sprite.visible = False
 
     def draw(self) -> None:
-
         self.state.draw()
 
         # Update the rotate functions
-        self.rotate_around_player_center(self.player_objects["arrow_sprite"], self.left_angle, 200.0)
-        self.rotate_around_player_center(self.player_objects["block_sprite"], self.left_angle, 50.0)
-        self.rotate_around_player_center(self.player_objects["slash_sprite"], self.left_angle, 30.0)
+        self.rotate_around_player_center(
+            self.player_objects["arrow_sprite"], self.left_angle, 200.0
+        )
+        self.rotate_around_player_center(
+            self.player_objects["block_sprite"], self.left_angle, 50.0
+        )
+        self.rotate_around_player_center(
+            self.player_objects["slash_sprite"], self.left_angle, 30.0
+        )
 
     def set_relative_position(self, offset):
-
         self.relative_position = self.position + offset
 
     @staticmethod
     def get_mouse_relative_angle(mouse_pos, image_center) -> float:
-
         # Get the mouse position
         dx, dy = mouse_pos - image_center
         target_angle = (math.degrees(math.atan2(dx, dy)) + 360) % 360
@@ -214,10 +248,7 @@ class Player:
         return target_angle
 
     def rotate_around_player_center(
-            self,
-            game_object: GameObject,
-            angle: float,
-            offset: float
+        self, game_object: GameObject, angle: float, offset: float
     ) -> None:
         """
         Updates the position and angle of a game object owned by the player
@@ -232,19 +263,18 @@ class Player:
         # Get the offset for the object
         offset_vector = pygame.Vector2(
             offset * math.sin(math.radians(angle)),
-            offset * math.cos(math.radians(angle))
+            offset * math.cos(math.radians(angle)),
         )
 
         # Grab the half of the size of the player
         player_half_size = pygame.Vector2(
-            self.sprite.image.get_width() // 2,
-            self.sprite.image.get_height() // 2
+            self.sprite.image.get_width() // 2, self.sprite.image.get_height() // 2
         )
 
         # Grab half of the size of the object
         obj_half_size = pygame.Vector2(
             game_object.sprite.image.get_width() // 2,
-            game_object.sprite.image.get_height() // 2
+            game_object.sprite.image.get_height() // 2,
         )
 
         full_offset = player_half_size - obj_half_size + offset_vector

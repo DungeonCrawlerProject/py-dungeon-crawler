@@ -57,7 +57,6 @@ class Bandit(Enemy):
         return enemy
 
     def move(self):
-        print("move")
         if self.target is None:
             return
         self_to_target = self.target.position - self.position
@@ -71,5 +70,8 @@ class Bandit(Enemy):
             return
         dist_to_target = (self.target.position - self.position).length()
         if dist_to_target < self.attack_range:
-            print("attack")
+            collisions = self.collider.check_collision()
+            for collision in collisions:
+                if collision.tag == "player":
+                    print("hit")
         

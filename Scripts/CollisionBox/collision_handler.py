@@ -7,7 +7,6 @@ class CollisionHandler:
     def update(self):
         for collider in self.active_colliders:
             collider.update()
-            print(collider.position)
 
     def add_collider(self, collider):
         self.active_colliders.append(collider)
