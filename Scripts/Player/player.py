@@ -87,15 +87,13 @@ class Player:
         self.add_camera(camera)
 
         # Add collision box
-        collider_dims = pygame.Vector2(self.sprite.rect.width, self.sprite.rect.height)
+        dimensions = pygame.Vector2(self.sprite.rect.width, self.sprite.rect.height)
         self.collider = CollisionBox(
             position=initial_position,
-            dimensions=collider_dims,
+            dimensions=dimensions,
             collision_handler=collision_handler,
-            tag="player"
+            tag="player",
         )
-        collision_handler.add_collider(self.collider)
-        self.collider.add_parent(self)
 
     def update(
         self,
@@ -163,6 +161,9 @@ class Player:
         )
         self.right_angle %= 360
 
+        # Update collider
+        self.collider.x = self.position.x
+        self.collider.y = self.position.y
         self.check_collisions()
 
         # Change player pos

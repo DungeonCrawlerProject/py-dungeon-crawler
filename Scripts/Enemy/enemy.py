@@ -3,7 +3,9 @@ import json
 from abc import ABC, abstractmethod
 from Scripts.sprite import PNGSprite
 from Scripts.GameObject.game_object import GameObject
+from Scripts.CollisionBox.collision_handler import CollisionHandler
 from Scripts.CollisionBox.collision_box import CollisionBox
+
 
 class Enemy(ABC, GameObject):
     def __init__(
@@ -15,7 +17,7 @@ class Enemy(ABC, GameObject):
         attack_damage: int,
         attack_range: int,
         aggro_range: int,
-        collider: CollisionBox
+        collision_handler: CollisionHandler,
     ) -> None:
         super().__init__(position=position, sprite=sprite, tag="Enemy")
         self.max_health: int = max_health
@@ -25,7 +27,14 @@ class Enemy(ABC, GameObject):
         self.attack_range: int = attack_range
         self.aggro_range = aggro_range
         self.target = None
-        self.collider = collider
+        self.collision_handler = collision_handler
+        dimensions = pygame.Vector2(sprite.rect.width, sprite.rect.height)
+        self.collider = CollisionBox(
+            position=position,
+            dimensions=dimensions,
+            collision_handler=collision_handler,
+            tag="enemy",
+        )
 
     def idle(self, targets: list):
         for target in targets:
@@ -35,6 +44,8 @@ class Enemy(ABC, GameObject):
                 break
 
     def update(self, targets):
+        self.collider.x = self.position.x
+        self.collider.y = self.position.y
         if self.target is None:
             self.idle(targets)
             return

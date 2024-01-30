@@ -113,9 +113,6 @@ if __name__ == "__main__":
         #Update Enemys
         enemy_handler.update()
 
-        # Update Colliders
-        collision_handler.update()
-
         cam.center_player(player, .1)
         cam.sorted_draw()
 

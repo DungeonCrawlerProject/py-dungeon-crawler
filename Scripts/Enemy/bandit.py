@@ -2,7 +2,7 @@ import pygame
 import json
 from Scripts.Enemy.enemy import Enemy
 from Scripts.sprite import PNGSprite
-from Scripts.CollisionBox.collision_box import CollisionBox
+from Scripts.CollisionBox.collision_handler import CollisionHandler
 
 
 class Bandit(Enemy):
@@ -15,7 +15,7 @@ class Bandit(Enemy):
         attack_damage: int,
         attack_range: int,
         aggro_range: int,
-        collider: CollisionBox
+        collision_handler
     ) -> None:
         super().__init__(
             position=position,
@@ -25,7 +25,7 @@ class Bandit(Enemy):
             attack_damage=attack_damage,
             attack_range=attack_range,
             aggro_range=aggro_range,
-            collider=collider
+            collision_handler=collision_handler
         )
 
     @classmethod
@@ -40,9 +40,6 @@ class Bandit(Enemy):
             aggro_range = data["aggro_range"]
 
         sprite = PNGSprite.make_single_sprite(sprite)
-        dimensions = (sprite.rect.width, sprite.rect.height)
-        collider = CollisionBox(position=pos, dimensions=dimensions, collision_handler=collision_handler, tag="enemy")
-        collision_handler.add_collider(collider)
         enemy = Bandit(
             position=pos,
             sprite=sprite,
@@ -51,9 +48,8 @@ class Bandit(Enemy):
             attack_damage=attack_damage,
             attack_range=attack_range,
             aggro_range=aggro_range,
-            collider=collider
+            collision_handler=collision_handler
         )
-        collider.add_parent(enemy)
         return enemy
 
     def move(self):
@@ -68,10 +64,12 @@ class Bandit(Enemy):
     def attack(self):
         if self.target is None:
             return
+        print("Enemy rect: ", self.collider.x, " ", self.collider.y)
+        print("Player rect: ", self.collision_handler.active_colliders["player"][0].x, " ", self.collision_handler.active_colliders["player"][0].y)
+        print("Active Player colliders: ", self.collision_handler.active_colliders["player"])
         dist_to_target = (self.target.position - self.position).length()
         if dist_to_target < self.attack_range:
-            collisions = self.collider.check_collision()
-            for collision in collisions:
-                if collision.tag == "player":
-                    print("hit")
+            player_collisions = self.collider.collideobjectsall(self.collision_handler.active_colliders["player"])
+            print(player_collisions)
+            
         
