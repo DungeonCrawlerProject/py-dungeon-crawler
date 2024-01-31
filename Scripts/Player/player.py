@@ -89,6 +89,7 @@ class Player:
         # Add collision box
         dimensions = pygame.Vector2(self.sprite.rect.width, self.sprite.rect.height)
         self.collider = CollisionBox(
+            parent=self,
             position=initial_position,
             dimensions=dimensions,
             collision_handler=collision_handler,

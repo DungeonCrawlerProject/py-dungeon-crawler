@@ -17,6 +17,18 @@ class Bandit(Enemy):
         aggro_range: int,
         collision_handler
     ) -> None:
+        """Basic enemy that will wait for a target to enter aggro range and then move towards them and preform a melee attack.
+
+        Args:
+            position (pygame.Vector2): The position of the enemy.
+            sprite (PNGSprite): The sprite of the enemy.
+            max_health (int): The max health that a particular enemy can have.
+            speed (float): The speed at which the enemy will move.
+            attack_damage (int): The amount of hearts that will be removed from the player if hit by the enemy.
+            attack_range (int): The range of the enemy's attacks
+            aggro_range (int): The distance from the enemy's target before it will begin combat with the target.
+            collision_handler (CollisionHandler): The collision handler associated with the enemy.
+        """
         super().__init__(
             position=position,
             sprite=sprite,
@@ -64,12 +76,9 @@ class Bandit(Enemy):
     def attack(self):
         if self.target is None:
             return
-        print("Enemy rect: ", self.collider.x, " ", self.collider.y)
-        print("Player rect: ", self.collision_handler.active_colliders["player"][0].x, " ", self.collision_handler.active_colliders["player"][0].y)
-        print("Active Player colliders: ", self.collision_handler.active_colliders["player"])
         dist_to_target = (self.target.position - self.position).length()
         if dist_to_target < self.attack_range:
-            player_collisions = self.collider.collideobjectsall(self.collision_handler.active_colliders["player"])
+            player_collisions = self.collider.check_collision(tag="player")
             print(player_collisions)
             
         

@@ -19,6 +19,18 @@ class Enemy(ABC, GameObject):
         aggro_range: int,
         collision_handler: CollisionHandler,
     ) -> None:
+        """The abstract class in which all other enemy's will be based on.
+
+        Args:
+            position (pygame.Vector2): The position of the enemy.
+            sprite (PNGSprite): The sprite of the enemy.
+            max_health (int): The max health that a particular enemy can have.
+            speed (float): The speed at which the enemy will move.
+            attack_damage (int): The amount of hearts that will be removed from the player if hit by the enemy.
+            attack_range (int): The range of the enemy's attacks
+            aggro_range (int): The distance from the enemy's target before it will begin combat with the target.
+            collision_handler (CollisionHandler): The collision handler associated with the enemy.
+        """
         super().__init__(position=position, sprite=sprite, tag="Enemy")
         self.max_health: int = max_health
         self.cur_health: int = max_health
@@ -30,6 +42,7 @@ class Enemy(ABC, GameObject):
         self.collision_handler = collision_handler
         dimensions = pygame.Vector2(sprite.rect.width, sprite.rect.height)
         self.collider = CollisionBox(
+            parent=self,
             position=position,
             dimensions=dimensions,
             collision_handler=collision_handler,
@@ -37,6 +50,11 @@ class Enemy(ABC, GameObject):
         )
 
     def idle(self, targets: list):
+        """The default state of an enemy before a target enters its aggro range.
+
+        Args:
+            targets (list): A list of all of the enemy's attackable game objects. ex: player
+        """
         for target in targets:
             target_distance = (target.position - self.position).length()
             if target_distance <= self.aggro_range:
@@ -44,6 +62,11 @@ class Enemy(ABC, GameObject):
                 break
 
     def update(self, targets):
+        """Tells the enemy what behaviors to preform each frame as well as update its collision box to that it stays on the enemy sprite.
+
+        Args:
+            targets (_type_): A list of all of the enemy's attackable game objects. ex: player
+        """
         self.collider.x = self.position.x
         self.collider.y = self.position.y
         if self.target is None:
@@ -60,7 +83,6 @@ class Enemy(ABC, GameObject):
     def move(self) -> None:
         """
         dictates how the enemy movement will work
-
         """
         pass
 
