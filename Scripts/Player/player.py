@@ -70,8 +70,8 @@ class Player:
 
         # Store and Make Player Objects
         self.game_obj = {
-            "player": GameObject(self.position, PNGSprite.make_from_sprite_sheet('Sprites/sprite_sheet.png', 32, 32)),
-            "walk": GameObject(self.position, PNGSprite.make_from_sprite_sheet('Sprites/sprite_sheet.png', 32, 32)),
+            "player": GameObject(self.position, PNGSprite.make_from_sprite_sheet('Sprites/sprite_sheet.png', 32, 32), tag="player_idle"),
+            "walk": GameObject(self.position, PNGSprite.make_from_sprite_sheet('Sprites/sprite_sheet.png', 32, 32), tag="player_walk"),
             "walk_side": GameObject(self.position, PNGSprite.make_from_sprite_sheet('Sprites/walk_side.png', 32, 32)),
             "slash": GameObject(self.position, PNGSprite.make_from_sprite_sheet('Sprites/slash.png', 40, 120)),
             "block": GameObject(self.position, PNGSprite.make_single_sprite('Sprites/block.png'))
@@ -91,10 +91,10 @@ class Player:
         self.add_camera(camera)
 
         # Add collision box
-        dimensions = pygame.Vector2(self.sprite.rect.width, self.sprite.rect.height)
+        dimensions = pygame.Vector2(14, 30)
         self.collider = CollisionBox(
             parent=self,
-            position=initial_position,
+            position=initial_position - pygame.Vector2(16, 16),
             dimensions=dimensions,
             collision_handler=collision_handler,
             tag="player",
@@ -113,15 +113,16 @@ class Player:
         :param mouse_pos: The position of the mouse
         """
 
+        print(self.game_obj["player"].position)
         # Check if the player is dead
         if self.stats.current_health <= 0:
             self.kill_player()
             return
 
         # Update State-machine and Sprite Based Hit-box
-        self.game_obj["player"].sprite.rect.x, self.game_obj["player"].sprite.rect.y = self.position.xy
-        self.game_obj["slash"].sprite.rect.x, self.game_obj["slash"].sprite.rect.y = self.position.xy
-        self.game_obj["walk"].sprite.rect.x, self.game_obj["walk"].sprite.rect.y = self.position.xy
+        self.game_obj["player"].sprite.rect.x, self.game_obj["player"].sprite.rect.y = self.position.xy - pygame.Vector2(16, 16)
+        self.game_obj["slash"].sprite.rect.x, self.game_obj["slash"].sprite.rect.y = self.position.xy - pygame.Vector2(16, 16)
+        self.game_obj["walk"].sprite.rect.x, self.game_obj["walk"].sprite.rect.y = self.position.xy - pygame.Vector2(16, 16)
 
         self.game_obj["player"].sprite.visible = True
 
