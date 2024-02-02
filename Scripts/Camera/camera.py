@@ -76,9 +76,6 @@ class Camera(pygame.sprite.Group):
 
             game_object_center = (game_object.sprite.rect.width // 2, game_object.sprite.rect.height // 2)
             sprite_offset = (self.position_scalar * (pygame.Vector2(game_object.position) - game_object_center)) + ground_offset
-            if game_object.tag == "player_idle" or game_object.tag == "player_walk":
-                print(game_object.tag, game_object.position, game_object.sprite.visible, game_object_center)
-                print(sprite_offset)
 
             # Draws the player last
             self.display_surface.blit(game_object.sprite.image, sprite_offset)

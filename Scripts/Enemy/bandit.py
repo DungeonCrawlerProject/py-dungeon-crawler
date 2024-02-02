@@ -79,24 +79,21 @@ class Bandit(Enemy):
             return
         dist_to_target = (self.target.position - self.position).length()
         if dist_to_target < self.attack_range:
-            print("player: ",self.target.position)
-            print("enemy pos: ",self.position)
-            print("enemy sprite pos: ", (self.sprite.rect.x, self.sprite.rect.y))
             attack_direction = (self.target.position) - (self.position)
-            print("dir_vec: ", attack_direction)
-            attack_angle = math.atan2(attack_direction.y, attack_direction.x)
-            print("angle: ", math.degrees(attack_angle))
+
+            attack_angle = math.atan2(-attack_direction.y, attack_direction.x)
             x_offset = self.sprite.rect.width // 2
             y_offset = self.sprite.rect.height // 2
             offset_vector = pygame.Vector2  (
-            x_offset * math.sin(attack_angle),
-            y_offset * math.cos(attack_angle),
+            x_offset * math.cos(attack_angle),
+            -y_offset * math.sin(attack_angle),
             )
-            print("offset: ", offset_vector)
+            print("angle:", attack_angle)
+            print("offset:", offset_vector)
             sprite = PNGSprite.make_single_sprite("Sprites/Enemys/Slash.png")
 
             sprite.rotate(math.degrees(attack_angle))
-            pos = self.position + self.sprite.rect.center + offset_vector - sprite.rect.center
+            pos = self.position + offset_vector
             attack = GameObject(position=pos, sprite=sprite)
             attack_collider = CollisionBox(
                 parent=attack,

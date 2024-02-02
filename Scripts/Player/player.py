@@ -112,8 +112,6 @@ class Player:
         :param mouse_buttons: Booleans representing whether each button on a mouse is pressed.
         :param mouse_pos: The position of the mouse
         """
-
-        print(self.game_obj["player"].position)
         # Check if the player is dead
         if self.stats.current_health <= 0:
             self.kill_player()
