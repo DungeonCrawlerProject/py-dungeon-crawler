@@ -1,9 +1,10 @@
 import pygame
 import json
+import math
 from Scripts.Enemy.enemy import Enemy
 from Scripts.sprite import PNGSprite
-from Scripts.CollisionBox.collision_handler import CollisionHandler
-
+from Scripts.CollisionBox.collision_box import CollisionBox
+from Scripts.GameObject.game_object import GameObject
 
 class Bandit(Enemy):
     def __init__(
@@ -15,7 +16,7 @@ class Bandit(Enemy):
         attack_damage: int,
         attack_range: int,
         aggro_range: int,
-        collision_handler
+        collision_handler,
     ) -> None:
         """Basic enemy that will wait for a target to enter aggro range and then move towards them and preform a melee attack.
 
@@ -37,8 +38,9 @@ class Bandit(Enemy):
             attack_damage=attack_damage,
             attack_range=attack_range,
             aggro_range=aggro_range,
-            collision_handler=collision_handler
+            collision_handler=collision_handler,
         )
+        self.camera = None
 
     @classmethod
     def load_from_json(cls, data_path, pos, collision_handler):
@@ -60,7 +62,7 @@ class Bandit(Enemy):
             attack_damage=attack_damage,
             attack_range=attack_range,
             aggro_range=aggro_range,
-            collision_handler=collision_handler
+            collision_handler=collision_handler,
         )
         return enemy
 
@@ -72,13 +74,39 @@ class Bandit(Enemy):
         if self_to_target.length() > self.attack_range:
             self.position += move_dir * self.speed
 
-
     def attack(self):
         if self.target is None:
             return
         dist_to_target = (self.target.position - self.position).length()
         if dist_to_target < self.attack_range:
-            player_collisions = self.collider.check_collision(tag="player")
-            print(player_collisions)
-            
-        
+            print("player: ",self.target.position)
+            print("enemy pos: ",self.position)
+            print("enemy sprite pos: ", (self.sprite.rect.x, self.sprite.rect.y))
+            attack_direction = (self.target.position) - (self.position)
+            print("dir_vec: ", attack_direction)
+            attack_angle = math.atan2(attack_direction.y, attack_direction.x)
+            print("angle: ", math.degrees(attack_angle))
+            x_offset = self.sprite.rect.width // 2
+            y_offset = self.sprite.rect.height // 2
+            offset_vector = pygame.Vector2  (
+            x_offset * math.sin(attack_angle),
+            y_offset * math.cos(attack_angle),
+            )
+            print("offset: ", offset_vector)
+            sprite = PNGSprite.make_single_sprite("Sprites/Enemys/Slash.png")
+
+            sprite.rotate(math.degrees(attack_angle))
+            pos = self.position + self.sprite.rect.center + offset_vector - sprite.rect.center
+            attack = GameObject(position=pos, sprite=sprite)
+            attack_collider = CollisionBox(
+                parent=attack,
+                position=attack.position,
+                dimensions=pygame.Vector2(sprite.rect.width, sprite.rect.height),
+                collision_handler=self.collision_handler,
+                tag="enemy_atk",
+            )
+            attack.collider = attack_collider
+            self.camera.game_objects.append(attack)
+            targets_hit = attack.collider.check_collision(tag="player")
+            for target in targets_hit:
+                print(target)

@@ -31,7 +31,15 @@ class Enemy(ABC, GameObject):
             aggro_range (int): The distance from the enemy's target before it will begin combat with the target.
             collision_handler (CollisionHandler): The collision handler associated with the enemy.
         """
-        super().__init__(position=position, sprite=sprite, tag="Enemy")
+        dimensions = pygame.Vector2(sprite.rect.width, sprite.rect.height)
+        collider = CollisionBox(
+            parent=self,
+            position=position,
+            dimensions=dimensions,
+            collision_handler=collision_handler,
+            tag="enemy",
+        )
+        super().__init__(position=position, sprite=sprite, collider=collider, tag="Enemy")
         self.max_health: int = max_health
         self.cur_health: int = max_health
         self.speed: float = speed
@@ -40,14 +48,6 @@ class Enemy(ABC, GameObject):
         self.aggro_range = aggro_range
         self.target = None
         self.collision_handler = collision_handler
-        dimensions = pygame.Vector2(sprite.rect.width, sprite.rect.height)
-        self.collider = CollisionBox(
-            parent=self,
-            position=position,
-            dimensions=dimensions,
-            collision_handler=collision_handler,
-            tag="enemy",
-        )
 
     def idle(self, targets: list):
         """The default state of an enemy before a target enters its aggro range.

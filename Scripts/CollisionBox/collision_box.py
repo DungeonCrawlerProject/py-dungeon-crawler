@@ -1,6 +1,5 @@
 import pygame
 from typing import Optional
-from Scripts.GameObject.game_object import GameObject
 from Scripts.CollisionBox.collision_handler import CollisionHandler
 
 

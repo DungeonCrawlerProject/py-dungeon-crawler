@@ -1,5 +1,5 @@
 {
-    "sprite": "Sprites/Enemys/Bandit.png",
+    "sprite": "Sprites/Enemys/Bandit_32x32.png",
     "max_health": 5,
     "speed": 5.0,
     "attack_damage": 1,
