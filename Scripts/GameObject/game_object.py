@@ -18,5 +18,9 @@ class GameObject:
     #: The collision box for the game object
     collider: Optional[CollisionBox] = None
 
+    #: The amount of time that the object will exist for after instantiation measured in milliseconds
+    lifetime: Optional[int] = None
+    spawn_time: Optional[int] = None
+
     #: The type of game object
     tag: Optional[str] = None

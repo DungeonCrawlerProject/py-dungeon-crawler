@@ -74,7 +74,13 @@ class Enemy(ABC, GameObject):
             return
         self.move()
         self.attack()
+        if self.target.stats.current_health <= 0:
+            if self.target in targets:
+                targets.remove(self.target)
+            self.target = None
 
+        if self.target is None:
+            return
         dist_to_target = pygame.Vector2(self.target.position - self.position).length()
         if dist_to_target > self.aggro_range * 1.5:
             self.target = None

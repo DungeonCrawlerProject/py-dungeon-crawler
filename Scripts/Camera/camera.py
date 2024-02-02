@@ -80,6 +80,15 @@ class Camera(pygame.sprite.Group):
             # Draws the player last
             self.display_surface.blit(game_object.sprite.image, sprite_offset)
 
+            # Change update object lifetime
+            if game_object.lifetime is None or game_object.spawn_time is None:
+                continue
+            if game_object.lifetime >= pygame.time.get_ticks() - game_object.spawn_time:
+                self.game_objects.remove(game_object)
+                
+
+    # TODO
+    # Change scaling method so sprites instantiated after resolution change are also scaled properly.
     def rescale(self, scalar):
         area = pygame.Vector2(self.ground_surf.get_rect().width, self.ground_surf.get_rect().height)
         self.ground_surf_scaled = pygame.transform.scale(self.ground_surf, scalar * area)

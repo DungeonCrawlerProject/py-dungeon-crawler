@@ -40,6 +40,7 @@ class Bandit(Enemy):
             aggro_range=aggro_range,
             collision_handler=collision_handler,
         )
+        self.knockback = 20
         self.camera = None
 
     @classmethod
@@ -88,13 +89,12 @@ class Bandit(Enemy):
             x_offset * math.cos(attack_angle),
             -y_offset * math.sin(attack_angle),
             )
-            print("angle:", attack_angle)
-            print("offset:", offset_vector)
-            sprite = PNGSprite.make_single_sprite("Sprites/Enemys/Slash.png")
 
+            sprite = PNGSprite.make_single_sprite("Sprites/Enemys/Slash.png")
             sprite.rotate(math.degrees(attack_angle))
+
             pos = self.position + offset_vector
-            attack = GameObject(position=pos, sprite=sprite)
+            attack = GameObject(position=pos, sprite=sprite, lifetime=1000, spawn_time=pygame.time.get_ticks(),)
             attack_collider = CollisionBox(
                 parent=attack,
                 position=attack.position,
@@ -106,4 +106,6 @@ class Bandit(Enemy):
             self.camera.game_objects.append(attack)
             targets_hit = attack.collider.check_collision(tag="player")
             for target in targets_hit:
-                print(target)
+                target.stats.current_health -= self.attack_damage
+                knockback_vector = attack_direction.normalize() * self.knockback
+                target.position += knockback_vector
