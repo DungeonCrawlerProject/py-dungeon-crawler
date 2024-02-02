@@ -15,6 +15,8 @@ class Bandit(Enemy):
         speed: float,
         attack_damage: int,
         attack_range: int,
+        attack_windup: int,
+        attack_cooldown: int,
         aggro_range: int,
         collision_handler,
     ) -> None:
@@ -37,6 +39,8 @@ class Bandit(Enemy):
             speed=speed,
             attack_damage=attack_damage,
             attack_range=attack_range,
+            attack_windup=attack_windup,
+            attack_cooldown=attack_cooldown,
             aggro_range=aggro_range,
             collision_handler=collision_handler,
         )
@@ -52,6 +56,8 @@ class Bandit(Enemy):
             speed = data["speed"]
             attack_damage = data["attack_damage"]
             attack_range = data["attack_range"]
+            attack_windup = data["attack_windup"]
+            attack_cooldown = data["attack_cooldown"]
             aggro_range = data["aggro_range"]
 
         sprite = PNGSprite.make_single_sprite(sprite)
@@ -62,6 +68,8 @@ class Bandit(Enemy):
             speed=speed,
             attack_damage=attack_damage,
             attack_range=attack_range,
+            attack_windup=attack_windup,
+            attack_cooldown=attack_cooldown,
             aggro_range=aggro_range,
             collision_handler=collision_handler,
         )
@@ -78,8 +86,16 @@ class Bandit(Enemy):
     def attack(self):
         if self.target is None:
             return
+        if self.last_attack > pygame.time.get_ticks() - self.attack_cooldown:
+            return
+        
         dist_to_target = (self.target.position - self.position).length()
-        if dist_to_target < self.attack_range:
+        if dist_to_target < self.attack_range or self.attack_start is not None:
+            if self.attack_start is None:
+                self.attack_start = pygame.time.get_ticks()
+                return
+            if self.attack_windup > pygame.time.get_ticks() - self.attack_start:
+                return
             attack_direction = (self.target.position) - (self.position)
 
             attack_angle = math.atan2(-attack_direction.y, attack_direction.x)
@@ -109,3 +125,5 @@ class Bandit(Enemy):
                 target.stats.current_health -= self.attack_damage
                 knockback_vector = attack_direction.normalize() * self.knockback
                 target.position += knockback_vector
+
+            self.last_attack = pygame.time.get_ticks()

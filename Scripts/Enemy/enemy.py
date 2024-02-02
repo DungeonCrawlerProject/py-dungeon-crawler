@@ -16,6 +16,8 @@ class Enemy(ABC, GameObject):
         speed: float,
         attack_damage: int,
         attack_range: int,
+        attack_windup: int,
+        attack_cooldown: int,
         aggro_range: int,
         collision_handler: CollisionHandler,
     ) -> None:
@@ -28,6 +30,7 @@ class Enemy(ABC, GameObject):
             speed (float): The speed at which the enemy will move.
             attack_damage (int): The amount of hearts that will be removed from the player if hit by the enemy.
             attack_range (int): The range of the enemy's attacks
+            attack_cooldown (int): The time it takes for the enemy to be able to attack after performing a attack. Measured in milliseconds
             aggro_range (int): The distance from the enemy's target before it will begin combat with the target.
             collision_handler (CollisionHandler): The collision handler associated with the enemy.
         """
@@ -45,6 +48,10 @@ class Enemy(ABC, GameObject):
         self.speed: float = speed
         self.attack_damage: int = attack_damage
         self.attack_range: int = attack_range
+        self.attack_windup: int = attack_windup
+        self.attack_start: int = None
+        self.attack_cooldown = attack_cooldown
+        self.last_attack = -attack_cooldown
         self.aggro_range = aggro_range
         self.target = None
         self.collision_handler = collision_handler

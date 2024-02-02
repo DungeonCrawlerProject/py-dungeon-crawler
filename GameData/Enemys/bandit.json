@@ -4,5 +4,7 @@
     "speed": 5.0,
     "attack_damage": 1,
     "attack_range": 20,
+    "attack_windup": 1000,
+    "attack_cooldown": 2000,
     "aggro_range": 150
 }
