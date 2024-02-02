@@ -96,6 +96,7 @@ class Bandit(Enemy):
                 return
             if self.attack_windup > pygame.time.get_ticks() - self.attack_start:
                 return
+            self.attack_start = None
             attack_direction = (self.target.position) - (self.position)
 
             attack_angle = math.atan2(-attack_direction.y, attack_direction.x)
