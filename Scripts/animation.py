@@ -1,7 +1,7 @@
 """
 The Animation class for animating PNGSprites
 By: Sean McClanahan
-Last Modified: 01/19/2024
+Last Modified: 02/01/2024
 """
 
 import pygame
@@ -38,10 +38,15 @@ class Animation:
         self.start_time = pygame.time.get_ticks()
         self.current_sprite_index = 0
 
-    def run(self, elapsed_time: float) -> int | None:
+    def run(
+            self,
+            elapsed_time: float,
+            is_replaying: bool = False
+    ) -> int | None:
         """
         Runs the animation
         :param elapsed_time: The timer showing the time differential
+        :param is_replaying: Whether the animation should replay
         :return: None represents the animation should not play. An int represents the frame index to animate
         """
 
@@ -49,19 +54,29 @@ class Animation:
         if self.start_time is None:
             return None
 
-        # If exceeded the duration return
-        if elapsed_time > self.display_duration:
-            return None
-
         # If the sprite is out of index return (this will be refactored when doing re-playable animations)
-        if self.current_sprite_index >= len(self.sprite.frames):
-            return None
+        if not is_replaying:
 
-        # Check if it's time to switch to the next sprite
-        if elapsed_time > (self.current_sprite_index + 1) * (self.display_duration // len(self.sprite.frames)):
-            self.current_sprite_index += 1
+            # If exceeded the duration return
+            if elapsed_time > self.display_duration:
+                return None
+            if self.current_sprite_index >= len(self.sprite.frames):
+                return None
 
-        self.current_sprite_index %= len(self.sprite.frames)
+            if elapsed_time > (self.current_sprite_index + 1) * (self.display_duration // len(self.sprite.frames)):
+                self.current_sprite_index += 1
+
+            self.current_sprite_index %= len(self.sprite.frames)
+            return self.current_sprite_index
+
+        else:
+
+            # Prevents zero division error
+            if elapsed_time == 0:
+                _ind = 0
+
+            time_per_frame = self.display_duration // len(self.sprite.frames)
+            self.current_sprite_index = int(elapsed_time // time_per_frame)
 
         # Return the index
         return self.current_sprite_index

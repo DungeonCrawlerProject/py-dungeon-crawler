@@ -79,9 +79,23 @@ class PNGSprite(Sprite):
 
         return lst_img
 
-    def change_frame(self, image_index: int) -> None:
+    def change_frame(
+            self,
+            image_index: int,
+            is_flipped=False
+    ) -> None:
+        """
+        Changes the sprite image to the frames index
+        :param image_index: The index
+        :param is_flipped: Whether the image should be flipped
+        """
 
-        self.image = self.frames[image_index]
+        new_image = self.frames[image_index]
+
+        if is_flipped:
+            new_image = pygame.transform.flip(new_image, flip_x=True, flip_y=False)
+
+        self.image = new_image
         self.current_frame = image_index
 
     def get_original_image(self):
@@ -97,7 +111,6 @@ class PNGSprite(Sprite):
             a = pygame.Vector2(size.width, size.height)
             self.frames[i] = pygame.transform.scale(frame, scalar * a)
             self.__unrotated_image[i] = pygame.transform.scale(frame, scalar * a)
-
 
     def move(
             self,

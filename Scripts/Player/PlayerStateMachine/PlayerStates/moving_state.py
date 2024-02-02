@@ -7,6 +7,8 @@ Last Modified: 01/27/2024
 import math
 import time
 
+import pygame
+
 from Scripts.Utility.input import Input
 from Scripts.Utility.game_controller import GameController
 from Scripts.Player.PlayerStateMachine.player_state import IPlayerState
@@ -14,11 +16,15 @@ from Scripts.Player.PlayerStateMachine.player_state import IPlayerState
 
 class MovingState(IPlayerState):
 
+    animation_timer = 0
+    move_dir = pygame.Vector2(0, 0)
+
     def update(self, game_controller: GameController) -> None:
         """
         Updates the players state, includes player movement and state switching
         :param game_controller: The Game Controller Instance
         """
+        self.move_dir = game_controller.get_movement_vector()
 
         dt = time.perf_counter() - self.player.cooldown_timers.dodge_cooldown_timer
 
@@ -50,4 +56,35 @@ class MovingState(IPlayerState):
         """
         Changes the sprite for the character depending on the state
         """
-        self.player.game_obj["player"].sprite.change_frame(1)
+
+        self.player.game_obj["player"].sprite.visible = False
+
+        _elapsed_time = pygame.time.get_ticks() - self.player.animations["walk"].start_time
+
+        self.player.game_obj["walk"].sprite.visible = False
+        self.player.game_obj["walk_side"].sprite.visible = False
+
+        if self.move_dir.x == 0 and abs(self.move_dir.y) == 1:
+            self.player.game_obj["walk"].sprite.visible = True
+            self.player.game_obj["walk_side"].sprite.visible = False
+
+            ind = self.player.animations["walk"].run(
+                _elapsed_time % self.player.animations["walk"].display_duration,
+                is_replaying=True
+            )
+
+            self.player.game_obj["walk"].sprite.change_frame(ind)
+        else:
+
+            self.player.game_obj["walk"].sprite.visible = False
+            self.player.game_obj["walk_side"].sprite.visible = True
+
+            ind = self.player.animations["walk_side"].run(
+                _elapsed_time % self.player.animations["walk"].display_duration,
+                is_replaying=True
+            )
+
+            if self.move_dir.x == 1:
+                self.player.game_obj["walk_side"].sprite.change_frame(ind)
+            else:
+                self.player.game_obj["walk_side"].sprite.change_frame(ind, is_flipped=True)

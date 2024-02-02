@@ -1,7 +1,7 @@
 """
 The player class
 By: Sean McClanahan and Nick Petruccelli
-Last Modified: 01/27/2024
+Last Modified: 02/01/2024
 """
 
 import math
@@ -69,14 +69,22 @@ class Player:
 
         # Store and Make Player Objects
         self.game_obj = {
-            "player": GameObject(self.position, PNGSprite.make_from_sprite_sheet('Sprites/sprite_sheet.png', 8, 16)),
+            "player": GameObject(self.position, PNGSprite.make_from_sprite_sheet('Sprites/sprite_sheet.png', 32, 32)),
+            "walk": GameObject(self.position, PNGSprite.make_from_sprite_sheet('Sprites/sprite_sheet.png', 32, 32)),
+            "walk_side": GameObject(self.position, PNGSprite.make_from_sprite_sheet('Sprites/walk_side.png', 32, 32)),
             "slash": GameObject(self.position, PNGSprite.make_from_sprite_sheet('Sprites/slash.png', 40, 120)),
             "block": GameObject(self.position, PNGSprite.make_single_sprite('Sprites/block.png'))
         }
+        self.game_obj["walk"].sprite.frames.pop(0)
+        self.game_obj["walk_side"].sprite.frames.pop(0)
 
         self.animations = {
-            "slash": Animation(1000/self.weapon.attack_speed, self.game_obj["slash"].sprite)
+            "slash": Animation(1000/self.weapon.attack_speed, self.game_obj["slash"].sprite),
+            "walk": Animation(1000, self.game_obj["walk"].sprite),
+            "walk_side": Animation(1000, self.game_obj["walk_side"].sprite)
         }
+
+        self.animations["walk_side"].sprite.visible = False
 
         # Give the player the camera
         self.add_camera(camera)
@@ -102,6 +110,10 @@ class Player:
         # Update State-machine and Sprite Based Hit-box
         self.game_obj["player"].sprite.rect.x, self.game_obj["player"].sprite.rect.y = self.position.xy
         self.game_obj["slash"].sprite.rect.x, self.game_obj["slash"].sprite.rect.y = self.position.xy
+        self.game_obj["walk"].sprite.rect.x, self.game_obj["walk"].sprite.rect.y = self.position.xy
+
+        self.game_obj["player"].sprite.visible = True
+
         self.state.update(game_controller)
 
         left_mouse, middle_mouse, right_mouse = mouse_buttons
