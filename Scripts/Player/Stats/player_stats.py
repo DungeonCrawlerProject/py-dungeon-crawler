@@ -16,10 +16,8 @@ class PlayerStats:
     max_stamina: float = 100.0
     current_stamina: float = 100.0
 
-    damage_mult: float = 1.0
-    crit_chance: float = 0.0
-    crit_multiplier: float = 1.0
     sprint_factor: float = 1.5
     speed: float = 7.5
+
     dodge_distance: float = 125.0
     dodge_cooldown: float = 2.0

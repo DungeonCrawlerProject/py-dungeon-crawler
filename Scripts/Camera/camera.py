@@ -83,9 +83,10 @@ class Camera(pygame.sprite.Group):
         area = pygame.Vector2(self.ground_surf.get_rect().width, self.ground_surf.get_rect().height)
         self.ground_surf_scaled = pygame.transform.scale(self.ground_surf, scalar * area)
 
-        for object in self.game_objects:
-            image = object.sprite.original_image
-            area = pygame.Vector2(image.get_rect().width, image.get_rect().height)
-            object.sprite.image = pygame.transform.scale(image, scalar * area)
+        for game_obj in self.game_objects:
+            original_size = game_obj.sprite.get_original_image().get_rect()
+            area = pygame.Vector2(original_size.width, original_size.height)
+            game_obj.sprite.scale_frames(scalar)
+            game_obj.sprite.image = pygame.transform.scale(game_obj.sprite.image, scalar * area)
         
         self.position_scalar = scalar

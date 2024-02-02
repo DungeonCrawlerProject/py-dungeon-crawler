@@ -1,14 +1,19 @@
 """
 The player class
 By: Sean McClanahan and Nick Petruccelli
-Last Modified: 01/27/2024
+Last Modified: 02/01/2024
 """
 
 import math
-from typing import Optional, Tuple
+import time
+from typing import (
+    Optional,
+    Tuple
+)
 
 import pygame
 
+from Scripts.Player.Weapons.weapon import Weapon
 from Scripts.Utility.game_controller import GameController
 from Scripts.Player.PlayerStateMachine.PlayerStates.dodge_state import DodgeState
 from Scripts.Player.PlayerStateMachine.PlayerStates.idle_state import IdleState
@@ -44,6 +49,13 @@ class Player:
         self.left_angle = 0.0
         self.right_angle = 0.0
 
+        self._button_down_since_last_attack = False
+
+        self.weapon = Weapon(3)
+
+        # TODO THIS IS A TERRIBLE PRACTICE
+        self.known_enemies = []
+
         # Dataclasses
         self.stats = PlayerStats()
         self.cooldown_timers = PlayerCoolDownTimer()
@@ -56,32 +68,24 @@ class Player:
         self.state = self.idle_state_inst
         self._memory_attack_angle = pygame.Vector2(0, 0)
 
-        # Make the sprite in the center
-        self.sprite = PNGSprite.make_from_sprite_sheet(
-            "Sprites/sprite_sheet.png", 8, 16
-        )
-
         # Store and Make Player Objects
-        self.player_objects = {
-            "player_sprite": GameObject(self.position, self.sprite),
-            "arrow_sprite": GameObject(
-                self.position, PNGSprite.make_single_sprite("Sprites/arrow.png")
-            ),
-            "slash_sprite": GameObject(
-                self.position,
-                PNGSprite.make_from_sprite_sheet("Sprites/slash.png", 40, 120),
-            ),
-            "block_sprite": GameObject(
-                self.position, PNGSprite.make_single_sprite("Sprites/block.png")
-            ),
+        self.game_obj = {
+            "player": GameObject(self.position, PNGSprite.make_from_sprite_sheet('Sprites/sprite_sheet.png', 32, 32)),
+            "walk": GameObject(self.position, PNGSprite.make_from_sprite_sheet('Sprites/sprite_sheet.png', 32, 32)),
+            "walk_side": GameObject(self.position, PNGSprite.make_from_sprite_sheet('Sprites/walk_side.png', 32, 32)),
+            "slash": GameObject(self.position, PNGSprite.make_from_sprite_sheet('Sprites/slash.png', 40, 120)),
+            "block": GameObject(self.position, PNGSprite.make_single_sprite('Sprites/block.png'))
+        }
+        self.game_obj["walk"].sprite.frames.pop(0)
+        self.game_obj["walk_side"].sprite.frames.pop(0)
+
+        self.animations = {
+            "slash": Animation(1000/self.weapon.attack_speed, self.game_obj["slash"].sprite),
+            "walk": Animation(1000, self.game_obj["walk"].sprite),
+            "walk_side": Animation(1000, self.game_obj["walk_side"].sprite)
         }
 
-        self.player_animations = {
-            "slash": Animation(500, self.player_objects["slash_sprite"].sprite)
-        }
-
-        # Set Arrow Invisible
-        self.player_objects["arrow_sprite"].sprite.visible = False
+        self.animations["walk_side"].sprite.visible = False
 
         # Give the player the camera
         self.add_camera(camera)
@@ -115,42 +119,18 @@ class Player:
             return
 
         # Update State-machine and Sprite Based Hit-box
-        self.sprite.rect.x, self.sprite.rect.y = self.position.xy
-        (
-            self.player_objects["slash_sprite"].sprite.rect.x,
-            self.player_objects["slash_sprite"].sprite.rect.y,
-        ) = self.position.xy
+        self.game_obj["player"].sprite.rect.x, self.game_obj["player"].sprite.rect.y = self.position.xy
+        self.game_obj["slash"].sprite.rect.x, self.game_obj["slash"].sprite.rect.y = self.position.xy
+        self.game_obj["walk"].sprite.rect.x, self.game_obj["walk"].sprite.rect.y = self.position.xy
+
+        self.game_obj["player"].sprite.visible = True
+
         self.state.update(game_controller)
 
         left_mouse, middle_mouse, right_mouse = mouse_buttons
 
-        # Only show the slash when attacking
-        if left_mouse or game_controller.check_user_input(Input.ATTACK):
-            self.player_objects["slash_sprite"].sprite.visible = True
-            self.player_animations["slash"].start_animation()
-
-        # Animation Type Diff
-        if self.player_animations["slash"].start_time is not None:
-            _elapsed_time = (
-                pygame.time.get_ticks() - self.player_animations["slash"].start_time
-            )
-        else:
-            _elapsed_time = 0
-
-        # Run the animation and get the current frame
-        render_frame = self.player_animations["slash"].run(_elapsed_time)
-
-        # Draw the current frame at the specified positions
-        if render_frame is not None:
-            self.player_objects["slash_sprite"].sprite.change_frame(render_frame)
-        else:
-            self.player_objects["slash_sprite"].sprite.visible = False
-
-        # Only show the block when blocking
-        if right_mouse or game_controller.check_user_input(Input.BLOCK):
-            self.player_objects["block_sprite"].sprite.visible = True
-        else:
-            self.player_objects["block_sprite"].sprite.visible = False
+        self.update_attack(left_mouse, game_controller)
+        self.update_block(right_mouse, game_controller)
 
         # Cursor Rotation
         target_angle = self.get_mouse_relative_angle(mouse_pos, self.relative_position)
@@ -169,6 +149,43 @@ class Player:
 
         # Change player pos
         self.draw()
+
+    def update_attack(self, left_mouse, game_controller):
+        # Only show the slash when attacking
+        dt = time.perf_counter() - self.cooldown_timers.dodge_cooldown_timer
+
+        if left_mouse or game_controller.check_user_input(Input.ATTACK):
+            if not self._button_down_since_last_attack:
+                if dt >= 1 / self.weapon.attack_speed:
+                    self.game_obj["slash"].sprite.visible = True
+                    self.animations["slash"].start_animation()
+                    # Store last dodge time
+                    self.cooldown_timers.dodge_cooldown_timer = time.perf_counter()
+                    self._button_down_since_last_attack = True
+        else:
+            self._button_down_since_last_attack = False
+
+        # Animation Type Diff
+        if self.animations["slash"].start_time is not None:
+            _elapsed_time = pygame.time.get_ticks() - self.animations["slash"].start_time
+        else:
+            _elapsed_time = 0
+
+        # Run the animation and get the current frame
+        ind = self.animations["slash"].run(_elapsed_time)
+
+        # Draw the current frame at the specified positions
+        if ind is not None:
+            self.game_obj["slash"].sprite.change_frame(ind)
+        else:
+            self.game_obj["slash"].sprite.visible = False
+
+    def update_block(self, right_mouse, game_controller):
+        # Only show the block when blocking
+        if right_mouse or game_controller.check_user_input(Input.BLOCK):
+            self.game_obj["block"].sprite.visible = True
+        else:
+            self.game_obj["block"].sprite.visible = False
 
     def check_collisions(self):
         pass
@@ -204,7 +221,8 @@ class Player:
         :return:
         """
 
-        camera.game_objects.extend(self.player_objects.values())
+        camera.game_objects.extend(self.game_obj.values())
+
         camera.position = self.position.copy()
 
     def take_damage(self, damage: float) -> None:
@@ -219,24 +237,17 @@ class Player:
             self.kill_player()
 
     def kill_player(self) -> None:
-        self.sprite.visible = False
+        self.game_obj["player"].sprite.visible = False
 
-        for obj in self.player_objects.values():
+        for obj in self.game_obj.values():
             obj.sprite.visible = False
 
     def draw(self) -> None:
         self.state.draw()
 
         # Update the rotate functions
-        self.rotate_around_player_center(
-            self.player_objects["arrow_sprite"], self.left_angle, 200.0
-        )
-        self.rotate_around_player_center(
-            self.player_objects["block_sprite"], self.left_angle, 50.0
-        )
-        self.rotate_around_player_center(
-            self.player_objects["slash_sprite"], self.left_angle, 30.0
-        )
+        self.rotate_around_player_center(self.game_obj["block"], self.left_angle, 50.0)
+        self.rotate_around_player_center(self.game_obj["slash"], self.left_angle, 30.0)
 
     def set_relative_position(self, offset):
         self.relative_position = self.position + offset
@@ -270,7 +281,8 @@ class Player:
 
         # Grab the half of the size of the player
         player_half_size = pygame.Vector2(
-            self.sprite.image.get_width() // 2, self.sprite.image.get_height() // 2
+            self.game_obj["player"].sprite.image.get_width() // 2,
+            self.game_obj["player"].sprite.image.get_height() // 2
         )
 
         # Grab half of the size of the object
