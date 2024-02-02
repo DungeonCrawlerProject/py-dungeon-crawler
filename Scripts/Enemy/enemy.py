@@ -68,7 +68,7 @@ class Enemy(ABC, GameObject):
                 self.target = target
                 break
 
-    def update(self, targets):
+    def update(self, targets, enemys):
         """Tells the enemy what behaviors to preform each frame as well as update its collision box to that it stays on the enemy sprite.
 
         Args:
@@ -79,7 +79,7 @@ class Enemy(ABC, GameObject):
         if self.target is None:
             self.idle(targets)
             return
-        self.move()
+        self.move(enemys)
         self.attack()
         if self.target.stats.current_health <= 0:
             if self.target in targets:
@@ -93,7 +93,7 @@ class Enemy(ABC, GameObject):
             self.target = None
 
     @abstractmethod
-    def move(self) -> None:
+    def move(self, enemys) -> None:
         """
         dictates how the enemy movement will work
         """

@@ -8,7 +8,7 @@ class EnemyHandler:
 
     def update(self):
         for enemy in self.active_enemys:
-            enemy.update(self.active_targets)
+            enemy.update(self.active_targets, self.active_enemys)
 
     def add_enemy(self, enemy: Enemy):
         self.active_enemys.append(enemy)

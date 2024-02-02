@@ -75,11 +75,25 @@ class Bandit(Enemy):
         )
         return enemy
 
-    def move(self):
+    def move(self, enemys):
         if self.target is None:
             return
+        enemy_avoidance_vector = pygame.Vector2(0, 0)
+        near_by_enemys = 0
+        for enemy in enemys:
+            self_to_enemy = (self.position - enemy.position)
+            if self_to_enemy.length() > 50:
+                continue
+            if self_to_enemy.length() == 0:
+                self_to_enemy = pygame.Vector2(.1, .1)
+            enemy_avoidance_vector += self_to_enemy * (20 / self_to_enemy.length())
+            near_by_enemys += 1
+        enemy_avoidance_vector /= near_by_enemys
+
         self_to_target = self.target.position - self.position
-        move_dir = self_to_target.normalize()
+        print("enemy avoid:", enemy_avoidance_vector)
+        print("to player vec:", self_to_target)
+        move_dir = (self_to_target + enemy_avoidance_vector).normalize()
         if self_to_target.length() > self.attack_range:
             self.position += move_dir * self.speed
 
