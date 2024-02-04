@@ -1,13 +1,12 @@
 """
 Sprint State
 By: Sean McClanahan
-Last Modified: 01/27/2024
+Last Modified: 02/03/2024
 """
 
 import math
 
 from pygame import Vector2
-from pygame.time import get_ticks
 
 from Scripts.Player.PlayerStateMachine.player_state import IPlayerState
 from Scripts.Utility.game_controller import GameController
@@ -24,6 +23,10 @@ class SprintingState(IPlayerState):
         """
 
         self.move_dir = game_controller.get_movement_vector()
+
+        if not game_controller.is_moving():
+            self.player.animations["sprint"].stop()
+            self.player.animations["sprint_side"].stop()
 
         if not game_controller.is_moving():
             self.player.state = self.player.idle_state_inst
@@ -53,38 +56,16 @@ class SprintingState(IPlayerState):
         Changes the sprite for the character depending on the state
         """
 
+        # Hide Idle Sprite
         self.player.game_obj["player"].sprite.visible = False
-        self.player.animations["walk"].sprite.visible = False
-        self.player.animations["walk_side"].sprite.visible = False
-        self.player.animations["sprint"].sprite.visible = False
-        self.player.animations["sprint_side"].sprite.visible = False
-
-        _elapsed_time = get_ticks() - self.player.animations["sprint"].start_time
-
-        self.player.game_obj["walk"].sprite.visible = False
-        self.player.game_obj["walk_side"].sprite.visible = False
 
         if self.move_dir.x == 0 and abs(self.move_dir.y) == 1:
-            self.player.game_obj["walk"].sprite.visible = True
-            self.player.game_obj["walk_side"].sprite.visible = False
-
-            ind = self.player.animations["sprint"].run(
-                _elapsed_time % self.player.animations["sprint"].display_duration,
-                is_replaying=True
-            )
-
-            self.player.game_obj["walk"].sprite.change_frame(ind)
+            dir_sprite = "sprint"
+            is_flipped = False
+            self.player.animations["sprint_side"].sprite.visible = False
         else:
+            dir_sprite = "sprint_side"
+            is_flipped = self.move_dir.x != 1
+            self.player.animations["sprint"].sprite.visible = False
 
-            self.player.game_obj["walk"].sprite.visible = False
-            self.player.game_obj["walk_side"].sprite.visible = True
-
-            ind = self.player.animations["sprint_side"].run(
-                _elapsed_time % self.player.animations["sprint"].display_duration,
-                is_replaying=True
-            )
-
-            if self.move_dir.x == 1:
-                self.player.game_obj["walk_side"].sprite.change_frame(ind)
-            else:
-                self.player.game_obj["walk_side"].sprite.change_frame(ind, is_flipped=True)
+        self.player.animations[dir_sprite].run_repeating(is_flipped=is_flipped)

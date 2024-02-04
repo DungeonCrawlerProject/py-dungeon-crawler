@@ -1,15 +1,18 @@
 """
 The Animation class for animating PNGSprites
 By: Sean McClanahan
-Last Modified: 02/01/2024
+Last Modified: 02/03/2024
 """
 
 import pygame
+from pygame import Vector2
+from pygame.time import get_ticks
 
+from Scripts.GameObject.game_object import GameObject
 from Scripts.sprite import PNGSprite
 
 
-class Animation:
+class Animation(GameObject):
 
     def __init__(
             self,
@@ -26,57 +29,81 @@ class Animation:
         if len(sprite.frames) <= 1:
             raise IndexError("The Input PNGSprite must have more than one frame to animate")
 
-        self.sprite = sprite
+        # Inherits Position and Sprite
+        super().__init__(Vector2(0, 0), sprite)
+
         self.display_duration = display_duration
         self.start_time = None
         self.current_sprite_index = 0
+
+        # Turn off the animation by default
+        self.sprite.visible = False
 
     def start_animation(self) -> None:
         """
         Begins the animation timer and sets the frame to zero
         """
         self.start_time = pygame.time.get_ticks()
+        self.sprite.visible = True
         self.current_sprite_index = 0
 
-    def run(
+    def run_repeating(
             self,
-            elapsed_time: float,
-            is_replaying: bool = False
-    ) -> int | None:
+            is_flipped: bool = False,
+    ) -> None:
         """
         Runs the animation
-        :param elapsed_time: The timer showing the time differential
-        :param is_replaying: Whether the animation should replay
-        :return: None represents the animation should not play. An int represents the frame index to animate
+        :param is_flipped: Whether the image should be flipped
         """
+
+        self.sprite.visible = True
 
         # Return if the timer has been started
         if self.start_time is None:
             return None
 
-        # If the sprite is out of index return (this will be refactored when doing re-playable animations)
-        if not is_replaying:
+        elapsed_time = (get_ticks() - self.start_time) % self.display_duration
+        time_per_frame = self.display_duration // len(self.sprite.frames)
+        self.current_sprite_index = int(elapsed_time // time_per_frame)
 
-            # If exceeded the duration return
-            if elapsed_time > self.display_duration:
-                return None
-            if self.current_sprite_index >= len(self.sprite.frames):
-                return None
+        if self.current_sprite_index is None:
+            return
 
-            if elapsed_time > (self.current_sprite_index + 1) * (self.display_duration // len(self.sprite.frames)):
-                self.current_sprite_index += 1
+        self.sprite.change_frame(self.current_sprite_index, is_flipped=is_flipped)
 
-            self.current_sprite_index %= len(self.sprite.frames)
-            return self.current_sprite_index
+    def run_once(
+        self,
+        elapsed_time: float,
+        is_flipped: bool = False
+    ) -> None:
+        """
+        Runs the animation
+        :param elapsed_time: The timer showing the time differential
+        :param is_flipped: Whether the image should be flipped
+        """
 
-        else:
+        self.sprite.visible = True
 
-            # Prevents zero division error
-            if elapsed_time == 0:
-                _ind = 0
+        # Return if the timer has been started
+        if self.start_time is None:
+            return None
 
-            time_per_frame = self.display_duration // len(self.sprite.frames)
-            self.current_sprite_index = int(elapsed_time // time_per_frame)
+        # If exceeded the duration return
+        if elapsed_time > self.display_duration:
+            self.stop()
+            return None
+        if self.current_sprite_index >= len(self.sprite.frames):
+            return None
 
-        # Return the index
-        return self.current_sprite_index
+        if elapsed_time > (self.current_sprite_index + 1) * (self.display_duration // len(self.sprite.frames)):
+            self.current_sprite_index += 1
+
+        self.current_sprite_index %= len(self.sprite.frames)
+
+        if self.current_sprite_index is None:
+            return
+
+        self.sprite.change_frame(self.current_sprite_index, is_flipped=is_flipped)
+
+    def stop(self):
+        self.sprite.visible = False

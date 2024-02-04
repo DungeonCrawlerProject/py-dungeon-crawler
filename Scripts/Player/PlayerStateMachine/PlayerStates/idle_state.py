@@ -1,7 +1,7 @@
 """
 Idle State
 By: Sean McClanahan
-Last Modified: 02/01/2024
+Last Modified: 02/03/2024
 """
 
 from Scripts.Utility.game_controller import GameController
@@ -35,7 +35,3 @@ class IdleState(IPlayerState):
         """
         self.player.game_obj["player"].sprite.change_frame(0)
         self.player.game_obj["player"].sprite.visible = True
-        self.player.animations["walk"].sprite.visible = False
-        self.player.animations["walk_side"].sprite.visible = False
-        self.player.animations["sprint"].sprite.visible = False
-        self.player.animations["sprint_side"].sprite.visible = False

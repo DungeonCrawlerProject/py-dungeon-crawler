@@ -1,7 +1,7 @@
 """
 The player class
 By: Sean McClanahan and Nick Petruccelli
-Last Modified: 02/01/2024
+Last Modified: 02/03/2024
 """
 
 import math
@@ -31,6 +31,7 @@ ROTATE_SPEED = 50
 
 
 class Player:
+
     def __init__(
         self, initial_position: Vector2, camera, collision_handler
     ) -> None:
@@ -68,23 +69,23 @@ class Player:
         # Store and Make Player Objects
         self.game_obj = {
             "player": GameObject(self.position, PNGSprite.make_from_sprite_sheet('Sprites/sprite_sheet.png', 32, 32), tag="player_idle"),
-            "walk": GameObject(self.position, PNGSprite.make_from_sprite_sheet('Sprites/sprite_sheet.png', 32, 32), tag="player_walk"),
-            "walk_side": GameObject(self.position, PNGSprite.make_from_sprite_sheet('Sprites/walk_side.png', 32, 32)),
-            "slash": GameObject(self.position, PNGSprite.make_from_sprite_sheet('Sprites/slash.png', 40, 120)),
             "block": GameObject(self.position, PNGSprite.make_single_sprite('Sprites/block.png'))
         }
-        self.game_obj["walk"].sprite.frames.pop(0)
-        self.game_obj["walk_side"].sprite.frames.pop(0)
 
         self.animations = {
-            "slash": Animation(1000/self.weapon.attack_speed, self.game_obj["slash"].sprite),
-            "walk": Animation(1000, self.game_obj["walk"].sprite),
-            "sprint": Animation(750, self.game_obj["walk"].sprite),
-            "walk_side": Animation(1000, self.game_obj["walk_side"].sprite),
-            "sprint_side": Animation(750, self.game_obj["walk_side"].sprite)
+            "slash": Animation(1000/self.weapon.attack_speed, PNGSprite.make_from_sprite_sheet('Sprites/slash.png', 40, 120)),
+            "walk": Animation(1000, PNGSprite.make_from_sprite_sheet('Sprites/sprite_sheet.png', 32, 32)),
+            "sprint": Animation(750, PNGSprite.make_from_sprite_sheet('Sprites/sprite_sheet.png', 32, 32)),
+            "walk_side": Animation(1000, PNGSprite.make_from_sprite_sheet('Sprites/walk_side.png', 32, 32)),
+            "sprint_side": Animation(750, PNGSprite.make_from_sprite_sheet('Sprites/walk_side.png', 32, 32))
         }
 
-        self.animations["walk_side"].sprite.visible = False
+        self.animations["walk"].sprite.frames.pop(0)
+        self.animations["walk_side"].sprite.frames.pop(0)
+
+        # Set All Animations Invisible on Start up
+        for anim in self.animations.values():
+            anim.sprite.visible = False
 
         # Give the player the camera
         self.add_camera(camera)
@@ -118,10 +119,11 @@ class Player:
 
         # Update State-machine and Sprite Based Hit-box
         self.game_obj["player"].sprite.rect.x, self.game_obj["player"].sprite.rect.y = self.position.xy - Vector2(16, 16)
-        self.game_obj["slash"].sprite.rect.x, self.game_obj["slash"].sprite.rect.y = self.position.xy - Vector2(16, 16)
-        self.game_obj["walk"].sprite.rect.x, self.game_obj["walk"].sprite.rect.y = self.position.xy - Vector2(16, 16)
 
         self.game_obj["player"].sprite.visible = True
+
+        for anim in self.animations.values():
+            anim.position = self.position
 
         self.state.update(game_controller)
 
@@ -151,10 +153,12 @@ class Player:
     def update_attack(self, left_mouse, game_controller):
         # Only show the slash when attacking
 
+        # TODO: Fix Slash's First Frame shows
+
+        # Animation Type Diff
         if left_mouse or game_controller.check_user_input(Input.ATTACK):
             if not self._button_down_since_last_attack:
                 if self.cooldown_timers.dodge.has_seconds_passed(1 / self.weapon.attack_speed):
-                    self.game_obj["slash"].sprite.visible = True
                     self.animations["slash"].start_animation()
                     # Store last dodge time
                     self.cooldown_timers.dodge.restart_time()
@@ -169,13 +173,7 @@ class Player:
             _elapsed_time = 0
 
         # Run the animation and get the current frame
-        ind = self.animations["slash"].run(_elapsed_time)
-
-        # Draw the current frame at the specified positions
-        if ind is not None:
-            self.game_obj["slash"].sprite.change_frame(ind)
-        else:
-            self.game_obj["slash"].sprite.visible = False
+        self.animations["slash"].run_once(_elapsed_time)
 
     def update_block(self, right_mouse, game_controller):
         # Only show the block when blocking
@@ -219,7 +217,7 @@ class Player:
         """
 
         camera.game_objects.extend(self.game_obj.values())
-
+        camera.game_objects.extend(self.animations.values())
         camera.position = self.position.copy()
 
     def take_damage(self, damage: float) -> None:
@@ -244,7 +242,7 @@ class Player:
 
         # Update the rotate functions
         self.rotate_around_player_center(self.game_obj["block"], self.left_angle, 50.0)
-        self.rotate_around_player_center(self.game_obj["slash"], self.left_angle, 30.0)
+        self.rotate_around_player_center(self.animations["slash"], self.left_angle, 30.0)
 
     def set_relative_position(self, offset):
         self.relative_position = self.position + offset
@@ -258,7 +256,7 @@ class Player:
         return target_angle
 
     def rotate_around_player_center(
-        self, game_object: GameObject, angle: float, offset: float
+        self, game_object: GameObject | Animation, angle: float, offset: float
     ) -> None:
         """
         Updates the position and angle of a game object owned by the player
