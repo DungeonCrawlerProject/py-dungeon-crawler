@@ -24,6 +24,9 @@ class GameController:
 
         self.input_key = None
         self.input_btn = None
+        self.mouse_btn = None
+
+        self._left_mouse_button_down_since_last_attack = False
 
         self.CONTROLLER_DEAD_ZONE = 0.15
 
@@ -87,7 +90,7 @@ class GameController:
         self.key_move_right = self.get_pygame_key('keyboard', 'move_right')
         self.key_movement = [self.key_move_up, self.key_move_down, self.key_move_left, self.key_move_right]
 
-    def update_inputs(self, keys, controller):
+    def update_inputs(self, keys, controller, clicks):
         """
         :param keys: The pygame keyboard reading
         :param controller: The controller instance
@@ -95,6 +98,22 @@ class GameController:
         """
         self.input_key = keys
         self.input_btn = controller
+        self.mouse_btn = clicks
+
+        if not self.mouse_btn[0]:
+            self._left_mouse_button_down_since_last_attack = False
+
+    def is_unique_left_click(self):
+        if self.mouse_btn[0]:
+            if not self._left_mouse_button_down_since_last_attack:
+                self._left_mouse_button_down_since_last_attack = True
+                return True
+            else:
+                return False
+        else:
+            self._left_mouse_button_down_since_last_attack = False
+            return False
+
 
     def check_user_input(
             self,

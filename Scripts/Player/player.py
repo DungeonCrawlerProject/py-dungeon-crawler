@@ -15,6 +15,7 @@ from pygame.time import get_ticks
 
 from Scripts.CollisionBox.collision_box import CollisionBox
 from Scripts.GameObject.game_object import GameObject
+from Scripts.Player.Actions.action import Action
 from Scripts.Player.PlayerStateMachine.PlayerStates.dodge_state import DodgeState
 from Scripts.Player.PlayerStateMachine.PlayerStates.idle_state import IdleState
 from Scripts.Player.PlayerStateMachine.PlayerStates.moving_state import MovingState
@@ -47,8 +48,6 @@ class Player:
         self.left_angle = 0.0
         self.right_angle = 0.0
 
-        self._button_down_since_last_attack = False
-
         self.weapon = Weapon(3)
 
         # TODO THIS IS A TERRIBLE PRACTICE
@@ -73,11 +72,14 @@ class Player:
         }
 
         self.animations = {
-            "slash": Animation(1000/self.weapon.attack_speed, PNGSprite.make_from_sprite_sheet('Sprites/slash.png', 40, 120)),
             "walk": Animation(1000, PNGSprite.make_from_sprite_sheet('Sprites/sprite_sheet.png', 32, 32)),
             "sprint": Animation(750, PNGSprite.make_from_sprite_sheet('Sprites/sprite_sheet.png', 32, 32)),
             "walk_side": Animation(1000, PNGSprite.make_from_sprite_sheet('Sprites/walk_side.png', 32, 32)),
             "sprint_side": Animation(750, PNGSprite.make_from_sprite_sheet('Sprites/walk_side.png', 32, 32))
+        }
+
+        self.actions = {
+            "slash": Action(Animation(1000/self.weapon.attack_speed, PNGSprite.make_from_sprite_sheet('Sprites/slash.png', 40, 120)), 0.0)
         }
 
         self.animations["walk"].sprite.frames.pop(0)
@@ -129,7 +131,7 @@ class Player:
 
         left_mouse, middle_mouse, right_mouse = mouse_buttons
 
-        self.update_attack(left_mouse, game_controller)
+        self.update_attack(game_controller)
         self.update_block(right_mouse, game_controller)
 
         # Cursor Rotation
@@ -150,30 +152,13 @@ class Player:
         # Change player pos
         self.draw()
 
-    def update_attack(self, left_mouse, game_controller):
-        # Only show the slash when attacking
+    def update_attack(self, game_controller):
 
-        # TODO: Fix Slash's First Frame shows
+        # If the Attack Button is Pressed, attempt the action
+        if game_controller.is_unique_left_click() or game_controller.check_user_input(Input.ATTACK):
+            self.actions["slash"].attempt()
 
-        # Animation Type Diff
-        if left_mouse or game_controller.check_user_input(Input.ATTACK):
-            if not self._button_down_since_last_attack:
-                if self.cooldown_timers.dodge.has_seconds_passed(1 / self.weapon.attack_speed):
-                    self.animations["slash"].start_animation()
-                    # Store last dodge time
-                    self.cooldown_timers.dodge.restart_time()
-                    self._button_down_since_last_attack = True
-        else:
-            self._button_down_since_last_attack = False
-
-        # Animation Type Diff
-        if self.animations["slash"].start_time is not None:
-            _elapsed_time = get_ticks() - self.animations["slash"].start_time
-        else:
-            _elapsed_time = 0
-
-        # Run the animation and get the current frame
-        self.animations["slash"].run_once(_elapsed_time)
+        self.actions["slash"].draw()
 
     def update_block(self, right_mouse, game_controller):
         # Only show the block when blocking
@@ -218,6 +203,7 @@ class Player:
 
         camera.game_objects.extend(self.game_obj.values())
         camera.game_objects.extend(self.animations.values())
+        camera.game_objects.append(self.actions["slash"].animation)
         camera.position = self.position.copy()
 
     def take_damage(self, damage: float) -> None:
@@ -241,8 +227,8 @@ class Player:
         self.state.draw()
 
         # Update the rotate functions
-        self.rotate_around_player_center(self.game_obj["block"], self.left_angle, 50.0)
-        self.rotate_around_player_center(self.animations["slash"], self.left_angle, 30.0)
+        self.actions["slash"].animation.rotate_about_object_center(self.game_obj["player"], self.left_angle, 30.0)
+        self.game_obj["block"].rotate_about_object_center(self.game_obj["player"], self.left_angle, 30.0)
 
     def set_relative_position(self, offset):
         self.relative_position = self.position + offset
@@ -254,38 +240,3 @@ class Player:
         target_angle = (math.degrees(math.atan2(dx, dy)) + 360) % 360
 
         return target_angle
-
-    def rotate_around_player_center(
-        self, game_object: GameObject | Animation, angle: float, offset: float
-    ) -> None:
-        """
-        Updates the position and angle of a game object owned by the player
-        :param game_object: The object to rotate about the player
-        :param angle: The angle of the object in degrees
-        :param offset: The distance between the objects center and the player's center
-        """
-
-        # Rotate the object first to prevent bouncy animation
-        game_object.sprite.rotate(angle)
-
-        # Get the offset for the object
-        offset_vector = Vector2(
-            offset * math.sin(math.radians(angle)),
-            offset * math.cos(math.radians(angle)),
-        )
-
-        # Grab the half of the size of the player
-        player_half_size = Vector2(
-            self.game_obj["player"].sprite.image.get_width() // 2,
-            self.game_obj["player"].sprite.image.get_height() // 2
-        )
-
-        # Grab half of the size of the object
-        obj_half_size = Vector2(
-            game_object.sprite.image.get_width() // 2,
-            game_object.sprite.image.get_height() // 2,
-        )
-
-        full_offset = player_half_size - obj_half_size + offset_vector
-
-        game_object.position = self.position + full_offset

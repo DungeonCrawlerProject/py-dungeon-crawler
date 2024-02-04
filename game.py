@@ -107,7 +107,7 @@ if __name__ == "__main__":
         mouse_buttons = pygame.mouse.get_pressed()
         mouse_pos = pygame.mouse.get_pos()
 
-        game_controller.update_inputs(keys, controller)
+        game_controller.update_inputs(keys, controller, mouse_buttons)
 
         # Update the player based on the current state
         player.update(game_controller, mouse_buttons, mouse_pos)
