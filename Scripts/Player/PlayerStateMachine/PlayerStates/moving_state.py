@@ -5,10 +5,11 @@ Last Modified: 01/27/2024
 """
 
 import math
-import time
 
-import pygame
+from pygame import Vector2
+from pygame.time import get_ticks
 
+from Scripts.Utility.cronos_clock import CronosClock
 from Scripts.Utility.input import Input
 from Scripts.Utility.game_controller import GameController
 from Scripts.Player.PlayerStateMachine.player_state import IPlayerState
@@ -16,8 +17,9 @@ from Scripts.Player.PlayerStateMachine.player_state import IPlayerState
 
 class MovingState(IPlayerState):
 
-    animation_timer = 0
-    move_dir = pygame.Vector2(0, 0)
+    move_dir = Vector2(0, 0)
+    momentum_timer = CronosClock()
+    momentum_memory = Vector2(0, 0)
 
     def update(self, game_controller: GameController) -> None:
         """
@@ -26,16 +28,18 @@ class MovingState(IPlayerState):
         """
         self.move_dir = game_controller.get_movement_vector()
 
-        dt = time.perf_counter() - self.player.cooldown_timers.dodge_cooldown_timer
+        if self.momentum_timer.has_seconds_passed(3.0):
+            self.player.state = self.player.sprinting_state_inst
 
-        if not game_controller.is_moving():
-            self.player.state = self.player.idle_state_inst
-        elif game_controller.check_user_input(Input.DODGE) and dt >= self.player.stats.dodge_cooldown:
+            # Start both animations for them to be in sync
+            self.player.animations["sprint"].start_animation()
+            self.player.animations["sprint_side"].start_animation()
+        elif game_controller.check_user_input(Input.DODGE) and self.player.cooldown_timers.dodge.has_seconds_passed(self.player.stats.dodge_cooldown):
             self.player.state = self.player.dodge_state_inst
-        else:
-            self.player.stats.current_stamina += 1.5
-            self.player.stats.current_stamina = min(self.player.stats.current_stamina, self.player.stats.max_stamina)
+        elif game_controller.is_moving():
             self.move(game_controller)
+        else:
+            self.player.state = self.player.idle_state_inst
 
     def move(self, game_controller: GameController) -> None:
         """
@@ -44,6 +48,16 @@ class MovingState(IPlayerState):
         """
 
         movement_input = game_controller.get_movement_vector()
+
+        if movement_input.x != 0:
+
+            if movement_input.x == -self.momentum_memory.x:
+
+                self.momentum_timer.restart_time()
+
+        if movement_input.y != 0:
+            if movement_input.y == -self.momentum_memory.y:
+                self.momentum_timer.restart_time()
 
         # Take max of that and 1 to prevent zero division error
         mag = math.sqrt(movement_input.x ** 2 + movement_input.y ** 2)
@@ -59,7 +73,7 @@ class MovingState(IPlayerState):
 
         self.player.game_obj["player"].sprite.visible = False
 
-        _elapsed_time = pygame.time.get_ticks() - self.player.animations["walk"].start_time
+        _elapsed_time = get_ticks() - self.player.animations["walk"].start_time
 
         self.player.game_obj["walk"].sprite.visible = False
         self.player.game_obj["walk_side"].sprite.visible = False

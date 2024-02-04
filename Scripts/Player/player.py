@@ -5,37 +5,34 @@ Last Modified: 02/01/2024
 """
 
 import math
-import time
 from typing import (
     Optional,
     Tuple
 )
 
-import pygame
+from pygame import Vector2
+from pygame.time import get_ticks
 
-from Scripts.Player.Weapons.weapon import Weapon
-from Scripts.Utility.game_controller import GameController
+from Scripts.CollisionBox.collision_box import CollisionBox
+from Scripts.GameObject.game_object import GameObject
 from Scripts.Player.PlayerStateMachine.PlayerStates.dodge_state import DodgeState
 from Scripts.Player.PlayerStateMachine.PlayerStates.idle_state import IdleState
 from Scripts.Player.PlayerStateMachine.PlayerStates.moving_state import MovingState
-from Scripts.Player.PlayerStateMachine.PlayerStates.sprinting_state import (
-    SprintingState,
-)
+from Scripts.Player.PlayerStateMachine.PlayerStates.sprinting_state import SprintingState
 from Scripts.Player.Stats.player_cooldowns import PlayerCoolDownTimer
 from Scripts.Player.Stats.player_stats import PlayerStats
+from Scripts.Player.Weapons.weapon import Weapon
+from Scripts.Utility.game_controller import GameController
 from Scripts.Utility.input import Input
 from Scripts.animation import Animation
 from Scripts.sprite import PNGSprite
-from Scripts.GameObject.game_object import GameObject
-from Scripts.CollisionBox.collision_box import CollisionBox
-from Scripts.CollisionBox.collision_handler import CollisionHandler
 
 ROTATE_SPEED = 50
 
 
 class Player:
     def __init__(
-        self, initial_position: pygame.Vector2, camera, collision_handler
+        self, initial_position: Vector2, camera, collision_handler
     ) -> None:
         """
         The player is the controllable character for the user.
@@ -66,7 +63,7 @@ class Player:
         self.sprinting_state_inst = SprintingState(self)
         self.dodge_state_inst = DodgeState(self)
         self.state = self.idle_state_inst
-        self._memory_attack_angle = pygame.Vector2(0, 0)
+        self._memory_attack_angle = Vector2(0, 0)
 
         # Store and Make Player Objects
         self.game_obj = {
@@ -82,7 +79,9 @@ class Player:
         self.animations = {
             "slash": Animation(1000/self.weapon.attack_speed, self.game_obj["slash"].sprite),
             "walk": Animation(1000, self.game_obj["walk"].sprite),
-            "walk_side": Animation(1000, self.game_obj["walk_side"].sprite)
+            "sprint": Animation(750, self.game_obj["walk"].sprite),
+            "walk_side": Animation(1000, self.game_obj["walk_side"].sprite),
+            "sprint_side": Animation(750, self.game_obj["walk_side"].sprite)
         }
 
         self.animations["walk_side"].sprite.visible = False
@@ -91,10 +90,10 @@ class Player:
         self.add_camera(camera)
 
         # Add collision box
-        dimensions = pygame.Vector2(14, 30)
+        dimensions = Vector2(14, 30)
         self.collider = CollisionBox(
             parent=self,
-            position=initial_position - pygame.Vector2(16, 16),
+            position=initial_position - Vector2(16, 16),
             dimensions=dimensions,
             collision_handler=collision_handler,
             tag="player",
@@ -118,9 +117,9 @@ class Player:
             return
 
         # Update State-machine and Sprite Based Hit-box
-        self.game_obj["player"].sprite.rect.x, self.game_obj["player"].sprite.rect.y = self.position.xy - pygame.Vector2(16, 16)
-        self.game_obj["slash"].sprite.rect.x, self.game_obj["slash"].sprite.rect.y = self.position.xy - pygame.Vector2(16, 16)
-        self.game_obj["walk"].sprite.rect.x, self.game_obj["walk"].sprite.rect.y = self.position.xy - pygame.Vector2(16, 16)
+        self.game_obj["player"].sprite.rect.x, self.game_obj["player"].sprite.rect.y = self.position.xy - Vector2(16, 16)
+        self.game_obj["slash"].sprite.rect.x, self.game_obj["slash"].sprite.rect.y = self.position.xy - Vector2(16, 16)
+        self.game_obj["walk"].sprite.rect.x, self.game_obj["walk"].sprite.rect.y = self.position.xy - Vector2(16, 16)
 
         self.game_obj["player"].sprite.visible = True
 
@@ -151,22 +150,21 @@ class Player:
 
     def update_attack(self, left_mouse, game_controller):
         # Only show the slash when attacking
-        dt = time.perf_counter() - self.cooldown_timers.dodge_cooldown_timer
 
         if left_mouse or game_controller.check_user_input(Input.ATTACK):
             if not self._button_down_since_last_attack:
-                if dt >= 1 / self.weapon.attack_speed:
+                if self.cooldown_timers.dodge.has_seconds_passed(1 / self.weapon.attack_speed):
                     self.game_obj["slash"].sprite.visible = True
                     self.animations["slash"].start_animation()
                     # Store last dodge time
-                    self.cooldown_timers.dodge_cooldown_timer = time.perf_counter()
+                    self.cooldown_timers.dodge.restart_time()
                     self._button_down_since_last_attack = True
         else:
             self._button_down_since_last_attack = False
 
         # Animation Type Diff
         if self.animations["slash"].start_time is not None:
-            _elapsed_time = pygame.time.get_ticks() - self.animations["slash"].start_time
+            _elapsed_time = get_ticks() - self.animations["slash"].start_time
         else:
             _elapsed_time = 0
 
@@ -273,19 +271,19 @@ class Player:
         game_object.sprite.rotate(angle)
 
         # Get the offset for the object
-        offset_vector = pygame.Vector2(
+        offset_vector = Vector2(
             offset * math.sin(math.radians(angle)),
             offset * math.cos(math.radians(angle)),
         )
 
         # Grab the half of the size of the player
-        player_half_size = pygame.Vector2(
+        player_half_size = Vector2(
             self.game_obj["player"].sprite.image.get_width() // 2,
             self.game_obj["player"].sprite.image.get_height() // 2
         )
 
         # Grab half of the size of the object
-        obj_half_size = pygame.Vector2(
+        obj_half_size = Vector2(
             game_object.sprite.image.get_width() // 2,
             game_object.sprite.image.get_height() // 2,
         )

@@ -5,7 +5,9 @@ Last Modified: 12/31/2023
 """
 from dataclasses import dataclass
 
+from Scripts.Utility.cronos_clock import CronosClock
+
 
 @dataclass
 class PlayerCoolDownTimer:
-    dodge_cooldown_timer: float = 0.0
+    dodge = CronosClock()

@@ -90,6 +90,12 @@ class PNGSprite(Sprite):
         :param is_flipped: Whether the image should be flipped
         """
 
+        if image_index < 0:
+            return
+
+        if image_index > len(self.frames):
+            return
+
         new_image = self.frames[image_index]
 
         if is_flipped:
