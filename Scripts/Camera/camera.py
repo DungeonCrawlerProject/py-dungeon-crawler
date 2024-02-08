@@ -66,10 +66,10 @@ class Camera(pygame.sprite.Group):
 
         # Draws the ground first
         self.display_surface.blit(self.ground_surf_scaled, ground_offset)
-
+    
+        non_none_sprites = [game_object for game_object in self.game_objects if game_object.sprite is not None]
         # Env Player and Enemies
-        for game_object in sorted(self.game_objects, key= lambda game_object: game_object.position[1] + game_object.sprite.rect.height):
-
+        for game_object in sorted(non_none_sprites, key= lambda game_object: game_object.position[1] + game_object.sprite.rect.height):
             # Skip if the sprite is set to invisible
             if not game_object.sprite.visible:
                 continue

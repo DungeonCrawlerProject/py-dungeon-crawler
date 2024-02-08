@@ -5,6 +5,8 @@ from Scripts.Enemy.enemy import Enemy
 from Scripts.sprite import PNGSprite
 from Scripts.CollisionBox.collision_box import CollisionBox
 from Scripts.GameObject.game_object import GameObject
+from Scripts.animation import Animation
+
 
 class Bandit(Enemy):
     def __init__(
@@ -45,7 +47,10 @@ class Bandit(Enemy):
             collision_handler=collision_handler,
         )
         self.knockback = 20
-        self.camera = None
+        self.attack_anim = Animation(
+            sprite=PNGSprite.make_from_sprite_sheet("Sprites/Enemys/Slash.png", 22, 15),
+            display_duration=1000,
+        )
 
     @classmethod
     def load_from_json(cls, data_path, pos, collision_handler):
@@ -74,25 +79,26 @@ class Bandit(Enemy):
             collision_handler=collision_handler,
         )
         return enemy
+    
+    def add_camera(self, camera):
+        self.camera = camera
+        camera.game_objects.append(self.attack_anim)
+    
+
+    def update(self, targets, enemys):
+        print(self.camera)
+        super().update(targets, enemys)
+        if self.attack_anim.start_time:
+            self.attack_anim.position = self.position
+            _elapsed_time = pygame.time.get_ticks() - self.attack_anim.start_time
+            self.attack_anim.run_once(_elapsed_time)
 
     def move(self, enemys):
         if self.target is None:
             return
-        enemy_avoidance_vector = pygame.Vector2(0, 0)
-        near_by_enemys = 0
-        for enemy in enemys:
-            self_to_enemy = (self.position - enemy.position)
-            if self_to_enemy.length() > 50:
-                continue
-            if self_to_enemy.length() == 0:
-                self_to_enemy = pygame.Vector2(.1, .1)
-            enemy_avoidance_vector += self_to_enemy * (20 / self_to_enemy.length())
-            near_by_enemys += 1
-        enemy_avoidance_vector /= near_by_enemys
+        enemy_avoidance_vector = self.calc_enemy_avoidance_vector(enemys)
 
         self_to_target = self.target.position - self.position
-        print("enemy avoid:", enemy_avoidance_vector)
-        print("to player vec:", self_to_target)
         move_dir = (self_to_target + enemy_avoidance_vector).normalize()
         if self_to_target.length() > self.attack_range:
             self.position += move_dir * self.speed
@@ -102,7 +108,7 @@ class Bandit(Enemy):
             return
         if self.last_attack > pygame.time.get_ticks() - self.attack_cooldown:
             return
-        
+
         dist_to_target = (self.target.position - self.position).length()
         if dist_to_target < self.attack_range or self.attack_start is not None:
             if self.attack_start is None:
@@ -116,25 +122,32 @@ class Bandit(Enemy):
             attack_angle = math.atan2(-attack_direction.y, attack_direction.x)
             x_offset = self.sprite.rect.width // 2
             y_offset = self.sprite.rect.height // 2
-            offset_vector = pygame.Vector2  (
-            x_offset * math.cos(attack_angle),
-            -y_offset * math.sin(attack_angle),
+            offset_vector = pygame.Vector2(
+                x_offset * math.cos(attack_angle),
+                -y_offset * math.sin(attack_angle),
             )
 
-            sprite = PNGSprite.make_single_sprite("Sprites/Enemys/Slash.png")
-            sprite.rotate(math.degrees(attack_angle))
+            self.attack_anim.sprite.rotate(math.degrees(attack_angle))
+            self.attack_anim.start_animation()
 
             pos = self.position + offset_vector
-            attack = GameObject(position=pos, sprite=sprite, lifetime=1000, spawn_time=pygame.time.get_ticks(),)
+            attack = GameObject(
+                position=pos,
+                sprite=None,
+                lifetime=1000,
+                spawn_time=pygame.time.get_ticks(),
+            )
             attack_collider = CollisionBox(
                 parent=attack,
                 position=attack.position,
-                dimensions=pygame.Vector2(sprite.rect.width, sprite.rect.height),
+                dimensions=pygame.Vector2(
+                    self.attack_anim.sprite.rect.width,
+                    self.attack_anim.sprite.rect.height,
+                ),
                 collision_handler=self.collision_handler,
                 tag="enemy_atk",
             )
             attack.collider = attack_collider
-            self.camera.game_objects.append(attack)
             targets_hit = attack.collider.check_collision(tag="player")
             for target in targets_hit:
                 target.stats.current_health -= self.attack_damage

@@ -54,7 +54,11 @@ class Enemy(ABC, GameObject):
         self.last_attack = -attack_cooldown
         self.aggro_range = aggro_range
         self.target = None
+        self.camera = None
         self.collision_handler = collision_handler
+
+    def add_camera(self, camera):
+        self.camera = camera
 
     def idle(self, targets: list):
         """The default state of an enemy before a target enters its aggro range.
@@ -105,3 +109,17 @@ class Enemy(ABC, GameObject):
         dictates how the enemy will attack
         """
         pass
+
+    def calc_enemy_avoidance_vector(self, enemys) -> pygame.Vector2:
+        enemy_avoidance_vector = pygame.Vector2(0, 0)
+        near_by_enemys = 0
+        for enemy in enemys:
+            self_to_enemy = (self.position - enemy.position)
+            if self_to_enemy.length() > 50:
+                continue
+            if self_to_enemy.length() == 0:
+                self_to_enemy = pygame.Vector2(.1, .1)
+            enemy_avoidance_vector += self_to_enemy * (20 / self_to_enemy.length())
+            near_by_enemys += 1
+        enemy_avoidance_vector /= near_by_enemys
+        return enemy_avoidance_vector

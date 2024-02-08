@@ -38,7 +38,7 @@ if __name__ == "__main__":
     # Camera Setup
     cam = Camera(world)
     for enemy in enemy_handler.active_enemys:
-        enemy.camera = cam
+        enemy.add_camera(cam)
 
     # UI Setup
     menu_handler = MenuHandler()
