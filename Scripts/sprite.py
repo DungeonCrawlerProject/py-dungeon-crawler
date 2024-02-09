@@ -130,3 +130,7 @@ class PNGSprite(Sprite):
         safe_ref = self.__unrotated_image[self.current_frame]
         self.image = pygame.transform.rotate(safe_ref, deg)
         self.rect = self.image.get_rect(center=self.rect.center)
+
+    def rotate_all_frames(self, deg: float) -> None:
+        for i in range(len(self.__original_frames)):
+            self.frames[i] = pygame.transform.rotate(self.__original_frames[i], deg)

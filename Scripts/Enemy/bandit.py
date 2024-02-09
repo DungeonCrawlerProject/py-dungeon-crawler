@@ -86,10 +86,8 @@ class Bandit(Enemy):
     
 
     def update(self, targets, enemys):
-        print(self.camera)
         super().update(targets, enemys)
         if self.attack_anim.start_time:
-            self.attack_anim.position = self.position
             _elapsed_time = pygame.time.get_ticks() - self.attack_anim.start_time
             self.attack_anim.run_once(_elapsed_time)
 
@@ -127,10 +125,10 @@ class Bandit(Enemy):
                 -y_offset * math.sin(attack_angle),
             )
 
-            self.attack_anim.sprite.rotate(math.degrees(attack_angle))
+            self.attack_anim.sprite.rotate_all_frames(math.degrees(attack_angle))
             self.attack_anim.start_animation()
-
             pos = self.position + offset_vector
+            self.attack_anim.position = pos
             attack = GameObject(
                 position=pos,
                 sprite=None,
