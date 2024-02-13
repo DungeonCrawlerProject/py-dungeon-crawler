@@ -7,6 +7,7 @@ from pygame import Vector2
 from Scripts.sprite import PNGSprite
 from typing import Optional, Tuple
 from Scripts.CollisionBox.collision_box import CollisionBox
+from Scripts.Animation.sprite_animation import SpriteAnimation
 
 
 @dataclass
@@ -16,7 +17,7 @@ class GameObject:
     position: pygame.Vector2 | Tuple[float | int, float | int]
 
     #: The sprite for rendering the game object
-    sprite: PNGSprite | pygame.Surface | None
+    sprite: PNGSprite | pygame.Surface | SpriteAnimation | None
 
     #: The collision box for the game object
     collider: Optional[CollisionBox] = None

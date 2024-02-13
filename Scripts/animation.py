@@ -11,7 +11,7 @@ from pygame.time import get_ticks
 from Scripts.GameObject.game_object import GameObject
 from Scripts.sprite import PNGSprite
 
-
+# TODO:  Try to make Animation a Sprite not a GameObject
 class Animation(GameObject):
 
     def __init__(

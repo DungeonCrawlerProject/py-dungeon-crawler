@@ -5,7 +5,7 @@ from Scripts.Enemy.enemy import Enemy
 from Scripts.sprite import PNGSprite
 from Scripts.CollisionBox.collision_box import CollisionBox
 from Scripts.GameObject.game_object import GameObject
-from Scripts.animation import Animation
+from Scripts.Animation.sprite_animation import SpriteAnimation
 
 
 class Bandit(Enemy):
@@ -47,10 +47,6 @@ class Bandit(Enemy):
             collision_handler=collision_handler,
         )
         self.knockback = 20
-        self.attack_anim = Animation(
-            sprite=PNGSprite.make_from_sprite_sheet("Sprites/Enemys/Slash.png", 22, 15),
-            display_duration=1000,
-        )
 
     @classmethod
     def load_from_json(cls, data_path, pos, collision_handler):
@@ -82,14 +78,9 @@ class Bandit(Enemy):
     
     def add_camera(self, camera):
         self.camera = camera
-        camera.game_objects.append(self.attack_anim)
     
-
     def update(self, targets, enemys):
         super().update(targets, enemys)
-        if self.attack_anim.start_time:
-            _elapsed_time = pygame.time.get_ticks() - self.attack_anim.start_time
-            self.attack_anim.run_once(_elapsed_time)
 
     def move(self, enemys):
         if self.target is None:
@@ -125,27 +116,28 @@ class Bandit(Enemy):
                 -y_offset * math.sin(attack_angle),
             )
 
-            self.attack_anim.sprite.rotate_all_frames(math.degrees(attack_angle))
-            self.attack_anim.start_animation()
             pos = self.position + offset_vector
-            self.attack_anim.position = pos
+
+            attack_anim = SpriteAnimation.make_from_sprite_sheet('Sprites/Enemys/Slash.png', 22, 15, 200)
             attack = GameObject(
                 position=pos,
-                sprite=None,
-                lifetime=1000,
+                sprite=attack_anim,
+                lifetime=600,
                 spawn_time=pygame.time.get_ticks(),
             )
             attack_collider = CollisionBox(
                 parent=attack,
                 position=attack.position,
                 dimensions=pygame.Vector2(
-                    self.attack_anim.sprite.rect.width,
-                    self.attack_anim.sprite.rect.height,
+                    attack_anim.rect.width,
+                    attack_anim.rect.height,
                 ),
                 collision_handler=self.collision_handler,
                 tag="enemy_atk",
             )
             attack.collider = attack_collider
+            
+            self.camera.game_objects.append(attack)
             targets_hit = attack.collider.check_collision(tag="player")
             for target in targets_hit:
                 target.stats.current_health -= self.attack_damage
