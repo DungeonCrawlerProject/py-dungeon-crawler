@@ -86,6 +86,12 @@ class Camera(pygame.sprite.Group):
             if game_object.lifetime >= pygame.time.get_ticks() - game_object.spawn_time:
                 self.game_objects.remove(game_object)
                 
+    def add_game_object(self, game_obj: GameObject):
+        original_size = game_obj.sprite.get_original_image().get_rect()
+        area = pygame.Vector2(original_size.width, original_size.height)
+        game_obj.sprite.scale_frames(self.position_scalar)
+        game_obj.sprite.image = pygame.transform.scale(game_obj.sprite.image, self.position_scalar * area)
+        self.game_objects.append(game_obj)
 
     # TODO
     # Change scaling method so sprites instantiated after resolution change are also scaled properly.

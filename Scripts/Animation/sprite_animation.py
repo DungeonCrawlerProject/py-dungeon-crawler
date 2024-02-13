@@ -23,6 +23,9 @@ class SpriteAnimation(PNGSprite):
     
     def __init__(self, ms_per_frame) -> None:
         super().__init__()
+        self.__original_frames = []
+        self.__original_image = None  # Store the original image for rotation
+        self.__unrotated_image = None
         self.ms_per_frame = ms_per_frame
         self.start_time = None
 
@@ -37,3 +40,26 @@ class SpriteAnimation(PNGSprite):
         self.image = self.frames[frame_idx]
         return 1
     
+    def get_original_image(self):
+        return self.__original_image
+
+    def get_original_frames(self):
+        return self.__original_frames
+    
+    def scale_frames(self, scalar):
+
+        for i, frame in enumerate(self.frames):
+            size = self.get_original_image().get_rect()
+            a = pygame.Vector2(size.width, size.height)
+            self.frames[i] = pygame.transform.scale(frame, scalar * a)
+            self.__unrotated_image[i] = pygame.transform.scale(frame, scalar * a)
+    
+    def rotate(self, deg: float) -> None:
+        # THE ORIGINAL IMAGE NEEDS A REWORK
+        safe_ref = self.__unrotated_image[self.current_frame]
+        self.image = pygame.transform.rotate(safe_ref, deg)
+        self.rect = self.image.get_rect(center=self.rect.center)
+
+    def rotate_all_frames(self, deg: float) -> None:
+        for i in range(len(self.__original_frames)):
+            self.frames[i] = pygame.transform.rotate(self.__original_frames[i], deg)

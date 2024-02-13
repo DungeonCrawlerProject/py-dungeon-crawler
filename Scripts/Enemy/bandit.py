@@ -119,6 +119,9 @@ class Bandit(Enemy):
             pos = self.position + offset_vector
 
             attack_anim = SpriteAnimation.make_from_sprite_sheet('Sprites/Enemys/Slash.png', 22, 15, 200)
+            
+            attack_anim.rotate(math.degrees(attack_angle))
+            attack_anim.rotate_all_frames(math.degrees(attack_angle))
             attack = GameObject(
                 position=pos,
                 sprite=attack_anim,
@@ -137,7 +140,7 @@ class Bandit(Enemy):
             )
             attack.collider = attack_collider
             
-            self.camera.game_objects.append(attack)
+            self.camera.add_game_object(attack)
             targets_hit = attack.collider.check_collision(tag="player")
             for target in targets_hit:
                 target.stats.current_health -= self.attack_damage
