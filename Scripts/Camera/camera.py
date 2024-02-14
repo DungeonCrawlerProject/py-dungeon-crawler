@@ -73,6 +73,9 @@ class Camera(pygame.sprite.Group):
             # Skip if the sprite is set to invisible
             if not game_object.sprite.visible:
                 continue
+            if game_object.tag == "anim":
+                print(game_object.sprite.start_time)
+                game_object.sprite.update()
 
             game_object_center = (game_object.sprite.rect.width // 2, game_object.sprite.rect.height // 2)
             sprite_offset = (self.position_scalar * (pygame.Vector2(game_object.position) - game_object_center)) + ground_offset
@@ -83,7 +86,8 @@ class Camera(pygame.sprite.Group):
             # Change update object lifetime
             if game_object.lifetime is None or game_object.spawn_time is None:
                 continue
-            if game_object.lifetime >= pygame.time.get_ticks() - game_object.spawn_time:
+            if game_object.lifetime <= (pygame.time.get_ticks() - game_object.spawn_time):
+                print(game_object)
                 self.game_objects.remove(game_object)
                 
     def add_game_object(self, game_obj: GameObject):

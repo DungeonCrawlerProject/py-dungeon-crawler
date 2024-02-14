@@ -116,17 +116,19 @@ class Bandit(Enemy):
                 -y_offset * math.sin(attack_angle),
             )
 
-            pos = self.position + offset_vector
+            pos = self.position + 1.5 * offset_vector
 
-            attack_anim = SpriteAnimation.make_from_sprite_sheet('Sprites/Enemys/Slash.png', 22, 15, 200)
-            
+            attack_anim = SpriteAnimation.make_from_sprite_sheet('Sprites/Enemys/Slash.png', 22, 15, 100)
             attack_anim.rotate(math.degrees(attack_angle))
             attack_anim.rotate_all_frames(math.degrees(attack_angle))
+            attack_anim.start_anim(is_repeating=False)
+
             attack = GameObject(
                 position=pos,
                 sprite=attack_anim,
-                lifetime=600,
+                lifetime=300,
                 spawn_time=pygame.time.get_ticks(),
+                tag="anim"
             )
             attack_collider = CollisionBox(
                 parent=attack,

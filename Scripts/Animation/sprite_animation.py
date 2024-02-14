@@ -1,3 +1,4 @@
+from typing import Any
 import pygame
 from Scripts.sprite import PNGSprite
 
@@ -26,19 +27,39 @@ class SpriteAnimation(PNGSprite):
         self.__original_frames = []
         self.__original_image = None  # Store the original image for rotation
         self.__unrotated_image = None
+        self.is_repeating = None
         self.ms_per_frame = ms_per_frame
         self.start_time = None
 
-    def start_anim(self):
+    def start_anim(self, is_repeating: bool):
         self.start_time = pygame.time.get_ticks()
+        self.is_repeating = is_repeating
 
-    def run_once(self):
+    def update(self) -> None:
+        if self.is_repeating:
+            self.run_repeating()
+        else:
+            self.run_once()
+
+    def run_repeating(self):
         elapsed_time = pygame.time.get_ticks() - self.start_time
         frame_idx = elapsed_time // self.ms_per_frame
-        if frame_idx > 5:
-            return 0
+        if frame_idx > len(self.frames):
+            self.image = self.frames[0]
+            self.start_time = pygame.time.get_ticks()
         self.image = self.frames[frame_idx]
-        return 1
+
+    def run_once(self):
+        print("start: ", self.start_time)
+        print("cur: ", pygame.time.get_ticks())
+        elapsed_time = pygame.time.get_ticks() - self.start_time
+        print("elapsed: ",elapsed_time)
+        frame_idx = elapsed_time // self.ms_per_frame
+        print("idx: ", frame_idx)
+        if frame_idx >= len(self.frames):
+            self.visible = False
+        else:
+            self.image = self.frames[frame_idx]
     
     def get_original_image(self):
         return self.__original_image
