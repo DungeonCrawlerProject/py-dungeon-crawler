@@ -115,11 +115,16 @@ class Enemy(ABC, GameObject):
         near_by_enemys = 0
         for enemy in enemys:
             self_to_enemy = (self.position - enemy.position)
+            if enemy == self:
+                continue
             if self_to_enemy.length() > 50:
                 continue
             if self_to_enemy.length() == 0:
+                print(self_to_enemy)
                 self_to_enemy = pygame.Vector2(.1, .1)
             enemy_avoidance_vector += self_to_enemy * (20 / self_to_enemy.length())
             near_by_enemys += 1
+        if near_by_enemys == 0:
+            return pygame.Vector2(0, 0)
         enemy_avoidance_vector /= near_by_enemys
         return enemy_avoidance_vector
